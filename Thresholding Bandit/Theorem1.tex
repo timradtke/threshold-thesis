@@ -1,0 +1,414 @@
+\documentclass[12pt,]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\PassOptionsToPackage{usenames,dvipsnames}{color} % color is loaded by hyperref
+\hypersetup{unicode=true,
+            pdftitle={Theorems and Proofs},
+            pdfauthor={Tim Radtke},
+            colorlinks=true,
+            linkcolor=Maroon,
+            citecolor=Blue,
+            urlcolor=blue,
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{Theorems and Proofs}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{Tim Radtke}
+  \preauthor{\centering\large\emph}
+  \postauthor{\par}
+  \predate{\centering\large\emph}
+  \postdate{\par}
+  \date{4/23/2017}
+
+\usepackage[retainorgcmds]{IEEEtrantools}
+\usepackage{bm}
+\usepackage{amsmath}
+\usepackage{bbm}
+\newtheorem{theorem}{Theorem}
+\newcommand{\KL}{\,\text{KL}}
+\newcommand{\der}{\,\text{d}}
+
+\begin{document}
+\maketitle
+
+\subsection{Theorem 1}\label{theorem-1}
+
+In Theorem 1 of Locatelli et al. (2016), a lower bound for the
+thresholding bandit problem is shown. The basic idea is as follows. The
+problem formulation considered in the paper describes bandit problems
+for Sub-Gaussian distributions. To show a lower bound, we show that
+every algorithm is expected to make a certain error even if we restrict
+ourselves to a heavily specified scenario. Even then, any algorithm will
+have a certain level of risk with which it cannot distinguish between
+the actual setting and a slightly changed setting (under which the
+former answer leads to regret).
+
+To be more specific, consider a case in which we set \(\tau = 0\) and
+\(\epsilon = 0\) w.l.o.g. If we then choose all arms to have normally
+distributed feedback with means \(\mu_i\), we see that for each arm
+\(i\) the distance from the threshold is given by
+\(\Delta_i = |\mu_i - \tau| + \epsilon = \mu_i\). Thus, assuming a
+variance of 1 for every arm, we have for every arm the distribution
+\(\nu_i = \mathcal{N}(\mu_i,1) = \mathcal{N}(\Delta_i,1)\). Furthermore,
+define \(\nu_i' = \mathcal{N}(-\Delta_i,1)\).
+
+The idea now is that every arm \(i \in \{1,\dots,K\}\) generates a
+sample for every time point \(t\in \{1, \dots, T\}\) from its
+distribution \(\nu_i\) before the algorithm starts to choose arms. Thus,
+we have a \(T \times K\) table of realized observations from the product
+distribution given by
+\(\mathcal{B}^0 = \nu_1^0 \otimes \ldots \otimes \nu_K^0 = \nu_1^0 \otimes \ldots \otimes \nu_K\).
+This is a product distribution where the \(K\) different means all lie
+above the threshold. We would hope that an algorithm classifies the
+means accordingly. However, we will show in what follows that any
+algorithm makes a certain error by not being able to distinguish
+\(\mathcal{B}^0\) from a product distribution \(\mathcal{B}^i\) which
+differs only slightly and has the same overall complexity (as defined by
+\(H = \sum_{i=1}^K (\Delta_i)^{-2}\)).
+
+Before the start of the algorithm, we introduce a slight variation in
+the setup. Similar to how one can switch arms in the pure exploration
+setup for multi-armed bandits (compare Audibert et al., Garivier \&
+Kaufmann) to ``confuse'' the algorithm without introducing additional
+complexity to the specified problem. However, since we do not compare
+arms with each other directly in the thresholding bandit problem
+(switching arms would still keep all means above the threshold), we
+instead need to flip an arm with respect to the threshold. Since the
+threshold is \(\tau = 0\), we have for the flipped arm the new
+distribution \(\nu_i'\) as defined above. Indeed, we can define the new
+product distribution \(B^i = \nu_1^i \otimes \dots \otimes \nu_K^i\)
+where for
+\(k \leq K, \nu_k' := \nu_i \mathbbm{1}_{k \neq i} + \nu_i' \mathbbm{1}_{k=i}\).
+This flipping of the arm corresponds to multiplying all random variables
+\(X_{i,t}\) of arm \(i\) by \(-1\).
+
+As in Locatelli et al. (2016), we let for \(i \leq K\),
+\(\mathbb{P}_{\mathcal{B}^i}\) define the probability distribution
+describing all samples that a bandit strategy can potentially collect up
+to horizon \(T\), i.e.~according to the samples
+\((X_{k,s})_{k\leq K, s \leq T} \sim (\mathcal{B}^i)^{\otimes T}\).
+\((T_k)_{k\leq K}\) denotes the number of samples collected on arm \(k\)
+until time \(T\).
+
+\paragraph{Reminder about the goal of the
+proof}\label{reminder-about-the-goal-of-the-proof}
+
+At this point, we have defined a finite set of problems of Gaussian
+distributions with fixed variance 1 for a given set of set of gaps
+between the means of the distributions and the threshold, \((d_k)_k\).
+We will now proof a lower bound on the worst case regret of any
+algorithm; that is, the maximum error probability that even the best
+algorithm makes on this problem.
+
+\paragraph{Statistical Decision}\label{statistical-decision}
+
+Given our formulation of the regret, the expected regret
+\(\mathbb{E}[\mathcal{L}(T)]\) corresponds directly to the probability
+of making a wrong classification of any of the \(K\) means. In general,
+let \(T\) be a binary decision function, and define
+\(\Omega = \{T = 0\}\) and \(\Omega^C = \{T = 1\}\). Assume that the
+decision \(T\) distinguishes between two states of the world, \(H_0\)
+and \(H_1\). Then our overall error probability is given by
+\(P_{H_0}(T=1) + P_{H_1}(T = 0) = P_{H_0}(\Omega^C) + P_{H_1}(\Omega)\).
+
+In our case, \(H_0\) may correspond to the state in which we have
+\(\mathcal{B}^0\), and \(H_1\) corresponds to the case where any arm has
+been flipped, \(\mathcal{B}^i\). Furthermore, we consider the events in
+which the algorithm, making the decision, classifies arm \(i\) as being
+above the threshold: \(\mathcal{A}_i = \{i \in \hat{S}_\tau\). The event
+on which all arms are being classified as above the threshold is
+consequently given by \(\mathcal{A} = \bigcap \mathcal{A}_i\). However,
+Theorem 1 does not bound the overall regret, but the maximum error
+probability. We can write this now as
+
+\begin{equation}
+\max_{i \in \{0, \dots, K\}} \mathbb{E}_{\mathcal{B}^i} (\mathcal{L}(T)) \geq \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}^C) \big)
+= \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \big) \label{LocatelliTheorem1ExpRegret}
+\end{equation}
+
+In order to give a bound on above equation, we start by considering
+\(\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\). This probability can be
+measured as the expected change in the likelihood of observed data times
+the probability under the original state. The measure of event
+\(\mathcal{A}_i\) under state \(\mathcal{B}^i\) is given as the
+probability of \(\mathcal{A}_i\) under the (original) state
+\(\mathcal{B}^0\) multiplied by a factor. This factor is the change in
+the data likelihoods due to moving from \(\mathcal{B}^0\) to
+\(\mathcal{B}^i\), and is expressed as the expected likelihood ratio
+under \(\mathcal{B}^0\). By definition though, this is equal to the
+empirical Kullback-Leibler divergence of the two measures.
+
+First, let us define the change of measure in terms of the empirical
+log-likelihood for our case. Then, we will show how to replace the
+log-likelihood by the empirical Kullback-Leibler divergence.
+
+Let every \(\nu_i, \nu_i'\) be dominated by the Lebesgue measure
+\(\lambda\). Then their density functions are given by
+\(f_i = \frac{\der \nu_i}{\der \lambda}\) and
+\(f_i' = \frac{\der \nu_i'}{\der \lambda}\) respectively. For
+\(T \geq t \geq 0\), define the empirical Kullback-Leibler divergence as
+
+\begin{align*}
+\hat{\KL}_{k,t} & = \frac{1}{t} \sum_{s=1}^{t} \log(\frac{\der \nu_k'}{\der \nu_k}(X_{k,s})) \\
+& = \frac{1}{t} \sum_{s=1}^{t} \log \big(\frac{f_k'(X_{k,s})}{f_k(X_{k,s})} \big) \\
+& = \frac{1}{t} \log \big( \prod_{s=1}^{t} \frac{f_k'(X_{k,s})}{f_k(X_{k,s})} \big) \\
+& \stackrel{\text{iid}}{=} \frac{1}{t} \log \big( \frac{f_k'(X_{k,1}, \dots,X_{k,t})}{f_k(X_{k,1}, \dots,X_{k,t})} \big) \\
+& = \frac{1}{t} \log \big( \text{LR}((X_{k,1}, \dots,X_{k,t}), \nu_k', \nu_k) \big)
+\end{align*}
+
+Since we consider Gaussian distributions with variance 1, we have
+density functions
+\(f_i(x) \propto \exp \big(-\frac{1}{2} (x-\Delta_i)^2\big)\) and
+\(f_i'(x) \propto \exp \big(-\frac{1}{2} (x+\Delta_i)^2\big)\). Plugging
+this into the above definition of the empirical Kullback-Leibler
+divergence, we easily see
+
+\begin{align*}
+\hat{\KL}_{k,t} & = \frac{1}{t} \sum_{s=1}^{t} \log \big(\frac{\exp \big(-\frac{1}{2} (X_{k,s}+\Delta_k)^2\big)}{\exp \big(-\frac{1}{2} (X_{k,s}-\Delta_k)^2\big)} \big) \\
+& = \frac{1}{t} \sum_{s=1}^{t} \log \big( \exp(-\frac{1}{2} (X_{k,s}+\Delta_k)^2 + \frac{1}{2} (X_{k,s}-\Delta_k)^2) \big) \\
+& = - \frac{1}{t} \sum_{s=1}^{t} 2 X_{k,s} \Delta_k
+\end{align*}
+
+\paragraph{Change of Measure}\label{change-of-measure}
+
+We are now ready to state the change of measure. As alluded to above, we
+consider how the probability changes for the event \(\mathcal{A}_i\)
+when we move from \(\mathcal{B}^0\) to \(\mathcal{B}^i\). When flipping
+arm \(i\), we only changed the samples of this arm, that is, the first
+\(T_i\) observations we got from arm \(i\) the algorithm took. The
+change of measure is then defined as:
+
+\begin{align*}
+\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i} \text{LR}((X_{i,1}, \dots,X_{i,T_i}), \nu_i', \nu_i) ] \\
+& = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i} \exp (- T_i \hat{\KL}_{i,T_i}) ]
+\end{align*}
+
+Obviously, \(\hat{\KL}_{i,T_i}\) depends on the realized samples
+\(X_{i,1}, \dots,X_{i,T_i}\). Consequently, we need to find a bound on
+\(\hat{\KL}_{i,T_i}\) itself to incorporate the uncertainty involved in
+this metric.
+
+\paragraph{Kullback-Leibler
+Divergence}\label{kullback-leibler-divergence}
+
+For our problem, the Kullback-Leibler divergence of \(/nu_k'\) from
+\(\nu_k\) is given by \(\KL_k := KL(\nu_k', \nu_k) = 2\Delta_k^2\).
+
+\paragraph{Concentration of the Empirical Kullback-Leibler
+Divergence}\label{concentration-of-the-empirical-kullback-leibler-divergence}
+
+It is easy to see that
+
+\begin{equation*}
+|\hat{\KL}_{k,t} - \KL_{k,t}| = |-\frac{2}{t} \Delta_k \sum_{s=1}^{t}(X_{k,s} - \Delta_k)|
+\end{equation*}
+
+itself is a normally distributed random variable with mean zero and a
+variance decreasing in \(t\). Thus, one can show that
+\(\mathbb{P}_{\mathcal{B}^i}(\xi) \geq 3/4\) for the event
+
+\begin{equation}
+\xi = \{ \forall k \leq K, \forall t \leq T, |\hat{\KL}_{k,t} - \KL_{k,t}| \leq 4 \Delta_k \sqrt{\frac{\log(4(\log(T)+1)K)}{t}} \}. \label{LocatelliTheorem1EventXi}
+\end{equation}
+
+Thus, in order to bound the empirical Kullback-Leibler divergence in our
+change of measure, we can consider the intersection of \(\mathcal{A}_i\)
+and \(\xi\) as follows and plug in the bound on event \(\xi\):
+
+\begin{align*}
+\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i} \exp (- T_i \hat{\KL}_{i,T_i}) ] \\
+& \geq \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- T_i \hat{\KL}_{i,T_i}) ] \\
+& \geq \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- 2 \Delta_i^2 T_i - 4 \Delta_i \sqrt{T_i} \sqrt{\log(4(\log(T)+1)K)}) ]
+\end{align*}
+
+Two things are left to do: With \(T_i\), we still have one random
+variable left which we cannot leave in our bound. Second, we are
+actually not interested in \(\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\)
+but in
+\(\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\).
+
+\paragraph{\texorpdfstring{Bounding \(T_i\) for
+\(\max_{i \in \{1,\dots,K\}}\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\)}{Bounding T\_i for \textbackslash{}max\_\{i \textbackslash{}in \textbackslash{}\{1,\textbackslash{}dots,K\textbackslash{}\}\}\textbackslash{}mathbb\{P\}\_\{\textbackslash{}mathcal\{B\}\^{}i\}(\textbackslash{}mathcal\{A\}\_i)}}\label{bounding-t_i-for-max_i-in-1dotskmathbbp_mathcalbimathcala_i}
+
+Part of our bound is
+\(\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\),
+so let's continue with that. In general it holds that
+\(\max_{1 \leq i \leq K} (X_1, \dots, X_K) \geq \bar{X}\). Thus we can
+write:
+
+\begin{align*}
+\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & \geq \frac{1}{K} \sum_{i=1}{K} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) \\
+& \geq \frac{1}{K} \sum_{i=1}{K} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i \cap \xi) \\
+& \geq \frac{1}{K} \sum_{i=1}{K} \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- 2 \Delta_i^2 T_i - 4 \Delta_i \sqrt{T_i} \sqrt{\log(4(\log(T)+1)K)}) ]
+\end{align*}
+
+where the second line is again the intersection of \(\mathcal{A}_i\) and
+\(\xi\) as before in order to apply the change of measure again in the
+third line.
+
+What is left to show before we have our final bound is a bound on
+\(T_i\). To show that any algorithm has a certain bound on its error, it
+only makes sense that every arm has to pulled at least a certain amount
+of times. Consequently, no arm should be pulled exclusively.
+
+First, let \(a = \Delta_i \sqrt{T_i}\) and
+\(b = 4\sqrt{\log((4\log(T)+1)K)}\). Then use \(ab \leq a^2 + b^2\) to
+write \(ab \leq \Delta_i^2 T_i + 16\log((4\log(T)+1)K)\). And so:
+
+\begin{align*}
+\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & \geq \frac{1}{K} \sum_{i=1}{K} \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- 3 \Delta_i^2 T_i - 16 \log(4(\log(T)+1)K)) ]
+\end{align*}
+
+Furthermore, we know that the sum of the individual arm pulls has to be
+equal to the overall number of pulls (equal to the budget in the fixed
+budget sense), \(\sum_i T_i = T\), and furthermore we know that
+\(T_i>0\). The latter holds since any reasonable algorithm has to check
+each arm at least once in our setup. This is because we need to check
+each arm's performance in comparison to the threshold. Thus it is easy
+to show that
+\(\exists i: T_i \leq \frac{T}{H \Delta_i^2} = \frac{T}{(\sum_{i=1}^{K} \Delta_i^{-2}) \Delta_i^2}\).
+To see this, assume the opposite:
+\(\forall i: T_i > T \frac{\sum_{i=1}^K \Delta_i^2}{\Delta_i^2}\). This
+implies however
+\(\sum_{i=1}^K T_i > \sum_{i=1}^K T \frac{\sum_{i=1}^K \Delta_i^2}{\Delta_i^2} = T \cdot 1 = T\)
+which is a contradiction.
+
+So we can write \((\Delta_i \sqrt{T_i})^2 \leq \frac{T}{H}\). We use
+\(\mathcal{A} = \cap_{i=1}^K \mathcal{A}_i\) to write:
+
+\begin{align*}
+\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & \geq \frac{1}{K} \sum_{i=1}^{K} \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- 3 \Delta_i^2 T_i - 16 \log(4(\log(T)+1)K)) \big] \\
+& = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A} \cap \xi} \frac{1}{K} \sum_{i=1}{K} \exp (- 3 \Delta_i^2 T_i - 16 \log(4(\log(T)+1)K)) \big]
+\end{align*}
+
+We write
+\(\frac{1}{K} \sum_{i=1}^K \exp(-3T_i \Delta_i^2) \geq \frac{1}{K} \sum_{i=1}^K \exp(-3 T/H) = \exp(-3 T/H)\).
+Thus:
+
+\begin{align*}
+\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A} \cap \xi} \frac{1}{K} \sum_{i=1}^{K} \exp (- 3 \Delta_i^2 T_i) \exp(-16 \log(4(\log(T)+1)K)) ] \\
+& \geq \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A} \cap \xi} \frac{1}{K} \sum_{i=1}^{K} \exp (- 3 \frac{T}{H}) \exp(-16 \log(4(\log(T)+1)K)) ] \\
+& = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A} \cap \xi} \exp (- 3 \frac{T}{H}) \exp(-16 \log(4(\log(T)+1)K)) ] \\
+& = \mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp (- 3 \frac{T}{H} -16 \log(4(\log(T)+1)K))
+\end{align*}
+
+\paragraph{Conclusion}\label{conclusion}
+
+Consider again the risk which we need to bound from equation
+\eqref{LocatelliTheorem1ExpRegret}. We bound the maximum expected loss
+over all \(\mathcal{B}_i\). By again using the fact that in general
+\(\max_{1 \leq i \leq K} (X_1, \dots, X_K) \geq \bar{X}\), we plug in
+our previous calculations:
+
+\begin{align}
+\max_{i \in \{0, \dots, K\}} \mathbb{E}_{\mathcal{B}^i} (\mathcal{L}(T)) & \geq \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \big) \\
+& \geq \frac{1}{2}\mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp (- 3 \frac{T}{H} -16 \log(4(\log(T)+1)K)) + \frac{1}{2}(1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A})) \label{LocatelliTheorem1DefinitionOfRisk}
+\end{align}
+
+From \eqref{LocatelliTheorem1EventXi} we know that for any
+\(i \in \{0, \dots, K\}\), \(\mathbb{P}_{\mathcal{B}^i}(\xi) \geq 3/4\).
+Following the argument in Locatelli et al. (2016), we now consider two
+cases: \(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \geq 1/2\) and
+\(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \leq 1/2\). In the former
+case, we can plug in the two probabilities into
+\eqref{LocatelliTheorem1DefinitionOfRisk}. If
+\(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \geq 1/2\) and
+\(\mathbb{P}_{\mathcal{B}^0}(\xi) \geq 3/4\), then
+\(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A} \cap \xi) \geq 1/4\). Thus:
+
+\begin{align*}
+\max_{i \in \{0, \dots, K\}} \mathbb{E}_{\mathcal{B}^i} (\mathcal{L}(T)) & \geq \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \big) \\
+& \geq \frac{1}{2}\mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp (- 3 \frac{T}{H} -16 \log(4(\log(T)+1)K)) + \frac{1}{2}(1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A})) \\
+& \geq \frac{1}{8} \exp (- 3 \frac{T}{H} -16 \log(4(\log(T)+1)K))
+\end{align*}
+
+where we drop the second summand of the second line so that the
+inequality holds.
+
+On the other hand, when
+\(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \leq 1/2\), then we know that
+\(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A} \cap \xi) \leq 1/2\) for any
+\(\mathbb{P}_{\mathcal{B}^0}(\xi)\). At the same time
+\(1-\mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) = \mathbb{P}_{\mathcal{B}^0}(\mathcal{A^C}) \geq 1/2\).
+Consequently,
+\(1/4 \leq \frac{1}{2}(1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A})) \leq 1/2\),
+while
+\(\frac{1}{2}\mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp (- 3 \frac{T}{H} -16 \log(4(\log(T)+1)K)) \geq 0\).
+And so the stronger lower bound in that case is, as noticed by Locatelli
+et al. (2016), given simply by
+
+\begin{align*}
+\max_{i \in \{0, \dots, K\}} \mathbb{E}_{\mathcal{B}^i} (\mathcal{L}(T)) & \geq \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \big) \\
+& \geq 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) = \mathbb{P}_{\mathcal{B}^0}(\mathcal{A^C}) \\
+& \geq \frac{1}{2}
+\end{align*}
+
+
+\end{document}

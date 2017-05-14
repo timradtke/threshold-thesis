@@ -1,0 +1,256 @@
+--- 
+title: "Theorems and Proofs"
+author: "Tim Radtke" 
+date: "4/23/2017"
+header-includes:
+   - \usepackage[retainorgcmds]{IEEEtrantools}
+keep_tex: TRUE
+output:
+  pdf_document
+---
+
+## Theorem 2
+
+Let $K \geq 0$, $T \geq 2K$, and consider a problem $\mathbb{B}$. Assume that
+all arms $\nu_k$ of the problem are R-sub-Gaussian with means $\mu_k$. Let $\tau
+\in \mathbb{R}, \epsilon \geq 0$.
+
+Algorithm APT's expected loss is upper bounded on this problem as 
+\begin{equation*} \mathbb{E}(\mathcal{L}(T)) \leq \exp
+(-\frac{1}{64R^2}\frac{T}{H} + 2 \log (T) + 1)K)) \end{equation*}
+
+where we remind that $H = \sum_i (|\mu_i - \tau | + \epsilon)^{-2}$ and where
+$\mathbb{E}$ is the expectation according to the samples of the problem.
+
+### Proof
+
+To prove above theorem, we first define a favorable event $\xi$ on which we hope
+to make a loss with only a small probability. Indeed, it is the event for which
+we want to upper bound the expected loss. As we want to find an upper bound for
+the expected loss of the APT algorithm, the event corresponds to the decision
+made by it. The APT algorithm's heuristic leads to a decision with low expected
+regret, if it finds empirical mean estimates $\frac{1}{s} \sum_{t=1}^s X_{i,t}$
+of the arms that are close to the true mean $mu_i$ of the arms. Then, we would
+expect arms which are over $\tau + \epsilon$ to be classified correctly, and
+arms that are under $\tau - \epsilon$ to be rejected.
+
+Indeed, we have $\mathbb{E}(\mathcal{L}(T)) = P(S_{\tau + \epsilon} \cap
+\hat{S}_\tau^C \neq \emptyset \lor S_{\tau-\epsilon}^C \cap \hat{S}_{\tau} \neq
+\emptyset)$. But this just corresponds to $P(\{\exists i: ((\mu_i <
+\tau-\epsilon) \land(\hat{\mu}_i \geq \tau)) \lor ((\mu_i > \tau + \epsilon)
+\land (\hat{\mu}_i < \tau)))$. Each of the two $(...)\lor(...)$ conditions
+corresponds to $| \hat{\mu}_i - \mu_i | \geq \epsilon$. It follows that the
+expected loss can be rewritten as: $\mathbb{E}(\mathcal{L}(T)) = P(\exists i,
+\exists s: |\hat{\mu}_{i,s} - \mu_i | \geq \epsilon) = P(\xi^C)$. But this is
+exactly the probability of classifying at least one arm incorrectly which
+results in a loss of size 1.
+
+Thus we define as the favorable event:
+
+\begin{equation} 
+\xi = \{\forall i, \forall s: | \hat{\mu}_{i,s} - \mu_i | \leq
+\epsilon\} 
+\end{equation}
+
+Furthermore, if we write $\xi_{i,s} = \{ |\hat{\mu}_{i,s}-\mu_i | \leq \epsilon
+\}$, then the following holds by union bound.
+
+\begin{equation} 
+P(\xi) = P(\cap_i \cap_s \xi_{i,s}) = 1 - P(\cup_i \cup_s
+\xi_{i,s}^C) \geq 1 - \sum_i \sum_s P(| \hat{\mu}_{i,s} - \mu_i| \geq \epsilon)
+\label{theorem2_prob_fav_event} 
+\end{equation}
+
+Furthermore, for any $i \in \{1, \dots, K\}$, for any $s \in \{1, \dots,
+T(i)\}$, with $X_{it}$ being the random sample from the R-sub-Gaussian
+distribution $v_i$ at time $t$:
+
+\begin{equation} 
+P(| \hat{\mu}_{i,s} - \mu_i| \geq \epsilon) = P(| (\frac{1}{s}
+\sum_{t=1}^{s} X_{it} - \mu_i) | \geq \epsilon) = P(| \sum_{t=1}^{s} (X_{it} -
+\mu_i) | \geq s \epsilon) 
+\end{equation}
+
+where the latter can be bounded by a Hoeffding inequality:
+
+\begin{equation} 
+P(| \sum_{t=1}^{s} (X_{it} - \mu_i) | \geq s \epsilon) \leq
+2\exp (-\frac{\epsilon^2 s}{2 R^2}) \label{theorem2_hoeffding} 
+\end{equation}
+
+The Hoeffding inequality as used here is as follows:
+
+...
+
+Plugging \eqref{theorem2_hoeffding} back into \eqref{theorem2_prob_fav_event},
+we get:
+\begin{equation}
+P(\xi) \geq 1 - \sum_i \sum_s P(| \hat{\mu}_{i,s} - \mu_i| \geq \epsilon) \geq 1 - 2 \sum_i \sum_s \exp (-\frac{\epsilon^2 s}{2 R^2})
+\end{equation}
+
+Now, in order to match the performance of the lower bound on the expected loss derived in theorem 1, we will choose $\epsilon = \sqrt{\frac{T \delta^2}{Hs}}$. Thus:
+
+\begin{equation}
+P(\xi) \geq 1 - 2 \sum_i \sum_s \exp (-\frac{\epsilon^2 s}{2 R^2}) = 1 - 2 \sum_i \sum_s \exp (-\frac{T \delta^2}{2 R^2 H}) \geq 1 - TK \exp(-\frac{T\delta^2}{2R^2H})
+\end{equation}
+
+Thus, we don't exactly get the bound from Locatelli et al. (2016) because we used the Hoeffding inequality instead of the martingale bound; but the the method should be clear. 
+
+What is left now is to show that the favorable event still holds under the proposed $\epsilon$, that is, we need to show that under $P(\xi) \geq 1 - TK \exp(-\frac{T\delta^2}{2R^2H})$ we still reject arms that are under $\tau - \epsilon$ and accept those above $\tau + \epsilon$.
+
+#### Step 2: Lower Bound on Number of Pulls of Difficult Arm
+
+In order to see that arms are correctly classified with large probability, we need to show that they are are pulled sufficiently often, that is, we have a degree of exploration for each arm $i$ that allows us to identify its characteristics. To see this, rewrite the favorable event of a single arm as follows with $s = T(i)$:
+
+\begin{equation}
+\xi_{i,s} = \{ |\hat{\mu}_{i,s}-\mu_i | \leq \epsilon \} = \{ |\hat{\mu}_{i,s} - \mu_i | \leq \sqrt{\frac{T \delta^2}{H T(i)}}\}
+\end{equation}
+
+To make sure that this deviation is small enough, we need to show that at time $T$, all $T(i)$ have a sufficient lower bound and thus all arms $i$ have been explored sufficiently to classify correctly with probability larger $TK \exp(-\frac{T\delta^2}{2R^2H})$.
+
+To start off, notice that due to the initialization of the APT algorithm, every $T_i(T) \geq 1$. Furthermore, we have assumed that $T>2K$. Now, at time $T$, consider an arm $k$ that has been pulled $T_k(T) -1 \geq \frac{(T-K)}{H \Delta^2_k}$ times. That is, it has been pulled at least proportionally to it's contribution to the overall hardness of the problem $H$. Recall $H = \sum_{i=1}^K(|\mu_i - \tau|+\epsilon)^-2$ and $\delta^2_i = (|\mu_i - \tau | + \epsilon)^2$. To see that such arm $k$ exists, assume it does not. Then
+
+\begin{equation*}
+T_i(T) - 1 < \frac{T-K}{H \Delta_i^2} \forall i
+\end{equation*}
+\begin{equation*}
+T- K = \sum_{i=1}^{K} T_i(T) - 1 < \sum_{i=1}^{K} \frac{T-K}{H \Delta_i^2} = \frac{T-K}{H \Delta_i^2} \sum_{i=1}^{K} \frac{1}{\Delta_i^2} = T-K
+\end{equation*}
+
+which is a contradiction.
+
+Consequently, using the assumption $T>2K$ from above, we have
+
+\begin{equation*}
+T_k(T) \geq T_k(T) - 1 \geq \frac{T-K}{H \Delta^2_k} = \frac{T}{2H\Delta_k^2}
+\end{equation*}
+
+This states a lower bound on the amount of pulls $T_k(t)$ for an arm $k$ that contributes more than average to the overall hardness of the problem.
+
+#### Step 3: Lower Bound on Number of Pulls of Simple Arm
+
+Next, we would like to derive bounds on the number of pulls of the remaining arms $i$ at the time $t$, the last pull of arm $k$. To do so, consider that we are on the favorable event $\xi$. For every arm $i$, it holds:
+
+\begin{equation}
+|\hat{\mu}_i(t) - \mu_i | \leq \sqrt{\frac{T \delta^2}{HT_i(t)}} \label{step3_favorable_event} 
+\end{equation}
+
+As described in Locatelli et al., using the reverse triangle inequality, we can write
+
+\begin{IEEEeqnarray*}{rCl}
+|\hat{\mu}_i(t) - \mu_i | & = & | (\hat{\mu}_i(t) - \tau) - (\mu_i-\tau) |
+\\
+& \geq & | |\hat{\mu}_i(t) - \tau| - |\mu_i-\tau| |
+\\
+& = & | (|\hat{\mu}_i(t) - \tau| + \epsilon) - (|\mu_i-\tau| - \epsilon) |
+\\
+& = & | \hat{\Delta}_i(t) - \Delta_i |
+\end{IEEEeqnarray*}
+
+Consequently, we can again employ the hardness of the task to start deriving bounds on the number of pulls of the arms:
+
+\begin{equation*}
+| \hat{\Delta}_i(t) - \Delta_i | \leq |\hat{\mu}_i(t) - \mu_i | \sqrt{\frac{T \delta^2}{HT_i(t)}}
+\end{equation*}
+
+From this, we get
+
+\begin{IEEEeqnarray*}{rlCrl}
+\Delta_i - \sqrt{\frac{T \delta^2}{HT_i(t)}} & \leq & \hat{\Delta}_i(t) & \leq & \Delta_i + \sqrt{\frac{T \delta^2}{HT_i(t)}}
+\end{IEEEeqnarray*}
+
+and in particular for the arm $k$ discussed above
+
+\begin{IEEEeqnarray}{rlCrl}
+\Delta_k - \sqrt{\frac{T \delta^2}{HT_k(t)}} & \leq & \hat{\Delta}_k(t) & \leq & \Delta_k + \sqrt{\frac{T \delta^2}{HT_k(t)}} \label{delta_hat_k_bounds}
+\end{IEEEeqnarray}
+
+To bound $T_i(t)$, it is helpful to compare $\Delta_i$ and $\Delta_k$ at time $t$. From the definition of the APT algorithm, we know that since arm $k$ has been pulled at time $t$ ("Pull arm $I_{t+1} = \arg \min_i \mathcal{B}_i (t+1)$"):
+
+\begin{IEEEeqnarray*}{rCl}
+\mathcal{B}_k(t) & \leq & \mathcal{B}_i(t)
+\\
+\sqrt{T_k(t)} \hat{\Delta}_k(t) & \leq & \sqrt{T_i(t)} \hat{\Delta}_i(t)
+\end{IEEEeqnarray*}
+
+Thus, every arm $i$ has a lower bound on it's number of pulls given by the lower bound for arm $k$ proportional with it's inverse relative estimated hardness $\hat{\Delta}_k(t) / \hat{\Delta}_i(t)$. We can easily derive a lower bound for the left hand side by plugging in \eqref{delta_hat_k_bounds}:
+
+\begin{IEEEeqnarray}{rCl}
+\sqrt{T_k(t)} (\Delta_k - \sqrt{\frac{T \delta^2}{HT_k(t)}}) & \leq & \mathcal{B}_k(t) 
+\\
+\sqrt{\frac{T}{2H\Delta_k^2}} (\Delta_k - \sqrt{2}\Delta_k \delta) & = & \sqrt{\frac{T}{H}} (\frac{1}{\sqrt{2}} - \delta)
+\\
+& \leq & \mathcal{B}_k(t)
+\end{IEEEeqnarray}
+
+since $T_k(t) \geq T/(2H\Delta^2_k)$ and $\sqrt{T \delta^2 / (HT_k(t))} \geq \sqrt{T \delta^2 / (H\frac{T}{2H \Delta^2_k})} = \sqrt{2}\Delta_k \delta$.
+
+Next, upper bound $\mathcal{B}_i(t)$. In contrast to $T_k(t)$, there is no lower bound for $T_i(t)$ available yet that we could plug in. Thus we derive:
+
+\begin{IEEEeqnarray*}{rCl}
+\mathcal{B}_i(t) & = & \sqrt{T_i(t)} \hat{\Delta}_i(t) 
+\\
+& \leq & \sqrt{T_i(t)} (\Delta_i + \sqrt{\frac{T \delta^2}{H T_i(t)}})
+\\
+& = & \sqrt{T_i(t)} \Delta_i + \delta \sqrt{\frac{T}{H}}
+\end{IEEEeqnarray*}
+
+Combining the two bounds, we get a lower bound on the pulls for every other arm $i$:
+
+\begin{IEEEeqnarray*}{rCl}
+\Delta_i \sqrt{T_i(t)} + \delta \sqrt{\frac{T}{H}} & \geq & (\frac{1}{\sqrt{2}} - \delta) \sqrt{\frac{T}{H}}
+\\
+\sqrt{T_i(t)} & \geq & (\frac{1}{\sqrt{2}} - 2\delta) \sqrt{\frac{T}{H}} \frac{1}{\Delta_i}
+\\ 
+& & \text{(choose $2\delta > 1 / \sqrt{2}$ such that RHS is greater 0)}
+% \\
+% T_i(t) & \geq & (\frac{1}{2} - 2\sqrt{2} \delta + 4\delta^2) \underbrace{\frac{T}{H} \frac{1}{\Delta_i^2}}_\text{$i$'s share of the budget}
+% \\
+% T_i(t) & \geq & (1 - 4 \sqrt{2} \delta + 8\delta^2) \frac{T}{2H} \frac{1}{\Delta_i^2}
+\end{IEEEeqnarray*}
+
+#### Conclusion
+
+As stated before, we require the lower bound on $T_i(t)$ in order to show that $|\hat{\mu}_i(t) - \mu_i | \leq \sqrt{frac{T \delta^2}{H T_i(t)}}$ holds for all $i$. So if we now simply plug in the derived lower bound, we get:
+
+\begin{equation*}
+\mu_i - \Delta_i (\frac{\sqrt{2}\delta}{1-2\sqrt{2}\delta}) \leq \hat{\mu}_i(t) \leq \mu_i + \Delta_i (\frac{\sqrt{2}\delta}{1-2\sqrt{2}\delta})
+\end{equation*}
+
+and with $\lambda := (\frac{\sqrt{2}\delta}{1-2\sqrt{2}\delta}) > 0$:
+
+\begin{equation*}
+\mu_i - \Delta_i \lambda \leq \hat{\mu}_i(t) \leq \mu_i + \Delta_i \lambda
+\end{equation*}
+
+Under this formulation on $\xi$, do we accept arms with $\mu_i \geq \tau + \epsilon$? For these arms holds that $\Delta_i = \mu_i - \tau + \epsilon$. Consequently: 
+
+\begin{IEEEeqnarray*}{rCl}
+\mu_i - (\mu_i - \tau + \epsilon) \lambda & \leq & \hat{\mu}_i(t) 
+\\ 
+\hat{\mu}_i(t) & \geq & \tau \lambda + \mu (1-\lambda) - \epsilon \lambda
+\end{IEEEeqnarray*}
+
+The arms are accepted if
+
+\begin{IEEEeqnarray*}{rCl}
+\hat{\mu}_i(t) - \epsilon & \geq & 0
+\end{IEEEeqnarray*}
+
+Or equivalently as long as
+
+\begin{IEEEeqnarray*}{rCl}
+\tau \lambda + \mu(1-\lambda) - \epsilon \lambda - \tau & \geq & 0
+\\
+\lambda & \leq & \frac{1}{2}
+\end{IEEEeqnarray*}
+
+
+
+
+
+
+
+
+
+
