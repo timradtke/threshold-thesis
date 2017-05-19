@@ -48,4 +48,29 @@ KL_comp(0.01,0.05, 0.03) # 0.00347
 KL_ber(0.01,0.03) # 0.00921866
 KL_ber(0.05,0.03) # 0.005748899
 
-for(i in 1:length(seq(0.001,0.)))
+par(mfcol = c(1,2))
+
+plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1), type = "n", asp = 1,
+     xlab = "p_1", ylab = "KL(Ber(p_1),Ber(p_2))", main = "KL of Bernoullis")
+for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
+  lines(seq(0.00001,0.3, by = 0.000005),
+       KL_ber(seq(0.00001,0.3, by = 0.000005),i))
+}
+
+plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1.5), type = "n", asp = 1,
+     xlab = "p_1", ylab = "(p_1 - p_2)^2", main = "Gaussian approx.\n KL of Bernoullis")
+for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
+  lines(seq(0.00001,0.3, by = 0.000005),
+        (seq(0.00001,0.3, by = 0.000005)-i)^2)
+}
+par(mfcol = c(1,1))
+
+
+
+
+
+plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1.5), type = "n", asp = 1)
+for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
+  lines(seq(0.00001,0.3, by = 0.000005),
+        KL_ber(i,seq(0.00001,0.3, by = 0.000005)))
+}

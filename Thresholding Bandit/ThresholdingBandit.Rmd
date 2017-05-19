@@ -66,9 +66,55 @@ To be specific, the APT algorithm initiates by pulling each arm once. Then, for 
 
 One of the APT algorithm's main features is its simplicity. The sampling rule is very straightforward, and, as highlighted in Locatelli et al. (2016), it does not require any knowledge about the type of sub-Gaussianity $R$, or the complexity $H$ upfront. This makes the algorithm immediately applicable in practice while it still enjoys its upper bound on the expected regret. This is in particular worth highlighting when comparing APT to algorithms used in the pure exploration bandit setting. There, many algorithms require knowledge about the corresponding complexity upfront. The problem however being, that to know the complexity, the experimenter has to know all means up to a permutation of the arms (for example, see Audibert et al., 2010). This, of course, is not given in practice and thus alternative algorithms try to estimate the complexity online which is not a desirable solution either as especially in the beginning plug-in estimates based on the estimated means may lead to wrong estimates of the complexity and consequently budget allocation based on mistaken beliefs (compare Garivier and Kaufmann, 2016).
 
-Furthermore, Locatelli et al. (2016) were able to present an upper bound for the APT algorithm matching the lower bound in their Theorem 1. Proofs of both bounds are repeated below.
+Furthermore, Locatelli et al. (2016) were able to present an upper bound for the APT algorithm matching the lower bound in their Theorem 1. Proofs of both bounds are given below.
 
-Where the APT algorithm shows room for improvement is when it comes to settings with distributions that are not sub-Gaussian. This is mentioned in Locetelli et al. (2016). They suggest ...
+Where the APT algorithm shows room for improvement is when it comes to settings with distributions that are not sub-Gaussian. This is mentioned in Locatelli et al. (2016). In general, the problem becomes that the assumptions for the bounds no longer hold; furthermore, the statistic $B_i(t+1)$, and the term $\hat{\Delta_i}(t)$ are motivated by (sub-)Gaussian distributions. The more one moves away from Gaussian-like distributions, the less appropriate this term becomes, however. In particular, the empirical mean will be less concentrated around the true mean and more impacted by outliers which are more likely under non sub-Gaussian distributions. Locatelli et al. (2016) thus refers to Bubeck et al. (2013) which considers solutions for multi-armed bandits that are based on heavy-tail distributions. By using more robust estimators of the mean, one could equip the APT algorithm to deal with such distributions.
+
+Another step towards dealing with non sub-Gaussianity is made by Mukherjee et al. (2017) who use an estimate of the variance additionally to the empirical mean in their Augmented UCB solution. Utilizing this additional information, the algorithm seems to perform better than for example APT, going from simulation results displayed in the paper. We will continue to discuss the Augmented UCB solution further in chapter 3.
+
+Yet another idea, again mentioned in Locatelli et al. (2016) is to show bounds based on the Kullback-Leibler divergence of the specific distribution directly. While the approximation through the Gaussian Kullback-Leibler divergence in the lower bound proof is convenient and leads to the simple APT algorithm, it might not stay appropriate for distributions whose Kullback-Leibler divergence tends to differ from the Gaussian. This, for example, is the case for Bernoulli distributions at very small parameters $\mu$. It's quite obvious simply by looking at examples that the Kullback-Leibler divergence of Bernoullis starts to lose any similarity to the plain quadratic approximation. The second graph then shows, that the actual Kullback-Leibler divergence of Bernoullis also has lost any symmetry over this range of parameter values. Given that Bernoulli distributions with very small parameter values arise naturally in many applications in website optimization and advertising click-through modeling, there is a need to tackle this problem.
+
+And so a potential approach can be to use the Kullback-Leibler divergence as measure similar to the methods proposed in Kaufmann et al. (2015). They proposed Kullback-Leibler based approaches for the pure exploration bandit setting, which we will describe in chapter 2. Then, in chapter 3, we will come back to the problem of using the Kullback-Leibler divergence in the thresholding bandit setting.
+
+```{r, echo = FALSE}
+KL_ber <- function(p,q) p*log(p/q) + (1-p)*log((1-p)/(1-q))
+par(mfcol = c(1,2))
+
+plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1), type = "n", asp = 1,
+     xlab = "p_1", ylab = "KL(Ber(p_1),Ber(p_2))", main = "KL of Bernoullis")
+for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
+  lines(seq(0.00001,0.3, by = 0.000005),
+       KL_ber(seq(0.00001,0.3, by = 0.000005),i))
+}
+
+plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1.5), type = "n", asp = 1,
+     xlab = "p_1", ylab = "(p_1 - p_2)^2", main = "Gaussian approx.\n KL of Bernoullis")
+for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
+  lines(seq(0.00001,0.3, by = 0.000005),
+        (seq(0.00001,0.3, by = 0.000005)-i)^2)
+}
+par(mfcol = c(1,1))
+```
+
+```{r, echo = FALSE}
+KL_ber <- function(p,q) p*log(p/q) + (1-p)*log((1-p)/(1-q))
+par(mfcol = c(1,2))
+
+plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1), type = "n", asp = 1,
+     xlab = "p_1", ylab = "KL(Ber(p_2),Ber(p_1))", main = "KL of Bernoullis")
+for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
+  lines(seq(0.00001,0.3, by = 0.000005),
+        KL_ber(i,seq(0.00001,0.3, by = 0.000005)))
+}
+
+plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1.5), type = "n", asp = 1,
+     xlab = "p_1", ylab = "(p_2 - p_1)^2", main = "Gaussian approx.\n KL of Bernoullis")
+for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
+  lines(seq(0.00001,0.3, by = 0.000005),
+        (i-seq(0.00001,0.3, by = 0.000005))^2)
+}
+par(mfcol = c(1,1))
+```
 
 
 
