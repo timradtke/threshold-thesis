@@ -366,5 +366,147 @@ in Kaufmann et al. (2016), one arrives at the final result by choosing
 \(\mu_1'\), \(\mu_2'\) so that
 \(| \KL(\nu_1', \nu_1) - \KL(\nu_2', \nu_2) |\) is as small as possible.
 
+Note that while deriving the lower bound on the complexity measure, we
+have also derived the following lower bound on the failure probability
+for the two-armed fixed-budget bandit:
+
+\begin{equation*}
+p_t(\nu) \geq \exp \big(- \sum_{a=1}^2 \mathbb{E}_{\nu'}[N_a(t)] \KL(\nu_a', \nu_a) \big)
+\end{equation*}
+
+or, to not rely on the share of samples attributed to each arm,
+
+\begin{equation*}
+p_t(\nu) \geq \exp \big(- \max_{a=1,2} \KL(\nu_a', \nu_a) \big).
+\end{equation*}
+
+\textbf{Mention something about the fact that we were not able to do
+this for more than 2 arms and top-m bandits. How could it be extended to
+that? How could it be extended to the threshold bandit?}
+
+As noted by Kaufmann et al. (2016), the advantage of this lower bound is
+that it makes the complexity in the fixed-confidence and the
+fixed-budget setting directly comparable. The disadvantage of course
+being that the result only holds for two-armed models. While the authors
+were not able to derive directly comparable lower bounds for the
+Top-\(m\) case, they did derive a first lower bound in the Gaussian case
+with equal variances. While we would like to move beyond Gaussian
+distributions in the work at hand, the idea for the proof might show a
+way of how the ideas can be transferred to the thresholding bandit
+problem. We first state the result and then discuss the proof.
+
+\begin{lemma}[Lemma 15, Kaufmann et al., 2016] \label{theorem:KaufmannEtAlLemma15}
+Let $\nu$ and $\nu'$ be two bandit models such that $S^*_m(\nu) \neq S*_m(\nu')$. Then
+
+\begin{equation*}
+\max \big( \mathbb{P}_{\nu}(S \neq S^*_m(\nu)), \mathbb{P}_{\nu'}(S \neq S^*_m(\nu')) \big) \geq \frac{1}{4} \exp \Big(-\sum_{a=1}^{K} \mathbb{E}_{\nu}[N_a] \KL(\nu_a, \nu_a') \Big).
+\end{equation*}
+\end{lemma}
+
+The following theorem only holds in the case of Gaussian bandit models
+with equal known variance.
+
+\begin{theorem}[Theorem 17, Kaufmann et al., 2016] \label{theorem:KaufmannEtAlTheorem17}
+
+Let $\mathcal{M}_m = \{\nu = (\nu_1, \dots, \nu_K): \nu_a = \mathcal{N}(\mu_a, \sigma^2), \mu_a \in \mathbb{R}, \mu_{[m]}\neq \mu_{[m+1]}\}.$ Furthermore, let $\nu$ be such that $\mu_1 > \dots > \mu_m > \mu_{m+1} > \dots > \mu_K$, and let
+
+\begin{equation*}
+H +(\nu) = \sum_{a=1}^m \frac{2\sigma^2}{(\mu_a - \mu_{m+1})^2}, \quad H^-(\nu) = \sum_{a=m+1}^K \frac{2\sigma^2}{(\mu_m - \mu_a)^2} \quad
+and \quad
+H(\nu) = H^+(\nu) + H^-(\nu).
+\end{equation*}
+
+There exists $a \in {1, \dots, m}$ and $b \in \{m+1, \dots, K\}$ such that the bandit model $\nu^{[a,b]}$ described in Figure 4 (Kaufmann et al., 2016) satisfies $H(\nu^{[a,b]}) < H(\nu)$ and is such that
+
+\begin{equation*}
+\max \big( p_t(\nu),p_t(\nu^{[a,b]})\big) \geq \frac{1}{4} \exp \big(-\frac{4t}{\bar{H}(\nu)}\big), \quad where \quad \bar{H}(\nu) = \frac{H(\nu) \min(H^+(\nu),H^-(\nu))}{H(\nu)+\min(H^+(\nu),H^-(\nu))}
+\end{equation*}
+\end{theorem}
+
+Given that we are again in the Top-\(m\) setting, the proof idea is
+similar to the proof of Theorem \ref{theorem:KaufmannEtAlTheorem4} in
+that we again consider problems where we switch arms around the limit
+seperating the two groups of arms as given implicitly by \(\mu_{[m]}\)
+and \(\mu_{[m+1]}\). The hope here being that these methods could be
+applied to the thresholding bandit problem where the threshold of course
+gives the limit between the arms above and below the threshold. As we
+have seen in chapter 1, this flip around the threshold was of course
+used in the proof of the lower bound in Theorem 1 of Locatelli et al.
+(2016). However, there, again, the distributions were assumed to be
+Gaussian. This brings the big advantage that the Kullback-Leibler
+divergence becomes symmetric, and the feedback can take values on all
+\(\mathbb{R}\). And by using the complexity measure \(H(\nu)\), it is
+also clear that there exists an arm that is undersampled with respect to
+its contribution to the overall complexity of the problem (or sampled
+exactly according to its contribution), which leads to leads to a
+convenient upper bound on this arms number of draws which is again
+employed in both the proof of Theorem
+\ref{theorem:KaufmannEtAlTheorem17} and in Locatelli et al. (2016). It
+is not clear yet, whether the same can also be done with other
+complexity measures.
+
+We do not repeat the proof here for now.
+
+See p20!
+
+What remains is to present algorithms that are able to match the lower
+bounds derived so far.
+
+\paragraph{Matching algorithm
+strategies}\label{matching-algorithm-strategies}
+
+Given those lower bounds, all that is left is to find algorithms which
+are able to match the complexity. Sadly, not straightforward for
+Bernoullis.
+
+Kaufmann et al. (2016) do not present algorithms matching the lower
+bound of Theorem \ref{theorem:KaufmannEtAlTheorem17}. They do consider
+algorithms that connect to Theorem \ref{theorem:KaufmannEtAlTheorem4}
+and Theorem \ref{theorem:KaufmannEtAlTheorem12}.
+
+Given that Locatelli et al. (2016), and thus the problem we mostly
+consider in this thesis, is in the fixed-budget setting, we are most
+interested in the matching strategies for Theorem
+\ref{theorem:KaufmannEtAlTheorem12}. However, given that the lower bound
+applies only to two-armed bandits, the algorithms are of limited
+practical interest. Furthermore, the algorithms proposed require
+knowledge that is in general not available upfront.
+
+For the example of Gaussian distributions, the knowledge of the
+(potentially different) variance is assumed which enables a strategy
+that pulls each arm proportional to its variance.
+
+Even worse is the case of Bernoulli two-armed bandit models where the
+proposed algorithm requires knowledge about the true parameters of the
+distributions. That this limits the practical interest is also noted by
+the authors of Kaufmann et al. (2016). Thus, they suggest to use uniform
+sampling strategies in the case of two-armed Bernoulli bandits, and show
+that there is not much to be lost by doing so.
+
+Thus, Kaufmann et al. (2016) join a number of other papers like Audibert
+et al. (2010) and Kaufmann and Kalyanakrishnan (2013) which struggle to
+find matching strategies in the fixed-budget setting that do not rely on
+knowledge of parameters or the complexity of the problem.
+
+In contrast, Kaufmann et al. (2016) are able to show that their
+complexity measure derived for the fixed-confidence setting,
+\(\mathcal{K}_C(\nu)\), can be upper-bounded using the upper bound of
+the sample complexity (number of pulls) given for the KL-LUCB algorithm
+in Kaufmann and Kalyanakrishnan (2013). Consequently, in the case of
+exponential family bandits, the complexity \(\mathcal{K}_C(\nu)\) is
+bounded as given in equation (6) in Kaufmann et al. (2016):
+
+\begin{equation*}
+\sum_{a \in S^*_m} \frac{1}{K(\theta_a, \theta_{[m+1]})} + \sum_{a \notin S^*_m \frac{1}{K(\theta_a,\theta_{[m]})}} \leq \mathcal{K}_C(\nu) \leq 24 \min_{\theta \in [\theta_{[m+1]},\theta_{[m]}]} \sum_{a=1}^{K} \frac{1}{K^*(\theta_a, \theta)},
+\end{equation*}
+
+where \(K(\theta, \theta') = \KL(\nu_{\theta}, \nu_{\theta'})\) for
+\((\theta, \theta') \in \Theta^2\) was defined as the shorthand for the
+Kullback-Leibler divergence for two distributions from the exponential
+family parameterized by \(\theta\) and \(\theta'\) respectively.
+\(K^*(\theta,\theta') = K(\theta^*, \theta)\) is the Chernoff
+distribution between the two distributions, where \(\theta^*\) is chosen
+so that \(K(\theta^*,\theta) = K(\theta^*, \theta')\).
+
 
 \end{document}
