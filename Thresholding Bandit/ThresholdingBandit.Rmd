@@ -74,6 +74,8 @@ Another step towards dealing with non sub-Gaussianity is made by Mukherjee et al
 
 Yet another idea, again mentioned in Locatelli et al. (2016) is to show bounds based on the Kullback-Leibler divergence of the specific distribution directly. While the approximation through the Gaussian Kullback-Leibler divergence in the lower bound proof is convenient and leads to the simple APT algorithm, it might not stay appropriate for distributions whose Kullback-Leibler divergence tends to differ from the Gaussian. This, for example, is the case for Bernoulli distributions at very small parameters $\mu$. It's quite obvious simply by looking at examples that the Kullback-Leibler divergence of Bernoullis starts to lose any similarity to the plain quadratic approximation. The second graph then shows, that the actual Kullback-Leibler divergence of Bernoullis also has lost any symmetry over this range of parameter values. Given that Bernoulli distributions with very small parameter values arise naturally in many applications in website optimization and advertising click-through modeling, there is a need to tackle this problem.
 
+Refer also to page 6 in Kaufmann et al. (2016): "This information-theoretic lower bound permits to interpret the quantity $H(\nu)$ defined in (2) as a subgaussian approximation".
+
 And so a potential approach can be to use the Kullback-Leibler divergence as measure similar to the methods proposed in Kaufmann et al. (2015). They proposed Kullback-Leibler based approaches for the pure exploration bandit setting, which we will describe in chapter 2. Then, in chapter 3, we will come back to the problem of using the Kullback-Leibler divergence in the thresholding bandit setting.
 
 ```{r, echo = FALSE}

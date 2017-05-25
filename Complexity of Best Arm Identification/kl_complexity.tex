@@ -1,0 +1,370 @@
+\documentclass[12pt,]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\PassOptionsToPackage{usenames,dvipsnames}{color} % color is loaded by hyperref
+\hypersetup{unicode=true,
+            pdftitle={On the Complexity of Best Arm Identification},
+            pdfauthor={Tim Radtke},
+            colorlinks=true,
+            linkcolor=Maroon,
+            citecolor=Blue,
+            urlcolor=blue,
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{On the Complexity of Best Arm Identification}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{Tim Radtke}
+  \preauthor{\centering\large\emph}
+  \postauthor{\par}
+  \predate{\centering\large\emph}
+  \postdate{\par}
+  \date{5/20/2017}
+
+\usepackage[retainorgcmds]{IEEEtrantools}
+\usepackage{bm}
+\usepackage{amsmath}
+\usepackage{bbm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newcommand{\KL}{\,\text{KL}}
+\newcommand{\der}{\,\text{d}}
+
+\begin{document}
+\maketitle
+
+In the previous chapter, we have discussed the thresholding bandit
+problem as presented in Locatelli et al. (2016). Doing so, we came
+across the complexity term \(H = \sum_{i=1}^{K} \Delta_i^{-2}\).
+Furthermore, we have noted the fact that an algorithm and bounds based
+on \emph{only} the gap between the respective mean and the threshold are
+useful in the case of sub-Gaussian problems. Furthermore, even for the
+case of Bernoulli arms, which are sub-Gaussian since their feedback is
+bounded on \([0,1]\), the gap \(\Delta\) becomes less and less
+appropriate for situations in which both \(\mu\) of the Bernoulli, and
+\(\tau\) are very close to 0 or 1.
+
+Even though the complexity \(H\) enjoys popularity in the literature of
+the best m arm identification problem, \(m \geq 1\), Kaufmann et al.
+(2016) show explicitly that \(H\) is mainly useful for problems of
+Gaussian distributions. Indeed, they go so far as to define new measures
+of complexity that are based on information theoretic metrics. Using
+those they then display \(H\) as an approximation to their measures in
+the case of Gaussian distributions. In turn, this makes apparent that
+especially Bernoulli distributions with small means have to be treated
+differently.
+
+For the current chapter, we will adopt the notation of Kaufmann et al.
+(2016) so that it will be easier to compare the arguments.
+
+Instead of the thresholding bandit problem, we now consider the problem
+of identifying the best \(m\) out of \(K\) arms, that is, the Top-\(m\)
+problem. While we previously looked at a fixed budget formulation, we
+now mainly focus on a fixed confidence problem. That is, we hold the
+confidence \(1-\delta\) fixed at which a strategy returns the correct
+\(m\) arms while trying to find them in a way that minimizes the sample
+complexity \(\mathbb{E}_{\nu}[\tau]\), that is, the expected number of
+overall draws of the arms. \(\tau\) is also called the stopping time of
+the algorithm. Algorithms are supposed to find \(\mathcal{S}_m^*\), the
+set of the \(m\) arms with the largest means. If we let
+\((\mu_1, \dots, \mu_K)\) be the vector of the means of the arms, then
+let \((\mu_{[1]}, \dots, \mu_{[K]})\) be the tuple in which the means
+are arranged in decreasing order. For the rest of this chapter, we
+consider only settings with arms for which \(\mu_{[m]} > \mu_{[m+1]}\);
+that is, the set of the top \(m\) arms, \(\mathcal{S}_m^*\), is unique.
+After the sampling phase, we require any algorithm to return the set
+\(\hat{S}_m \subset \{1,\dots,K\}\) of \(m\) arms that the algorithm
+believes to have the largest means. In the case of fixed confidence, we
+fix \(\delta\) at the beginning, such that the algorithm only stops
+sampling when
+\(\mathbb{P}_{\nu}(\hat{S}_m = \mathcal{S}_m^*) \geq 1-\delta\). We try
+to find algorithms who fulfill this as quickly as possible; that is,
+they minimize the expected stopping time (or number of draws),
+\(\mathbb{E}_{\nu}[\tau]\).
+
+To arrive at the new measure of complexity proposed by Kaufmann et al.
+(2016), it will actually make sense to first follow their arguments to a
+general lower bound on the sample complexity \(\mathbb{E}_{\nu}[\tau]\)
+in the case of fixed confidence problems. This bound is given in their
+Theorem 4 (for common confidence levels of \(\delta \leq 0.15\)).
+
+\begin{theorem}[Kaufmann et al., 2016] \label{theorem:KaufmannEtAlTheorem4}
+Let $\nu \in \mathcal{M}_m$, where $\mathcal{M}_m$ is the set of uniquely identifiable bandit models described above. Assume that $\mathcal{P}$ satisfies the continuity conditions in Assumption 3. Any $\delta$-PAC algorithm on $\mathcal{M}_m$ satisfies, for $\delta \leq 0.15$:
+
+\begin{equation*}
+\mathbb{E}_{\nu}[\tau] \geq \Big[ \sum_{a \in \mathcal{S}^*_m} \frac{1}{KL(\nu_a, \nu_{[m+1]})} + \sum_{a \notin \mathcal{S}^*_m} \frac{1}{KL(\nu_a, \nu_{[m]})} \Big] \der(1-\delta, \delta),
+\end{equation*}
+
+where $\der(x,y) := x \log(x/y) + (1-x) \log((1-x)/(1-y))$ is the binary relative entropy, with the convention that $\der(0,0) = \der(1,1) = 0$.
+\end{theorem}
+
+To proof this statement, we assume as before that the arms are ordered
+by their means decreasing in size. For a given \(\delta\)-PAC algorithm
+\(\mathcal{A} = ((A_t), \tau, \hat{S}_m)\), and under the continuity
+conditions, there exists for every arm \(a \in \{1, \dots, K\}\) an
+alternative model
+\(\nu' = (\nu_1, \dots, \nu_{a-1}, \nu_a', \nu_{a+1}, \dots, \nu_K)\).
+In this alternative model, only arm \(a\) is modified in accordance with
+the continuity conditions. Modified in such a way that measured by the
+Kullback-Leibler divergence, the arm \(\nu_{m+1}\) is now closer to
+\(\nu_a\) than \(\nu_a'\) is to \(\nu_a\), if \(\mu_a > \mu_{m+1}\)
+(consequently, \(\mu_a' < \mu_{m+1}\)). On the other hand, if
+\(\mu_a < \mu_{m}\), then \(\nu_a'\) will be moved away from \(\nu_a\)
+just enough so that \(\nu_a\) is closer to \(\nu_m\) than to \(\nu_a'\)
+(consequently, \(\mu_a' > \mu_m\)). These changes in distribution make
+the original set of optimal arms, \(\{1,\dots,m\}\) no longer optimal
+under the alternative model \(\nu'\). Given that the algorithm returns
+\(\hat{S}_m\), we know that for the event
+\(\mathcal{E} = (\hat{S}_m = \{1, \dots, m\})\) (which is element of the
+by the stopping time \(\tau\) induced \(\sigma\)-Algebra
+\(\mathcal{F}_{\tau}\)), that
+\(\mathbb{P}_{\nu}(\mathcal{E}) \geq 1-\delta\) and
+\(\mathbb{P}_{\nu'}(\mathcal{E}) \leq \delta\) (because fixed confidence
+\(\delta\)!).
+
+To now give the lower bound on the expected number of samples,
+\(\mathbb{E}_{\nu}[\tau]\), we employ the general lemma given by the
+authors for such changes in distribution in bandit models.
+
+\begin{lemma}[Kaufmann et al., 2016] \label{theorem:KaufmannEtAlLemma1}
+Let $\nu$ and $\nu'$ be two bandit models with $K$ arms such that for all $a$, the distributions $\nu_a$ and $\nu_a'$ are mutually absolutely continuous. For any almost-surely finite stopping time $\sigma$ with respect to $(\mathcal{F}_t)$,
+
+\begin{equation*}
+\sum_{a=1}^{K} \mathbb{E}_{\nu} [N_a(\sigma)] \KL(\nu_a, \nu_a') \geq \sup_{\mathcal{E} \in \mathcal{F}_{\sigma}} \der (\mathbb{P}_{\nu}(\mathcal{E}), \mathbb{P}_{\nu'}(\mathcal{E})),
+\end{equation*}
+
+where $\der(x,y)$ is the binary relative entropy as defined above.
+\end{lemma}
+
+We can apply this lemma directly on the expected number of draws for
+each arm, \(\mathbb{E}_{\nu}[N_a]\). For each arm \(a\), we thus have
+\(\KL(\nu_a, \nu_a') \mathbb{E}_{\nu}[N_a] \geq \der (1-\delta, \delta)\).
+Using the definition of the alternative model above, we get for every
+small but fixed \(\alpha > 0\), for every arm \(a \in \{1, \dots, K\}\)
+and each arm \(b \in \{m+1, \dots, K\}\):
+
+\begin{equation*}
+\mathbb{E}_{\nu}[N_a] \geq \frac{\der(1-\delta, \delta)}{\KL (\nu_a, \nu_{m+1}) + \alpha}
+\end{equation*}
+
+and
+
+\begin{equation*}
+\mathbb{E}_{\nu}[N_b] \geq \frac{\der(1-\delta, \delta)}{\KL (\nu_b, \nu_{m}) + \alpha}.
+\end{equation*}
+
+We can then let \(\alpha \to 0\), sum the bounds on the individual arms
+to get the bound on the overall number of draws:
+
+\begin{equation*}
+\mathbb{E}_{\nu}[\tau] = \sum_{a=1}^K \mathbb{E}_{\nu}[N_a] \geq \Big( \sum_{a \in \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m+1]})} + \sum_{a \notin \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m]})} \Big) \der(1-\delta, \delta)
+\end{equation*}
+
+Given that we will be naturally interested in either very high or very
+low confidence of our algorithm, that is, \(P_\nu(\mathcal{E})\) is
+either close to 0 or 1, it is possible to use the following
+approximation to the binary relative entropy:
+
+\begin{equation*}
+\forall x \in [0,1], \quad \der(x,1-x) = \der(1-x,x) \geq \log \frac{1}{2.4x}
+\end{equation*}
+
+And so the final lower bound can be written as
+
+\begin{equation*}
+\mathbb{E}_{\nu}[\tau] \geq \Big( \sum_{a \in \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m+1]})} + \sum_{a \notin \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m]})} \Big) \log \big(\frac{1}{2.4\delta} \big).
+\end{equation*}
+
+\includegraphics{kl_complexity_files/figure-latex/unnamed-chunk-1-1.pdf}
+
+Given this general lower bound for the sampling complexity, or expected
+number of draws, it makes sense to define the complexity of a Top-\(m\)
+bandit problem using the Kullback-Leibler divergence. After all, besides
+the number of arms and the experimenter-chosen confidence, it is just
+how close arms are with respect to each other in terms of
+Kullback-Leibler divergence that influences the sampling complexity. And
+in general, a problem requiring more samples is of course considered to
+be more complex (at least with respect to the samples, which is what
+needs to be optimized).
+
+Thus, following Kaufmann et al. (2016), define the complexity
+\(\mathcal{K}_C(\nu)\) for the fixed confidence setting as
+
+\begin{equation}
+\mathcal{K}_C(\nu) = \inf_{A \, \text{PAC}} \lim_{\delta \to 0} \sup \frac{\mathbb{E}_{\nu}[\tau_{\delta}]}{\log \frac{1}{\delta}}.
+\end{equation}
+
+So if we were to plug in the lower bound on the sampling complexity, we
+would arrive at a complexity measure that basically depends only on the
+Kullback-Leibler measuring for each arm how far it is away from the
+border between the two groups of arms. To see this, consider the lower
+bound on the complexity measure given in Kaufmann et al. (2016):
+
+\begin{equation*}
+\mathcal{K}_C(\nu) \geq \sum_{a \in \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m+1]})} + \sum_{a \notin \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m]})}
+\end{equation*}
+
+Given this description, we can already note that an intuitive extension
+of this complexity notion to the thresholding bandit problem might
+involve replacing \(\mu_{[m]}\) and \(\mu_{[m+1]}\) by the actual
+threshold \(\tau\) (notation in Locatelli et al.) that divides the group
+above the threshold from the group below the threshold. In that case,
+the previously used \(\alpha\) might be very similar to the \(\epsilon\)
+used in Locatelli et al. (2016).
+
+To get there, however, at least two important steps remain. First, we
+need to define a complexity for the fixed budget problem. Second, we
+need to create algorithms that can match the lower bound.
+
+Kaufmann et al. are able to provide a bound on their complexity measure
+in the fixed budget case, however only in the case of \textbf{two-armed}
+bandit models. As demanded in their paper, a fixed-budget algorithm is
+called consistent if the failure probability
+\(p_t(\nu) := \mathbb{P}_{\nu}(\hat{S}_m \neq S^*_m)\) tends to zero as
+the number of samples goes to infinity. Also, define the complexity in
+the fixed-budget setting as follows:
+
+\begin{equation}
+\mathcal{K}_B(\nu) = \inf_{A \, \text{consistent}} \big(\lim_{t \to \infty} \sup - \frac{1}{t} \log p_t(\nu)\big)^{-1}.
+\end{equation}
+
+Given this definition, one can interpret the bound given in Theorem 12
+of Kaufmann et al. directly as a lower bound on the complexity
+\(\mathcal{K}_B(\nu)\) (note the inverse).
+
+\begin{theorem}[Kaufmann et al., 2016] \label{theorem:KaufmannEtAlTheorem12}
+Let $\nu = (\nu_1, \nu_2)$ be a two-armed bandit model such that $\mu_1 > \mu_2$. In the fixed-budget setting, any consistent algorithm satisfies:
+
+\begin{equation*}
+\lim_{t \to \infty} \sup - \frac{1}{t} \log p_t(\nu) \leq \inf_{(\nu_1', \nu_2') \in \mathcal{M}: \mu_1' < \mu_2'} \frac{\KL(\nu_1', \nu_1) + \KL(\nu_2', \nu_2)}{2}
+\end{equation*}
+\end{theorem}
+
+For a proof, consider first the two different bandit models, \(\nu\) and
+\(\nu'\), where we fix without loss of generality that \(a^* = 1\) is
+the best arm in \(\nu\), while \(a^* = 2\) in \(\nu'\). Note that in
+this case we don't necessarily try to fool the algorithm by a change of
+distribution. Indeed, we want the algorithm \(\mathcal{A}\) to be
+consistent for both problems. Since we are in the fixed-budget setting,
+the stopping time is fixed at \(\tau = t\). Even though the correct
+decision differs between the two problems, we focus on the event
+\(A = (\hat{S}_1 = 1)\). Given the formulation in Kaufmann et al.
+(2016), we have \(A \in \mathcal{F}_t = \mathcal{F}_{\tau}\). Now, we
+can apply Lemma 1 as before, as it in essense gives a measure of how
+different two bandit models are. Here, we want to know how different
+\(\nu\) is from \(\nu'\), and so, given we have only two arms,
+
+\begin{equation*}
+\mathbb{E}_{\nu'}[N_1(t)]\KL(\nu_1', \nu_1) + \mathbb{E}_{\nu'}[N_2(t)]\KL(\nu_2', \nu_2) \geq \der(\mathbb{P}_{\nu'}(A),\mathbb{P}_{\nu}(A)))
+\end{equation*}
+
+The expectations were chosen with respect to \(\nu'\) in order to allow
+the for the following: We have \(p_t(\nu) = 1 - \mathbb{P}_{\nu}(A)\)
+and \(p_t(\nu') = \mathbb{P}_{\nu'}(A)\) (since \(A\) is wrong in
+\(\nu'\)). But since algorithm \(\mathcal{A}\) is consistent for both
+\(\nu\) and \(\nu'\), we know that there should exist some number of
+samples such that the probability of event \(A\) is bigger in setting
+\(\nu\) (where it is the correct decision), than in setting \(\nu'\)
+(where this would be a wrong decision and failure). Thus, for every
+\(\epsilon > 0\), there exists \(t_0(\epsilon)\) such that for all
+\(t \geq t_0(\epsilon)\),
+\(\mathbb{\nu'}(A) \leq \epsilon \leq \mathbb{P}_\nu(A)\). Consequently,
+if we plug in the bound of \(\epsilon\) for \(\mathbb{P}_{\nu'}(A)\),
+then
+
+\begin{align*}
+\mathbb{E}_{\nu'}[N_1(t)]\KL(\nu_1', \nu_1) + \mathbb{E}_{\nu'}[N_2(t)]\KL(\nu_2', \nu_2) & \geq \der(\epsilon,1-p_t(\nu))) \\
+& = \epsilon \log \frac{\epsilon}{1-p_t(\nu)} + (1-\epsilon) \log \frac{1-\epsilon}{p_t(\nu)} \\
+& \geq (1-\epsilon) \log \frac{1-\epsilon}{p_t(\nu)} + \epsilon \log \epsilon.
+\end{align*}
+
+Let \(\epsilon\) go to zero so that
+
+\begin{align*}
+\mathbb{E}_{\nu'}[N_1(t)]\KL(\nu_1', \nu_1) + \mathbb{E}_{\nu'}[N_2(t)]\KL(\nu_2', \nu_2)
+& \geq \log \frac{1}{p_t(\nu)} = -\log p_t(\nu).
+\end{align*}
+
+Dividing both sides by \(t\) and taking the limsup, we arrive at
+
+\begin{align*}
+\lim_{t \to 0} \sup - \frac{1}{t} \log p_t(\nu)
+& \leq \lim_{t \to 0} \sup \frac{1}{t} \sum_{a=1}^2 \mathbb{E}_{\nu'}[N_a(t)] \KL(\nu_a', \nu_a) \\
+& \leq \max_{a=1,2} \KL(\nu_a', \nu_a),
+\end{align*}
+
+where the last line follows from the fact that the
+\(\frac{1}{t} \sum_{a=1}^2 \mathbb{E}_{\nu'}[N_a(t)]\) part creates a
+weighted average of the two divergences \(\KL(\nu_a', \nu_a)\). As noted
+in Kaufmann et al. (2016), one arrives at the final result by choosing
+\(\mu_1'\), \(\mu_2'\) so that
+\(| \KL(\nu_1', \nu_1) - \KL(\nu_2', \nu_2) |\) is as small as possible.
+
+
+\end{document}
