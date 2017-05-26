@@ -497,7 +497,7 @@ exponential family bandits, the complexity \(\mathcal{K}_C(\nu)\) is
 bounded as given in equation (6) in Kaufmann et al. (2016):
 
 \begin{equation*}
-\sum_{a \in S^*_m} \frac{1}{K(\theta_a, \theta_{[m+1]})} + \sum_{a \notin S^*_m \frac{1}{K(\theta_a,\theta_{[m]})}} \leq \mathcal{K}_C(\nu) \leq 24 \min_{\theta \in [\theta_{[m+1]},\theta_{[m]}]} \sum_{a=1}^{K} \frac{1}{K^*(\theta_a, \theta)},
+\sum_{a \in S^*_m} \frac{1}{K(\theta_a, \theta_{[m+1]})} + \sum_{a \notin S^*_m} \frac{1}{K(\theta_a,\theta_{[m]})} \leq \mathcal{K}_C(\nu) \leq 24 \min_{\theta \in [\theta_{[m+1]},\theta_{[m]}]} \sum_{a=1}^{K} \frac{1}{K^*(\theta_a, \theta)},
 \end{equation*}
 
 where \(K(\theta, \theta') = \KL(\nu_{\theta}, \nu_{\theta'})\) for
@@ -507,6 +507,141 @@ family parameterized by \(\theta\) and \(\theta'\) respectively.
 \(K^*(\theta,\theta') = K(\theta^*, \theta)\) is the Chernoff
 distribution between the two distributions, where \(\theta^*\) is chosen
 so that \(K(\theta^*,\theta) = K(\theta^*, \theta')\).
+
+\subsubsection{Optimal Best Arm
+Identification}\label{optimal-best-arm-identification}
+
+A very similar application of the KL divergence has been given in
+Garivier and Kaufmann to derive a lower bound on the sample complexity
+in the case of best arm identification. In particular, the
+transportation Lemma 1 is used again. And a matching algorithm for
+\(K \geq 2\) arms is proposed.
+
+Talk about: - Not a simple sum of squares - Idea of algorithm: Equalize
+the probability of all wrong decisions
+
+In Garivier and Kaufmann (2016), the authors are able to derive a
+somewhat similar lower bound on the sample complexity of a \(K\)-armed
+bandit in the single best arm identification problem with fixed
+confidence. Additionally, they provide a \(\delta\)-PAC algorithm
+achieving said bound asymptotically.
+
+In particular, the authors pick up Lemma 1 from Kaufmann et al. (2016)
+-- which we discussed above -- to derive the lower bound. While
+presenting these results, we try to stick as much as possible with the
+notation used so far. In particular, we let for distributions
+\(\nu_{\theta}\) from a canonical exponential family, which can be
+parameterized by its mean \(\stackrel{.}{b}(\theta) = \mu\) and thus be
+written as \(\nu^{\mu}\); for these, we continue to write the
+Kullback-Leibler divergence as
+
+\begin{equation*}
+\KL(\mu, \mu') = \KL(\nu^{\mu},\nu^{\mu'}) = \KL(\nu_{\theta},\nu_{\theta'}) = \KL(\nu, \nu')
+\end{equation*}
+
+while \(d(x,y)\) continues to represent the binary relative entropy.
+
+As we will consider only problems with exponential family distributions,
+the distributions can be parameterized by their means. Therefore, if we
+let \(\mathcal{S}\) to be a set of bandit models with \(K\)
+distributions each, then each model is fully defined by a vector
+\(\bm{\mu} = (\mu_1, \dots, \mu_K)\). Assume that every
+\(\bm{\mu} \in \mathcal{S}\) has a unique maximum given by
+\(a^*(\bm{\mu})\) such that
+\(\mu_{a^*} > \max_{a \neq a^*(\bm{\mu})} \mu_a\). In order to fix the
+confidence, we specify the risk \(\delta\). The strategies corresponding
+to this risk are called \(\delta\)-PAC if for every
+\(\bm{\mu} \in \mathcal{S}\),
+\(\mathbb{P}_{\bm{\mu}}(\tau_{\delta} < \infty) = 1\) (the strategy ends
+surely after a finite number of samples) and
+\(\mathbb{P}_{\bm{\mu}}(\hat{a}_{\tau_{\delta}} \neq a^*) \leq \delta\)
+(the probability of picking not the optimal arm is smaller than the
+fixed risk). As in Garivier and Kaufmann (2016), we introduce the set of
+problems for which the optimal arm is different from the one in
+\(\bm{\mu}\):
+
+\begin{equation*}
+\text{Alt}(\bm{\mu}) := \{\bm{\lambda} \in \mathcal{S}: a^*(\bm{\lambda}) \neq a^*(\bm{\mu})\}
+\end{equation*}
+
+where \(\bm{\lambda}\) is the vector of means defining the distributions
+of the alternative problem to \(\bm{\mu}\). Lastly, we have the set of
+probability distributions on the arms \(\mathcal{A}\):
+\(\Sigma_K = \{w \in \mathbb{R}_{+}^K: w_1 + \dots + w_K = 1\}\).
+\marginpar{Give more intuition for what these probability distributions are}
+We are now ready to state the theorem.
+
+\begin{theorem}[Theorem 1, Garivier and Kaufmann, 2016] \label{theorem:GarivierKaufmannTheorem1}
+Let $\delta \in (0,1)$. For any $\delta$-PAC strategy and any bandit model $\bm{\mu} \in \mathcal{S}$,
+
+\begin{equation*}
+\mathbb{E}_{\bm{\mu}} [\tau_{\delta}] \geq T^*(\bm{\mu}) \text{\em{d}}(\delta,1-\delta),
+\end{equation*}
+
+where 
+
+\begin{equation} \label{eq:GarivierKaufmann_Theorem1_Game}
+T^*(\bm{\mu})^{-1} := \sup_{w \in \Sigma_K} \inf_{\bm{\lambda} \in \text{\em{Alt}}(\bm{\mu})} \left( \sum_{a=1}^K w_a \text{\em{KL}}(\mu_a, \lambda_a)\right) .
+\end{equation}
+\end{theorem}
+
+And so we see that the two bounds on the sample complexity (one for
+Top-\(m\), one for best arm identification) differ only in the way that
+they build the sum of Kullback-Leibler divergences over the \(K\) arms.
+In contrast to Theorem \ref{theorem:KaufmannEtAl2016Theorem1}, here the
+contribution of each arm through its KL-divergence is weighted. The
+difference is that while we were able to very clearly describe the
+change of distribution in the Top-\(m\) case for each arm -- for each
+arm, we specified an alternative model that yields a new set of \(m\)
+optimal arms -- we now consider all alternative models that yield a
+different best arm than the model \(\bm{\mu}\). In the previous theorem,
+we sum over the complexity of each individual arm, as the change in
+distribution only ever touches one arm, thus leading to a KL-divergence
+of 0 for the other arms while still changing the optimal set. Here, we
+consider all instances of alternative models \(\bm{\lambda}\), and thus
+also those in which several arms are modified (and thus have a
+KL-divergence unequal 0 in the result of Lemma 1).
+
+\emph{Proof of Theorem \ref{theorem:GarivierKaufmannTheorem1}}: As
+stated before, we let \(\delta \in (0,1)\),
+\(\bm{\mu} \in \mathcal{S}\), and only consider \(\delta\)-PAC
+strategies. As before, \(N_a(t)\) describes the random number of pulls
+of arm \(a\) until time \(t\), for all \(t\geq 1\). Again, Lemma
+\ref{theorem:KaufmannEtAlLemma1} states how the failure probability
+\(\delta\) relates to the expected number of draws of each arm given two
+models which differ in their optimal arm, and where it is evaluated
+based on the Kullback-Leibler divergence for each pair of arms how much
+the two models differ:
+
+\begin{equation*}
+\forall \lambda \in \mathcal{S}: a^*(\lambda) \neq a^*(\mu), \sum_{a=1}^K \KL(\mu_a,\lambda_a)\mathbb{E}_{\bm{\mu}}[N_a(\tau_{\delta})] \geq \d(\delta, 1- \delta).
+\end{equation*}
+
+As mentioned, we now do not consider a specific alternative for each
+arm, but instead look at the infimum over all the possible alternatives,
+and use the fact that
+\(\mathbb{E}_{\bm{\mu}}[\tau_{\delta}] = \sum_{a=1}^K \mathbb{E}_{\bm{\mu}}[N_a(\tau_{\delta})]\):
+
+\begin{align*}
+\der(\delta, 1-\delta) & \leq \inf_{\lambda \in \text{Alt}(\bm{\mu})} \mathbb{E}_{\bm{\mu}}[\tau_{\delta}] \Big(\sum_{a=1}^K \frac{\mathbb{E}_{\bm{\mu}}[N_a]}{\mathbb{E}_{\mu}[\tau_{\delta}]} \KL(\mu_a, \lambda_a)\Big) \\
+& = \mathbb{E}_{\bm{\mu}}[\tau_{\delta}] \inf_{\lambda \in \text{Alt}(\bm{\mu})} \Big(\sum_{a=1}^K \frac{\mathbb{E}_{\bm{\mu}}[N_a]}{\mathbb{E}_{\mu}[\tau_{\delta}]} \KL(\mu_a, \lambda_a)\Big) \\
+& \leq \mathbb{E}_{\bm{\mu}}[\tau_{\delta}] \sup_{w \in \Sigma_K} \inf_{\lambda \in \text{Alt}(\bm{\mu})} \Big(\sum_{a=1}^K w_a \KL(\mu_a, \lambda_a)\Big).
+\end{align*}
+
+As stated in Garivier and Kaufmann (2016), the term
+\(\frac{\mathbb{E}_{\bm{\mu}}[N_a]}{\mathbb{E}_{\mu}[\tau_{\delta}]}\)
+gives the fraction of draws each arm receives. This value, however,
+depends on the used algorithm. To make it hold for any \(\delta\)-PAC
+algorithm, it is replaced by the supremum over \(\Sigma_K\), which is
+the distribution over these fractions for any \(\mathcal{A}\), that is,
+for any \(\delta\)-PAC strategy.
+
+This lower bound can be interpreted as a Minimax game, where the
+experimenter has to choose the share of samples he attributes to each
+arm in a way that is optimal given that nature will respond and choose
+the most difficult alternative model given his weights. Thus, to make
+the lower bound practical, it is a matter of finding the optimal weights
+\(w^*(\bm{\mu})\).
 
 
 \end{document}
