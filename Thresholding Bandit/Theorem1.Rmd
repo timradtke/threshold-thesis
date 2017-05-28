@@ -9,6 +9,7 @@ header-includes:
    - \usepackage{amsmath}
    - \usepackage{bbm}
    - \newtheorem{theorem}{Theorem}
+   - \newtheorem{lemma}{Lemma}
    - \newcommand{\KL}{\,\text{KL}}
    - \newcommand{\der}{\,\text{d}}
    #- \usepackage[top=1.5cm, bottom=1.5cm, outer=5cm, inner=2cm, heightrounded, marginparwidth=2.5cm, marginparsep=2cm]{geometry}
@@ -26,13 +27,13 @@ urlcolor: blue
 
 ## Theorem 1
 
-In Theorem 1 of Locatelli et al. (2016), a lower bound for the thresholding bandit problem is shown. The basic idea is as follows. The problem formulation considered in the paper describes bandit problems for Sub-Gaussian distributions. To show a lower bound, we show that every algorithm is expected to make a certain error even if we restrict ourselves to a heavily specified scenario. Even then, any algorithm will have a certain level of risk with which it cannot distinguish between the actual setting and a slightly changed setting (under which the former answer leads to regret).
+In Theorem 1 of Locatelli et al. (2016), a lower bound for the thresholding bandit problem is shown. The basic idea is as follows. The problem formulation considered in the paper describes bandit problems for sub-Gaussian distributions. To show a lower bound, we show that every algorithm is expected to make a certain error even if we restrict ourselves to a very restricted scenario. Even then, any algorithm will have a certain level of risk with which it cannot distinguish between the actual setting and slightly changed settings (under which the former answer leads to regret).
 
-To be more specific, consider a case in which we set $\tau = 0$ and $\epsilon = 0$ w.l.o.g. If we then choose all arms to have normally distributed feedback with means $\mu_i$, we see that for each arm $i$ the distance from the threshold is given by $\Delta_i = |\mu_i - \tau| + \epsilon = \mu_i$. Thus, assuming a variance of 1 for every arm, we have for every arm the distribution $\nu_i = \mathcal{N}(\mu_i,1) = \mathcal{N}(\Delta_i,1)$. Furthermore, define $\nu_i' = \mathcal{N}(-\Delta_i,1)$.
+To be more specific, consider a case in which we set $\tau = 0$ and $\epsilon = 0$ w.l.o.g. If we then choose all arms to have normally distributed feedback with means $\mu_i$, we see that for each arm $i$ the distance from the threshold is given by $\Delta_i = |\mu_i - \tau| + \epsilon = \mu_i$. Thus, assuming a variance of 1 for every arm, we have for every arm the distribution $\nu_i = \mathcal{N}(\mu_i,1) = \mathcal{N}(\Delta_i,1)$. Furthermore, define for each arm $i \in \{1, \dots, K\}$ the alternative distribution $\nu_i' = \mathcal{N}(-\Delta_i,1)$. It is easy to see that in this case, this is equivalent to a "flip around the threshold". Arms that originally have a mean larger than the threshold have a mean smaller than the threshold after the flip.
 
-The idea now is that every arm $i \in \{1,\dots,K\}$ generates a sample for every time point $t\in \{1, \dots, T\}$ from its distribution $\nu_i$ before the algorithm starts to choose arms. Thus, we have a $T \times K$ table of realized observations from the product distribution given by $\mathcal{B}^0 = \nu_1^0 \otimes \ldots \otimes \nu_K^0 = \nu_1^0 \otimes \ldots \otimes \nu_K$. This is a product distribution where the $K$ different means all lie above the threshold. We would hope that an algorithm classifies the means accordingly. However, we will show in what follows that any algorithm makes a certain error by not being able to distinguish $\mathcal{B}^0$ from a product distribution $\mathcal{B}^i$ which differs only slightly and has the same overall complexity (as defined by $H = \sum_{i=1}^K (\Delta_i)^{-2}$).
+The idea now is that every arm $i \in \{1,\dots,K\}$ generates a sample for every time point $t\in \{1, \dots, T\}$ from its distribution $\nu_i$ before the algorithm starts to choose arms. Thus, we have a $T \times K$ table of realized observations from the product distribution given by $\mathcal{B}^0 = \nu_1^0 \otimes \ldots \otimes \nu_K^0 = \nu_1^0 \otimes \ldots \otimes \nu_K$. This is a product distribution where the $K$ different means all lie above the threshold. We would hope that an algorithm classifies the means accordingly. However, we will show in what follows that any algorithm makes a certain error by not being able to distinguish $\mathcal{B}^0$ from at least one of $K$ alternative product distributions $\mathcal{B}^i, i \in \{1, \dots, K\}$, of which each differs only slightly in one arm from the original distribution, and has the same overall complexity (as defined by $H = \sum_{i=1}^K (\Delta_i)^{-2}$). We require $K$ different distributions so that an arm sampling arm $i$ very often for some reason will not have a smaller lower bound by chance.
 
-Before the start of the algorithm, we introduce a slight variation in the setup. Similar to how one can switch arms in the pure exploration setup for multi-armed bandits (compare Audibert et al., Garivier & Kaufmann) to "confuse" the algorithm without introducing additional complexity to the specified problem. However, since we do not compare arms with each other directly in the thresholding bandit problem (switching arms would still keep all means above the threshold), we instead need to flip an arm with respect to the threshold. Since the threshold is $\tau = 0$, we have for the flipped arm the new distribution $\nu_i'$ as defined above. Indeed, we can define the new product distribution $B^i = \nu_1^i \otimes \dots \otimes \nu_K^i$ where for $k \leq K, \nu_k' := \nu_i \mathbbm{1}_{k \neq i} + \nu_i' \mathbbm{1}_{k=i}$. This flipping of the arm corresponds to multiplying all random variables $X_{i,t}$ of arm $i$ by $-1$.
+For each of the $K$ arms, we introduce an alternative model of the following kind. Before the start of the algorithm, we introduce a slight variation in the setup. The idea is similar to how one can switch arms in the pure exploration setup for multi-armed bandits (compare Audibert et al., 2010; Garivier & Kaufmann, 2016) to "confuse" any algorithm without introducing additional complexity to the specified problem. However, since we do not compare arms directly with each other in the thresholding bandit problem (switching arms would still keep all means above the threshold), we instead need to flip an arm $i$ with respect to the threshold in order to get the alternative model $\mathcal{B}_i$. Since the threshold is $\tau = 0$, we have for the flipped arm the new distribution $\nu_i'$ as defined above. Indeed, we can define the new product distribution $B^i = \nu_1^i \otimes \dots \otimes \nu_K^i$ where for $k \leq K, \nu_k' := \nu_i \mathbbm{1}_{k \neq i} + \nu_i' \mathbbm{1}_{k=i}$. This flipping of the arm corresponds to multiplying all random variables $X_{i,t}$ of arm $i$ by $-1$.
 
 As in Locatelli et al. (2016), we let for $i \leq K$, $\mathbb{P}_{\mathcal{B}^i}$ define the probability distribution describing all samples that a bandit strategy can potentially collect up to horizon $T$, i.e. according to the samples $(X_{k,s})_{k\leq K, s \leq T} \sim (\mathcal{B}^i)^{\otimes T}$. $(T_k)_{k\leq K}$ denotes the number of samples collected on arm $k$ until time $T$.
 
@@ -42,18 +43,18 @@ At this point, we have defined a finite set of problems of Gaussian distribution
 
 #### Statistical Decision
 
-Given our formulation of the regret, the expected regret $\mathbb{E}[\mathcal{L}(T)]$ corresponds directly to the probability of making a wrong classification of any of the $K$ means. In general, let $T$ be a binary decision function, and define $\Omega = \{T = 0\}$ and $\Omega^C = \{T = 1\}$. Assume that the decision $T$ distinguishes between two states of the world, $H_0$ and $H_1$. Then our overall error probability is given by $P_{H_0}(T=1) + P_{H_1}(T = 0) = P_{H_0}(\Omega^C) + P_{H_1}(\Omega)$.
+Given our formulation of the regret, the expected regret $\mathbb{E}[\mathcal{L}(T)]$ corresponds directly to the probability of making a wrong classification of any of the $K$ means. In general, let $g$ be a binary decision function, and define $\Omega = \{g = 0\}$ and $\Omega^C = \{g = 1\}$. Assume that the decision $T$ distinguishes between two states of the world, $H_0$ and $H_1$. Then our overall error probability is given by $P_{H_0}(g=1) + P_{H_1}(g = 0) = P_{H_0}(\Omega^C) + P_{H_1}(\Omega)$.
 
-In our case, $H_0$ may correspond to the state in which we have $\mathcal{B}^0$, and $H_1$ corresponds to the case where any arm has been flipped, $\mathcal{B}^i$. Furthermore, we consider the events in which the algorithm, making the decision, classifies arm $i$ as being above the threshold: $\mathcal{A}_i = \{i \in \hat{S}_\tau$. The event on which all arms are being classified as above the threshold is consequently given by $\mathcal{A} = \bigcap \mathcal{A}_i$. However, Theorem 1 does not bound the overall regret, but the maximum error probability. We can write this now as 
+In our case, $H_0$ may correspond to the state in which we have $\mathcal{B}^0$, and $H_1$ corresponds to the case where any arm has been flipped, $\mathcal{B}^i$. Furthermore, we consider the events in which the algorithm, making the decision, classifies arm $i$ as being above the threshold: $\mathcal{A}_i = \{i \in \hat{S}_\tau\}$. The event on which all arms are being classified as above the threshold is consequently given by $\mathcal{A} = \bigcap \mathcal{A}_i$. However, Theorem 1 does not bound the overall regret, but the maximum error probability on the $K+1$ different models. We can write this now as 
 
-\begin{equation}
-\max_{i \in \{0, \dots, K\}} \mathbb{E}_{\mathcal{B}^i} (\mathcal{L}(T)) \geq \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}^C) \big)
-= \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \big) \label{LocatelliTheorem1ExpRegret}
-\end{equation}
+\begin{align}
+\max_{i \in \{0, \dots, K\}} \mathbb{E}_{\mathcal{B}^i} (\mathcal{L}(T)) & \geq \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}^C) \big) \\
+& = \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \big) \label{LocatelliTheorem1ExpRegret}
+\end{align}
 
-In order to give a bound on above equation, we start by considering $\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)$. This probability can be measured as the expected change in the likelihood of observed data times the probability under the original state. The measure of event $\mathcal{A}_i$ under state $\mathcal{B}^i$ is given as the probability of $\mathcal{A}_i$ under the (original) state $\mathcal{B}^0$ multiplied by a factor. This factor is the change in the data likelihoods due to moving from $\mathcal{B}^0$ to $\mathcal{B}^i$, and is expressed as the expected likelihood ratio under $\mathcal{B}^0$. By definition though, this is equal to the empirical Kullback-Leibler divergence of the two measures.
+In order to give a bound on above equation, we start by considering $\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)$. This probability can be written as the expected change in the likelihood of observed data when moving from distribution $P_{\mathcal{B}_0}$ to $P_{\mathcal{B}_i}$, times the probability under the original state. In other words, the probability of event $\mathcal{A}_i$ under state $\mathcal{B}^i$ is given as the probability of $\mathcal{A}_i$ under the (original) state $\mathcal{B}^0$ multiplied by a factor. This factor describes whether the new distribution increases or decreases the probability of the event, and is given by the change in the data likelihoods due to moving from $\mathcal{B}^0$ to $\mathcal{B}^i$, expressed as the expected likelihood ratio under $\mathcal{B}^0$. By definition, the latter is equal to the empirical Kullback-Leibler divergence of the two distributions.
 
-First, let us define the change of measure in terms of the empirical log-likelihood for our case. Then, we will show how to replace the log-likelihood by the empirical Kullback-Leibler divergence.
+We will define the change of distribution in terms of the empirical log-likelihood for our case. Then, we will show how to replace the log-likelihood by the empirical Kullback-Leibler divergence. So let us first introduce the empirical Kullback-Leibler divergence.
 
 Let every $\nu_i, \nu_i'$ be dominated by the Lebesgue measure $\lambda$. Then their density functions are given by $f_i = \frac{\der \nu_i}{\der \lambda}$ and $f_i' = \frac{\der \nu_i'}{\der \lambda}$ respectively. For $T \geq t \geq 0$, define the empirical Kullback-Leibler divergence as 
 
@@ -73,9 +74,9 @@ Since we consider Gaussian distributions with variance 1, we have density functi
 & = - \frac{1}{t} \sum_{s=1}^{t} 2 X_{k,s} \Delta_k
 \end{align*}
 
-#### Change of Measure
+#### Change of Distribution
 
-We are now ready to state the change of measure. As alluded to above, we consider how the probability changes for the event $\mathcal{A}_i$ when we move from $\mathcal{B}^0$ to $\mathcal{B}^i$. When flipping arm $i$, we only changed the samples of this arm, that is, the first $T_i$ observations we got from arm $i$ the algorithm took. The change of measure is then defined as:
+We are now ready to state the change of distribution. As alluded to above, we consider how the probability changes for the event $\mathcal{A}_i$ when we move from $\mathcal{B}^0$ to $\mathcal{B}^i$. When flipping arm $i$, we only changed the samples of this arm, that is, the first $T_i$ observations we got from arm $i$ the algorithm took. The change of distribution is then defined as:
 
 \begin{align*}
 \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i} \text{LR}((X_{i,1}, \dots,X_{i,T_i}), \nu_i', \nu_i) ] \\
@@ -84,11 +85,9 @@ We are now ready to state the change of measure. As alluded to above, we conside
 
 Obviously, $\hat{\KL}_{i,T_i}$ depends on the realized samples $X_{i,1}, \dots,X_{i,T_i}$. Consequently, we need to find a bound on $\hat{\KL}_{i,T_i}$ itself to incorporate the uncertainty involved in this metric. 
 
-#### Kullback-Leibler Divergence
-
-For our problem, the Kullback-Leibler divergence of $/nu_k'$ from $\nu_k$ is given by $\KL_k := KL(\nu_k', \nu_k) = 2\Delta_k^2$.
-
 #### Concentration of the Empirical Kullback-Leibler Divergence
+
+For our problem, the Kullback-Leibler divergence of $\nu_k'$ from $\nu_k$ is given by $\KL_k := KL(\nu_k', \nu_k) = 2\Delta_k^2$.
 
 It is easy to see that
 
@@ -96,10 +95,10 @@ It is easy to see that
 |\hat{\KL}_{k,t} - \KL_{k,t}| = |-\frac{2}{t} \Delta_k \sum_{s=1}^{t}(X_{k,s} - \Delta_k)|
 \end{equation*}
 
-itself is a normally distributed random variable with mean zero and a variance decreasing in $t$. Thus, one can show that $\mathbb{P}_{\mathcal{B}^i}(\xi) \geq 3/4$ for the event
+itself is a normally distributed random variable with mean zero and a variance decreasing in $t$. Thus, one can show as in Locatelli et al. (2016) that $\mathbb{P}_{\mathcal{B}^i}(\xi) \geq 3/4$ for the event
 
 \begin{equation}
-\xi = \{ \forall k \leq K, \forall t \leq T, |\hat{\KL}_{k,t} - \KL_{k,t}| \leq 4 \Delta_k \sqrt{\frac{\log(4(\log(T)+1)K)}{t}} \}. \label{LocatelliTheorem1EventXi}
+\xi = \{ \forall k \leq K, \forall t \leq T, |\hat{\KL}_{k,t} - \KL_{k,t}| \leq 4 \Delta_k \sqrt{\frac{\log(4(\log(T)+1)K)}{t}}\}. \label{LocatelliTheorem1EventXi}
 \end{equation}
 
 Thus, in order to bound the empirical Kullback-Leibler divergence in our change of measure, we can consider the intersection of $\mathcal{A}_i$ and $\xi$ as follows and plug in the bound on event $\xi$:
@@ -114,15 +113,15 @@ Two things are left to do: With $T_i$, we still have one random variable left wh
 
 #### Bounding $T_i$ for $\max_{i \in \{1,\dots,K\}}\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)$
 
-Part of our bound is $\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)$, so let's continue with that. In general it holds that $\max_{1 \leq i \leq K} (X_1, \dots, X_K) \geq \bar{X}$. Thus we can write:
+Part of our bound is $\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)$, so let's continue with that. In general it holds that $\max_{1 \leq i \leq K} (X_1, \dots, X_K) \geq \frac{1}{K}\sum_{i=1}^K X_i$. Thus we can write:
 
 \begin{align*}
-\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & \geq \frac{1}{K} \sum_{i=1}{K} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) \\
-& \geq \frac{1}{K} \sum_{i=1}{K} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i \cap \xi) \\
-& \geq \frac{1}{K} \sum_{i=1}{K} \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- 2 \Delta_i^2 T_i - 4 \Delta_i \sqrt{T_i} \sqrt{\log(4(\log(T)+1)K)}) ]
+\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & \geq \frac{1}{K} \sum_{i=1}^{K} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) \\
+& \geq \frac{1}{K} \sum_{i=1}^{K} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i \cap \xi) \\
+& \geq \frac{1}{K} \sum_{i=1}^{K} \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- 2 \Delta_i^2 T_i - 4 \Delta_i \sqrt{T_i} \sqrt{\log(4(\log(T)+1)K)}) ]
 \end{align*}
 
-where the second line is again the intersection of $\mathcal{A}_i$ and $\xi$ as before in order to apply the change of measure again in the third line.
+where the second line is again the intersection of $\mathcal{A}_i$ and $\xi$ as before in order to apply the change of distribution in the third line.
 
 What is left to show before we have our final bound is a bound on $T_i$. To show that any algorithm has a certain bound on its error, it only makes sense that every arm has to pulled at least a certain amount of times. Consequently, no arm should be pulled exclusively.
 
@@ -150,9 +149,9 @@ We write $\frac{1}{K} \sum_{i=1}^K \exp(-3T_i \Delta_i^2) \geq \frac{1}{K} \sum_
 & = \mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp (- 3 \frac{T}{H} -16 \log(4(\log(T)+1)K))
 \end{align*}
 
-#### Conclusion
+#### Bringing everything together
 
-Consider again the risk which we need to bound from equation \eqref{LocatelliTheorem1ExpRegret}. We bound the maximum expected loss over all $\mathcal{B}_i$. By again using the fact that in general $\max_{1 \leq i \leq K} (X_1, \dots, X_K) \geq \bar{X}$, we plug in our previous calculations:
+Consider again the risk which we need to bound from equation \eqref{LocatelliTheorem1ExpRegret}. We bound the maximum expected loss over all $\mathcal{B}_i$. By again using the fact that in general $\max_{1 \leq i \leq K} (X_1, \dots, X_K) \geq \frac{1}{K} \sum_{i = 1}^K X_i$, we plug in our previous calculations:
 
 \begin{align}
 \max_{i \in \{0, \dots, K\}} \mathbb{E}_{\mathcal{B}^i} (\mathcal{L}(T)) & \geq \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \big) \\

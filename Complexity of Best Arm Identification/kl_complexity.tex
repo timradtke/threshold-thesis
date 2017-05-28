@@ -651,6 +651,59 @@ that keeps track of the share of samples that is attributed to each arm
 and makes sure that it stays close to the optimum until some decision
 rule assures that the \(\delta\)-PAC condition is fulfilled.
 
+Indeed, the optimal weights will lead to a sampling structure in which
+arms are drawn in such a way ensuring that their individual failure
+probabilities are at the same level. Take a situation where the
+currently best arm \(\hat{\mu}_1\) is the best arm. Then, we calculate
+for each arm the risk that actually it is better than arm 1. Since the
+arms are assumed to be independent, the we only have to compare every
+arm individually to arm 1. Given that, it makes sense that we don't want
+to disregard an arm that has a high probability of being better than arm
+1. Assuming arm 1 is actually the best arm, we would an algorithm that
+ensures a low failure probability on all arms, thus equalizing the
+failure probability for every arm compared to arm 1.
+
+This is exactly what happens when we look for the proportions
+\(w \in \Sigma_K\) that minimize the cost from a change in
+distributions, that is, the term
+\(F(\bm{\mu}, \bm{w}) = \inf_{\bm{\lambda} \in \text{Alt}(\bm{\mu})} \Big(\sum_{a= 1}^K w_a \KL(\mu_a, \lambda_a)\Big)\).
+In the proof of Lemma 3 of Garivier and Kaufmann, it is shown that
+nature, selecting the alternative model \(bm{\lambda}\) will always pick
+an alternative model in which only a single arm \(a\) is changed such
+that \(\lambda_a > \lambda_1\) since
+
+\begin{align*}
+T^*(\bm{\mu})^{-1} & = \sup_{w \in \Sigma_K} \min_{a \neq 1} \inf_{\bm{\lambda} \in \mathcal{S}: \lambda_a > \lambda_1} \sum_{a=1}^K w_a \KL(\mu_a, \lambda_a)  \\
+& = \sup_{w \in \Sigma_K} \min_{a \neq 1} \inf_{\bm{\lambda}: \lambda_a \geq \lambda_1} [w_1 \KL(\mu_1, \lambda_1)+w_a \KL(\mu_a, \lambda_a)].
+\end{align*}
+
+Consequently, \(w\) will be chosen so as to minimize \(T^*(\bm{\mu})\)
+no matter which arm \(a\) was picked. It is a minimax game, so the ideal
+solution is to keep for each arm \(a \neq 1\) the term
+\(w_1 \KL(\mu_1, \lambda_1) + w_a \KL(\mu_a, \lambda_a)\) at the same
+level. Garivier and Kaufmann show that this can be written in terms of
+the Jenson-Shannon divergence, defined for every \(\alpha \in [0,1]\) as
+
+\begin{equation*}
+I_{\alpha}(\mu_1, \mu_2) := \alpha \KL(\mu_1, \alpha \mu_1 + (1-\alpha) \mu_2) + (1-\alpha) \KL(\mu_2, \alpha \mu_1 + (1-\alpha) \mu_2).
+\end{equation*}
+
+Using this notation, the optimal proportions can be written as
+
+\begin{equation*}
+w^*(\bm{\mu}) = \arg \max_{w \in \Sigma_K} \min_{a \neq 1} (w_1 + w_a) I_{\frac{w_1}{w_1+w_a}}(\mu_1, \mu_a)
+\end{equation*}
+
+which let's us furthermore conclude that these quantities are equal for
+all \(a,b \in \{2,\dots, K\}\) with
+
+\begin{equation*}
+(w_1^* + w_a^*) I_{\frac{w_1^*}{w_1^*+w_a^*}}(\mu_1, \mu_a) = (w_1^* + w_b^*) I_{\frac{w_1^*}{w_1^*+w_b^*}}(\mu_1, \mu_b),
+\end{equation*}
+
+which is simply the statement in Lemma 4 of Garivier and Kaufmann
+(2016).
+
 And so by assuring the reader that there are ways to compute \(w_a^*\)
 and \(T^*\) given \(\bm{\mu}\) (see chapter 2.2 in Garivier and Kaufmann
 (2016)), we can now introduce the \emph{Track-and-Stop} strategy given
@@ -760,20 +813,52 @@ fixed-confidence setting which are primarily based on Lemma
 \ref{theorem:KaufmannEtAlLemma1}. Lemma \ref{theorem:KaufmannEtAlLemma1}
 is able to measure the ``transportation cost'' (see Garivier and
 Kaufmann, 2016) of moving from one distribution to another one in terms
-of Kullback-Leibler divergence. Using the information from the lower
-bound of how well any \(\delta\)-PAC algorithm can potentially be, the
-authors design algorithms matching these lower bounds. In the case of
-Top-\(m\) identification, a simple application of the existing KL-LUCB
-algorithm works. In the case of best arm identification, the lower bound
-provides a way of calculating the optimal proportions in which the arms
-need to be pulled. Consequently, a matching algorithm can be set up so
-that it draws arms in these proportions, and so that it is robust
-against estimation errors of the plug-in estimates. Combining this
-sampling rule with an appropriate stopping rule makes for a
-\(\delta\)-PAC algorithm that matches the lower bound, where the upper
-bound in Theorem \ref{theorem:GarivierAndKaufmannTheorem14} matches the
-lower bound from Theorem \ref{theorem:GarivierKaufmannTheorem1} using
-equation \eqref{bre_approx}.
+of Kullback-Leibler divergence. This transportation cost will increase
+the expected stopping time, and so the experimenter has to be careful
+when selecting which arm to sample. By picking proportions
+\(w^*(\bm{\mu})\) that minimize the transportation cost, a solution is
+found with as few iterations as possible.
+
+With respect to the optimal proportions we have derived some
+characteristics that now allow for a few interpretations. First, we have
+demanded that the algorithm keeps arms proportions in a way that
+equalizes the failure probability of every arm with respect to the best
+arm. This is basically similar to keeping the weighted Jensen-Shannon
+divergence at the same level which was shown in Lemma 4 of Garivier and
+Kaufmann (2016) and which we have repeated above. The fact that the risk
+plays an important role at any round of the algorithm suggests the
+possibility of turning the algorithm into an anytime algorithm. That is,
+instead of relying on Chernoff's stopping rule to end the algorithm at
+one point, and not being able to stop the algorithm before that and
+receiving a meaningful result, one would be able to stop the algorithm
+at any iteration, and receive both the recommended best arm and a
+confidence level. Second, the idea of comparing each arm to the best arm
+and based on that keeping the failure probabilities at a flat level
+seems transferrable to the thresholding bandit problem. Indeed, it might
+even be easier as the best arm does not have to be estimated; thus, the
+risk with respect to this estimate goes away. Instead, every arm will be
+compared to the threshold. One idea might be to compute for each arm
+\(a\) the probability that the mean \(\mu_a\) is actually on the other
+side of the threshold as currently suggested by \(\hat{\mu}_a(t)\). This
+is independent of the other arms. And so a strategy might be to draw
+arms such that their failure probabilities are at the same level (draw
+whatever arm has the highest failure probability). We will come back to
+this idea in chapter 3.
+
+Using the information from the lower bound of how well any
+\(\delta\)-PAC algorithm can potentially be, the authors design
+algorithms matching these lower bounds. In the case of Top-\(m\)
+identification, a simple application of the existing KL-LUCB algorithm
+works. In the case of best arm identification, the lower bound provides
+a way of calculating the optimal proportions in which the arms need to
+be pulled. Consequently, a matching algorithm can be set up so that it
+draws arms in these proportions, and so that it is robust against
+estimation errors of the plug-in estimates. Combining this sampling rule
+with an appropriate stopping rule makes for a \(\delta\)-PAC algorithm
+that matches the lower bound, where the upper bound in Theorem
+\ref{theorem:GarivierAndKaufmannTheorem14} matches the lower bound from
+Theorem \ref{theorem:GarivierKaufmannTheorem1} using equation
+\eqref{bre_approx}.
 
 
 \end{document}
