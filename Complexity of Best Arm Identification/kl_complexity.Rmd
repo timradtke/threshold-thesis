@@ -294,4 +294,36 @@ As mentioned, we now do not consider a specific alternative for each arm, but in
 
 As stated in Garivier and Kaufmann (2016), the term $\frac{\mathbb{E}_{\bm{\mu}}[N_a]}{\mathbb{E}_{\mu}[\tau_{\delta}]}$ gives the fraction of draws each arm receives. This value, however, depends on the used algorithm. To make it hold for any $\delta$-PAC algorithm, it is replaced by the supremum over $\Sigma_K$, which is the distribution over these fractions for any $\mathcal{A}$, that is, for any $\delta$-PAC strategy.
 
-This lower bound can be interpreted as a Minimax game, where the experimenter has to choose the share of samples he attributes to each arm in a way that is optimal given that nature will respond and choose the most difficult alternative model given his weights. Thus, to make the lower bound practical, it is a matter of finding the optimal weights $w^*(\bm{\mu})$.
+This lower bound can be interpreted as a Minimax game, where the experimenter has to choose the share of samples he attributes to each arm in a way that is optimal given that nature will respond and choose the most difficult alternative model given his weights. Thus, to make the lower bound practical, it is a matter of finding the optimal weights $w^*(\bm{\mu})$. This step did not occur in the previous lower bound, as the alternative models were made specific by changing the distribution of one arm with respect to the "border" between the two groups of arms.
+
+In any case, the existence of the optimal weights suggests an algorithm that keeps track of the share of samples that is attributed to each arm and makes sure that it stays close to the optimum until some decision rule assures that the $\delta$-PAC condition is fulfilled.
+
+And so by assuring the reader that there are ways to compute $w_a^*$ and $T^*$ given $\bm{\mu}$ (see chapter 2.2 in Garivier and Kaufmann (2016)), we can now introduce the *Track-and-Stop* strategy given in Garivier and Kaufmann (2016) that is able to match the lower bound by the intuition given above.
+
+When going from theory to algorithm, the obvious problem is of course that we do no longer know $\bm{\mu}$ and thus cannot simply calculate the optimal weights. Instead, we are estimating the maximum likelihood estimates $\hat{\mu}(t) = (\hat{\mu}_1(t), \dots, \hat{\mu}_K(t))$ of the true mean at the current round $t$ and need to base our weights based on these. It is however problematic to rely on these sample means as we are inherently unsure about them. And so wrong estimates, which naturally occur most easily in the beginning when not many samples have been pulled, are prone to lead to wrong weights. Thus, if a wrong estimate $\hat{\mu}_a$ for arm $a$ leads to a small weight $w_a$, then neither the estimate nor the weight will be correct soon. Thus, Kaufmann and Garivier conclude that "a naive plug-in sampling rule sometimes fails". They propose to enforce a certain minimum level of exploration to make sure that arms that erroneously received a very small weight will be further explored regardless.
+
+A very intuitive fix to this problem is the solution proposed in Lemma 8 of Garivier and Kaufmann (2016), with their $D-Tracking$ rule. Basically, whenever an arm has received a very low number of pulls $N_a(t)$ given the number of iterations so far, $t$ and the number of arms $K$ that have to share the samples, pull the arm that has received the smallest amount of samples so far. Else, pull the arm which number of pulls so far $N_a(t)$ is the furthest away from what its optimal share $t\cdot w^*_a(\hat{\bm{\mu}}(t))$ would be. Given this sampling rule, the authors can show in their Proposition 9 that the empirical proportion of draws converges in probability to the optimal weights given the true means.
+
+When combining this sampling rule with an appropriate stopping rule, the authors are able to prove in Theorem 14 an upper bound on the expected sampling complexity $\mathbb{E}_{\mu}[\tau_{\delta}]$. The stopping rule ensures that the algorithm explores sufficiently to promise a risk smaller than $\delta$, while stopping as soon as possible. Given that the sampling rule is independent of this stopping rule, the rule boils down to a statistical test at every iteration and thus is a sequential test based on the current estimate of $\hat{\bm{\mu}}$. The Chernoff's Stopping Rule proposed in Garivier and Kaufmann (2016) calculates for each arm $a\in \mathcal{A}$ the Generalized Likelihood Ratio statistic with every arm $b \in \mathcal{A}^{\setminus a}$, which for $\hat{\mu}_a(t) \geq \hat{\mu}_b(t)$ can be written as
+
+\begin{equation*}
+Z_{a,b}(t) = - Z_{b,a} = N_a(t) \KL(\hat{\mu},\hat{\mu}_{a,b})) + N_b(t) \KL(\hat{\mu}_{b(t)}, \hat{\mu}_{a,b}),
+\end{equation*}
+
+where
+
+\begin{equation*}
+\hat{\mu}_{a,b}(t) := \frac{N_a(t)}{N_a(t) + N_b(t)}\hat{\mu}_a + \frac{N_b(t)}{N_a(t) + N_b(t)}\hat{\mu}_b.
+\end{equation*}
+
+Consequently, a sensible idea for a stopping rule would be that there has to be an arm $a \in \mathcal{A}$ for which $Z_{a,b} \geq 0 \forall b \in \mathcal{A}^{\setminus a}$ (which is always fulfilled if there is a uniquely best arm), and, additionally, we demand that for this arm the smallest of the $(K-1)$ test statistics has to be larger than an exploration threshold $\beta(t, \delta)$. Consequently, the final number of samples $\tau_{\delta}$ of an algorithm is given by:
+
+\begin{equation*}
+\tau_{\delta} = \inf \{t \in \mathbb{N}: \exists a \in \mathcal{A}, \forall b\in \mathcal{A}^{\setminus a}, Z_{a,b}(t) > \beta(t, \delta)\}
+\end{equation*}
+
+Demanding that the optimal exploration threshold increases in rounds $t$ (if we have more samples, require more certainty; also, punish for failing previous tests) and decreases in the risk $\delta$, and does so at a diminishing rate, the optimal threshold derived in Theorem 10 of Garivier and Kaufmann (2016) makes sense intuitively:
+
+\begin{equation*}
+\beta(t, \delta) = \log \Big(\frac{2t(K-1)}{\delta}\Big)
+\end{equation*}.
