@@ -231,9 +231,9 @@ low confidence of our algorithm, that is, \(P_\nu(\mathcal{E})\) is
 either close to 0 or 1, it is possible to use the following
 approximation to the binary relative entropy:
 
-\begin{equation*}
+\begin{equation}\label{bre_approx}
 \forall x \in [0,1], \quad \der(x,1-x) = \der(1-x,x) \geq \log \frac{1}{2.4x}
-\end{equation*}
+\end{equation}
 
 And so the final lower bound can be written as
 
@@ -254,10 +254,10 @@ be more complex (at least with respect to the samples, which is what
 needs to be optimized).
 
 Thus, following Kaufmann et al. (2016), define the complexity
-\(\mathcal{K}_C(\nu)\) for the fixed confidence setting as
+\(\kappa_C(\nu)\) for the fixed confidence setting as
 
 \begin{equation}
-\mathcal{K}_C(\nu) = \inf_{A \, \text{PAC}} \lim_{\delta \to 0} \sup \frac{\mathbb{E}_{\nu}[\tau_{\delta}]}{\log \frac{1}{\delta}}.
+\kappa_C(\nu) = \inf_{A \, \text{PAC}} \lim_{\delta \to 0} \sup \frac{\mathbb{E}_{\nu}[\tau_{\delta}]}{\log \frac{1}{\delta}}.
 \end{equation}
 
 So if we were to plug in the lower bound on the sampling complexity, we
@@ -267,7 +267,7 @@ border between the two groups of arms. To see this, consider the lower
 bound on the complexity measure given in Kaufmann et al. (2016):
 
 \begin{equation*}
-\mathcal{K}_C(\nu) \geq \sum_{a \in \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m+1]})} + \sum_{a \notin \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m]})}
+\kappa_C(\nu) \geq \sum_{a \in \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m+1]})} + \sum_{a \notin \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m]})}
 \end{equation*}
 
 Given this description, we can already note that an intuitive extension
@@ -291,12 +291,12 @@ the number of samples goes to infinity. Also, define the complexity in
 the fixed-budget setting as follows:
 
 \begin{equation}
-\mathcal{K}_B(\nu) = \inf_{A \, \text{consistent}} \big(\lim_{t \to \infty} \sup - \frac{1}{t} \log p_t(\nu)\big)^{-1}.
+\kappa_B(\nu) = \inf_{A \, \text{consistent}} \big(\lim_{t \to \infty} \sup - \frac{1}{t} \log p_t(\nu)\big)^{-1}.
 \end{equation}
 
 Given this definition, one can interpret the bound given in Theorem 12
 of Kaufmann et al. directly as a lower bound on the complexity
-\(\mathcal{K}_B(\nu)\) (note the inverse).
+\(\kappa_B(\nu)\) (note the inverse).
 
 \begin{theorem}[Kaufmann et al., 2016] \label{theorem:KaufmannEtAlTheorem12}
 Let $\nu = (\nu_1, \nu_2)$ be a two-armed bandit model such that $\mu_1 > \mu_2$. In the fixed-budget setting, any consistent algorithm satisfies:
@@ -490,14 +490,14 @@ knowledge of parameters or the complexity of the problem.
 
 In contrast, Kaufmann et al. (2016) are able to show that their
 complexity measure derived for the fixed-confidence setting,
-\(\mathcal{K}_C(\nu)\), can be upper-bounded using the upper bound of
-the sample complexity (number of pulls) given for the KL-LUCB algorithm
-in Kaufmann and Kalyanakrishnan (2013). Consequently, in the case of
-exponential family bandits, the complexity \(\mathcal{K}_C(\nu)\) is
-bounded as given in equation (6) in Kaufmann et al. (2016):
+\(\kappa_C(\nu)\), can be upper-bounded using the upper bound of the
+sample complexity (number of pulls) given for the KL-LUCB algorithm in
+Kaufmann and Kalyanakrishnan (2013). Consequently, in the case of
+exponential family bandits, the complexity \(\kappa_C(\nu)\) is bounded
+as given in equation (6) in Kaufmann et al. (2016):
 
 \begin{equation*}
-\sum_{a \in S^*_m} \frac{1}{K(\theta_a, \theta_{[m+1]})} + \sum_{a \notin S^*_m} \frac{1}{K(\theta_a,\theta_{[m]})} \leq \mathcal{K}_C(\nu) \leq 24 \min_{\theta \in [\theta_{[m+1]},\theta_{[m]}]} \sum_{a=1}^{K} \frac{1}{K^*(\theta_a, \theta)},
+\sum_{a \in S^*_m} \frac{1}{K(\theta_a, \theta_{[m+1]})} + \sum_{a \notin S^*_m} \frac{1}{K(\theta_a,\theta_{[m]})} \leq \kappa_C(\nu) \leq 24 \min_{\theta \in [\theta_{[m+1]},\theta_{[m]}]} \sum_{a=1}^{K} \frac{1}{K^*(\theta_a, \theta)},
 \end{equation*}
 
 where \(K(\theta, \theta') = \KL(\nu_{\theta}, \nu_{\theta'})\) for
@@ -581,14 +581,14 @@ Let $\delta \in (0,1)$. For any $\delta$-PAC strategy and any bandit model $\bm{
 where 
 
 \begin{equation} \label{eq:GarivierKaufmann_Theorem1_Game}
-T^*(\bm{\mu})^{-1} := \sup_{w \in \Sigma_K} \inf_{\bm{\lambda} \in \text{\em{Alt}}(\bm{\mu})} \left( \sum_{a=1}^K w_a \text{\em{KL}}(\mu_a, \lambda_a)\right) .
+T^*(\bm{\mu})^{-1} := \sup_{w \in \Sigma_K} \inf_{\bm{\lambda} \in \text{\em{Alt}}(\bm{\mu})} \left( \sum_{a=1}^K w_a \text{\em{KL}}(\mu_a, \lambda_a)\right).
 \end{equation}
 \end{theorem}
 
 And so we see that the two bounds on the sample complexity (one for
 Top-\(m\), one for best arm identification) differ only in the way that
 they build the sum of Kullback-Leibler divergences over the \(K\) arms.
-In contrast to Theorem \ref{theorem:KaufmannEtAl2016Theorem1}, here the
+In contrast to Theorem \ref{theorem:KaufmannEtAlTheorem4}, here the
 contribution of each arm through its KL-divergence is weighted. The
 difference is that while we were able to very clearly describe the
 change of distribution in the Top-\(m\) case for each arm -- for each
@@ -699,7 +699,7 @@ with every arm \(b \in \mathcal{A}^{\setminus a}\), which for
 \(\hat{\mu}_a(t) \geq \hat{\mu}_b(t)\) can be written as
 
 \begin{equation*}
-Z_{a,b}(t) = - Z_{b,a} = N_a(t) \KL(\hat{\mu},\hat{\mu}_{a,b})) + N_b(t) \KL(\hat{\mu}_{b(t)}, \hat{\mu}_{a,b}),
+Z_{a,b}(t) = - Z_{b,a} = N_a(t) \KL(\hat{\mu}_a(t),\hat{\mu}_{a,b}(t)) + N_b(t) \KL(\hat{\mu}_{b}(t), \hat{\mu}_{a,b}(t)),
 \end{equation*}
 
 where
@@ -728,10 +728,52 @@ so at a diminishing rate, the optimal threshold derived in Theorem 10 of
 Garivier and Kaufmann (2016) makes sense intuitively:
 
 \begin{equation*}
-\beta(t, \delta) = \log \Big(\frac{2t(K-1)}{\delta}\Big)
+\beta(t, \delta) = \log \Big(\frac{2t(K-1)}{\delta}\Big).
 \end{equation*}
 
-.
+With this, we can state the final theorem of the chapter, which gives
+the upper bound matching the lower bound in Theorem
+\ref{theorem:GarivierKaufmannTheorem1} for small risk values \(\delta\)
+using the D-Tracking rule and Chernoff's stopping rule with the
+exploration term given in the previous equation:
+
+\begin{theorem}[Theorem 14, Garivier and Kaufmann, 2016] \label{theorem:GarivierAndKaufmannTheorem14}
+Let $\bm{\mu}$ be an exponential family bandit model. Let $\alpha \in [1, e/2]$ and $r(t) = O(t^{\alpha})$. Using Chernoff's stopping rule with $\beta(t,\delta) = \log(r(t)/\delta)$ and the sampling rule C-Tracking or D-Tracking,
+
+\begin{equation*}
+\lim_{\delta \to 0} \sup \frac{\mathbb{E}_{\bm{\mu}}[\tau_{\delta}]}{\log(1/\delta)} \leq \alpha T^*(\mu).
+\end{equation*}
+\end{theorem}
+
+\subsubsection{Conclusion of Complexity of Best Arm
+Identification}\label{conclusion-of-complexity-of-best-arm-identification}
+
+Overall, the two papers presented in this chapter make significant
+contributions to identifying the top-\(1\) or the top-\(m\) arms in a
+multi-armed bandit setting. Their contribution is primarily based on
+including the Kullback-Leibler divergence in the derivation of bounds
+and the matching algorithms and thus going beyond a sum of squared gaps
+which is most practical only in the case of Gaussian distributions.
+While the contribution in the fixed-budget setting was limited to the
+two-armed bandit case, the authors derive general lower bounds in the
+fixed-confidence setting which are primarily based on Lemma
+\ref{theorem:KaufmannEtAlLemma1}. Lemma \ref{theorem:KaufmannEtAlLemma1}
+is able to measure the ``transportation cost'' (see Garivier and
+Kaufmann, 2016) of moving from one distribution to another one in terms
+of Kullback-Leibler divergence. Using the information from the lower
+bound of how well any \(\delta\)-PAC algorithm can potentially be, the
+authors design algorithms matching these lower bounds. In the case of
+Top-\(m\) identification, a simple application of the existing KL-LUCB
+algorithm works. In the case of best arm identification, the lower bound
+provides a way of calculating the optimal proportions in which the arms
+need to be pulled. Consequently, a matching algorithm can be set up so
+that it draws arms in these proportions, and so that it is robust
+against estimation errors of the plug-in estimates. Combining this
+sampling rule with an appropriate stopping rule makes for a
+\(\delta\)-PAC algorithm that matches the lower bound, where the upper
+bound in Theorem \ref{theorem:GarivierAndKaufmannTheorem14} matches the
+lower bound from Theorem \ref{theorem:GarivierKaufmannTheorem1} using
+equation \eqref{bre_approx}.
 
 
 \end{document}
