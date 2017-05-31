@@ -1,0 +1,75 @@
+---
+title: "Chapter Three"
+author: "Tim Radtke"
+date: "5/31/2017"
+header-includes:
+   #- \documentclass[a4paper,twoside,english]{article}
+   - \usepackage[retainorgcmds]{IEEEtrantools}
+   - \usepackage{bm}
+   - \usepackage{amsmath}
+   - \usepackage{bbm}
+   - \newtheorem{theorem}{Theorem}
+   - \newtheorem{lemma}{Lemma}
+   - \newcommand{\KL}{\,\text{KL}}
+   - \newcommand{\der}{\,\text{d}}
+   #- \usepackage[top=1.5cm, bottom=1.5cm, outer=5cm, inner=2cm, heightrounded, marginparwidth=2.5cm, marginparsep=2cm]{geometry}
+   #- \usepackage{fontspec}
+   #-   \setmainfont{Arial}
+keep_tex: TRUE
+output:
+  pdf_document:
+    number_sections: true
+    keep_tex: true
+    toc: true
+    toc_depth: 3
+    #latex_engine: xelatex
+fontsize: 12pt
+urlcolor: blue
+---
+
+# KL and Bayesian Thresholding Bandits
+
+## Introduction
+
+We have introduced the thresholding bandit problem in chapter 1. The APT algorith described in Locatelli et al. (2016) is able to match a lower bound (be more specific!) given in the same paper, and has several favorable characteristics such as its overall simplicity and it being an anytime algorithm. However, the bounds on the expected loss assume the arms' distributions to be $R$-sub-Gaussian. This is reflected in the algorithm's complexity measure $H = \sum_{i=1}^K (\Delta_i^{\tau, \epsilon})^{-2}$, where $\Delta_i^{\tau,\epsilon} = |\mu_i - \tau| + \epsilon$, which -- given the known threshold $\tau \pm \epsilon$ -- only depends on the distribution's mean. This is appropriate for Gaussian arms with equal variances, but potentially inefficient for other kinds of distributions.
+
+In the case of Gaussian distributions with varying variances, for example, it makes sense to take the variance into account; after all, given two Gaussians with equal mean, intuitively we would prefer to get a sample from the distribution of larger variance.
+
+In the case of Gaussians, the complexity $H$ is nice also because it reflects the Kullback-Leibler divergence between two Gaussians. And since Bernoulli distributions are bounded on the interval $[0,1]$, they are consequently sub-Gaussian, meaning that their Kullback-Leibler divergence can be approximated by the Gaussian one. However, while Bernoullis are sub-Gaussian, the approximation of their divergence by the Gaussian divergence becomes less and less optimal as the parameter (and thus mean) goes to $0$ or $1$, as shown in chapter 1. And while online advertisements might not be an obvious use case for thresholding bandits, they are just one real life scenario dominated by Bernoulli distributions with very small parameters. Thus it is worthwile to adapt current solutions of the thresholding bandit problem to cases in which the Gaussian Kullback-Leibler divergence is no longer an appropriate approximation.
+
+Large motiviation for the idea of adjusting the complexity measure (and thus the algorithms) to distributions more generally based on the Kullback-Leibler divergence stems from the work discussed in chapter 2, complexity measures were defined for the pure exploration bandits in terms of the Kullback-Leibler divergence. Based on this, the authors were for example able to point our differences between Gaussian and Bernoulli bandits. We expect that results in a similar vain could be derived for thresholding bandits.
+
+To this end, in the following, we first present an extension of mean based algorithms to an algorithm that incorporates empirical variances as described in Mukherjee et al. (2017). Afterwards, we propose and discuss potential further improvements based on Kullback-Leibler divergence and Bayesian posterior distributions. Finally, we compare the performance of different algorithms based on simulations and real world data sets.
+
+## Variance Based Algorithms for Thresholding Bandits
+
+Mukherjee et al. (2017) propose an algorithm based on variance estimates called Augmented-UCB (AugUCB). The setting in which the algorithm is proposed is very similar to the setting in Locatelli et al. (2016). The algorithm itself, however, differs heavily from the APT algorithm. So is AugUCB for example not an anytime algorithm. Furthermore, arms can be deleted in every round if there are "far enough" away from the mean. Both the decision of which arm is played in a given round, and whether an arm is removed from the active set of arm, is based not only on the empirical mean estimate $\mu_i(t)$, but also on a term $s_i$ that is increasing linearly in the estimated standard deviation. While the APT algorithm plays the arm minimizing the quantity $B_i(t+1) = \sqrt{T_i(t)} \hat{\Delta}_i(t) = \sqrt{T_i(t)} (|\hat{\mu}_i(t) - \tau| + \epsilon)$, AugUCB plays the arm minimizing the quantity $(\hat{\Delta}_i(t) - 2s_i)$, where $s_i$ is based on the variance estimate $\hat{v}_i$, and an exploration $\psi_m$ term linear in $T$, and an elimination parameter $\rho$ (compare Algorithm 1 in Mukherjee et al., 2017):
+
+\begin{equation*}
+s_i = \sqrt{\frac{\rho \psi_m (\hat{v}_i + 1) \log(T \epsilon_m)}{4n_i}}
+\end{equation*}
+
+Consequently, the authors also introduce complexity measures which take the variance into account. From Gabillon et al. (2011) they use $H_{\sigma, 1}= \sum_{i=1}^K \frac{\sigma_i + \sqrt{\sigma_i^2 + (16/3)\Delta_i}}{\Delta_i^2}$. Furthermore, with $\stackrel{\sim}{\Delta}_i^2 = \frac{\Delta_i^2}{\sigma_i + \sqrt{\sigma_i^2 + (16/3)\Delta_i}}$, and with $\stackrel{\sim}{\Delta}_{(i)}$ being an increasing ordering of $\stackrel{\sim}{\Delta}_i$, the authors define a complexity corresponding to $H_{CSAR,2}$ in Chen et al. (2014):
+
+\begin{equation*}
+H_{\sigma,2} = \max_{i \ in \mathcal{A}} \frac{i}{\stackrel{\sim}{\Delta}_{(i)}^2}.
+\end{equation*}
+
+While the latter complexity appears in the provided upper bound on the AugUCB algorithm's expected loss, it could be replaced by $H_{\sigma, 1}$ since $H_{\sigma, 2} \leq H_{\sigma,1}$. $H_{\sigma,1}$ is of course more directly comparable to the complexity $H$ that we are used to.
+
+While in the case of the APT algorithm the number of times a specific arm has been drawn $T_i$ measures how concentrated the estimated mean is around the true mean (and thus for large $T_i$ an arm is no longer drawn even if $\hat{\mu}$ is close to $\tau$); in the case of the AugUCB algorithm this is regulated by the combination of the variance estimate $\hat{v}_i$ and the exploration factor $\psi_m$, where they ensure that certain arms are no longer pulled when the algorithm is sufficiently confident in its knowledge about the true mean. Therefore, when using a very similar favorable event in the proof of their upper bound, Mukherjee et al. (2017) have to bound the probability that an an arm is not removed from the active set after the a certain number of rounds -- even though the arm is above (respectively below) the threshold. If this probability is low, then this means that the algorithm is able to be certain about an arm's true mean *quickly* by employing variance estimates. In comparison, Locatelli et al (2016) used bounds on on how often arms are drawn ($T_i$) to give a bound on the probability of the favorable event. In order to derive the bound, Mukherjee et al. (2017) use the Bernstein inequality.
+
+It has to be noted that Mukherjee et al. (2017) have to assume that the distributions have rewards bounded in $[0,1]$ in order to derive the bound on the probability that an arm has not been eliminated correctly in round $T_i$. Thus, the distributions for which their upper bound holds are a subset of the sub-Gaussian distributions considered in Locatelli et al. (2016). However, it is not that the authors need to assume that the rewards are in $[0,1]$, but this was assumed so that the variance of the distribution is in $[0,1]$. Thus, the upper bound holds in particular for Gaussian distributions with variance $\sigma^2 \in [0,1]$.
+
+Based on this assumption, the authors show that the probability that an arm has not been eliminated after $m_i$ rounds is given by (compare equation (2) in Mukherjee et al., 2017):
+
+\begin{equation} \label{Mukherjee2017Equation2}
+\mathbb{P}(\hat{\mu}_i > \mu_i + 2s_i) \leq \mathbb{P} (\hat{\mu}_i > \mu_i + 2\bar{s}_i) + \mathbb{P}(\hat{v}_i \geq \sigma^2_i + \sqrt{\rho \epsilon_{T_i}})
+\end{equation}
+
+Compare Mukherjee et al. (2017) for the notation. Then it becomes clear that the left part of the RHS gives the probability that the mean estimate is out of wack, while the right term gives the probability that the variance is overestimated. The first term is bounded by the Bernstein inequality. In the cumulative regret setting, there exists a similar decomposition that bounds the expected number of pulls of a suboptimal arm. Compare for example chapter 3.1 in "Thompson Sampling: An Asymptotically Optimal Finite Time Analysis" by Kaufmann, Korda and Munos (2012). There they decompose the expected number of draws of an suboptimal arm for an optimistic (UCB like) into the probability that the optimal arm's mean is underestimated, and the probability that the UCB of the suboptimal arm is still very large. To give bounds for UCB algorithms, it is then shown that these two terms show a certain convergence. Mukherjee et al. do similarly for their variance based algorithm in the thresholding setting.
+
+(since the AugUCB eliminates arms, it is interesting to see how it behaves when the underlying CTR changes over time...)
+
+
+## New Approaches
