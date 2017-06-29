@@ -1,0 +1,57 @@
+---
+title: "Algorithm Comparison"
+author: "Tim Radtke"
+date: "6/5/2017"
+output: html_document
+---
+
+specify the problem that we want to look at
+
+20 arms, low threshold of 0.04, epsilon of 0.01
+5 arms very low, 5 arms very high
+3 arms below 0.04, 3 arms above 0.04
+2 arms below within epsilon, 2 arms above within epsilon
+
+```{r, echo = FALSE}
+mean_twenty <- c(0.0005, 0.0005, 0.001, 0.001, 0.005,
+                 0.3, 0.4, 0.5, 0.6, 0.7,
+                 0.01, 0.02, 0.02,
+                 0.06, 0.06, 0.07,
+                 0.035, 0.035, 0.045, 0.045)
+```
+
+```{r, echo = FALSE}
+script_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/AugUCB/"
+
+load(file = paste0(script_path, "ber20_TTS_comp.Rda"))
+load(file = paste0(script_path, "ber20_PI_informative_nosamples_comp.Rda"))
+load(file = paste0(script_path, "ber20_PI_informative_comp.Rda"))
+load(file = paste0(script_path, "ber20_PI_uniform_prior_comp.Rda"))
+load(file = paste0(script_path, "ber20_AugUCB_comp.Rda"))
+load(file = paste0(script_path, "ber20_APT_comp.Rda"))
+load(file = paste0(script_path, "ber20_uniform_comp.Rda"))
+load(file = paste0(script_path, "ber20_KL_comp.Rda"))
+load(file = paste0(script_path, "ber20_TTS_informative_comp.Rda"))
+load(file = paste0(script_path, "ber20_JC_informative_comp.Rda"))
+load(file = paste0(script_path, "ber20_BUCB_informative_comp.Rda"))
+load(file = paste0(script_path, "ber20_BUCB_comp.Rda"))
+load(file = paste0(script_path, "ber20_BLUCB_comp.Rda"))
+load(file = paste0(script_path, "ber20_BUCB_inverse_horizon_comp.Rda"))
+
+
+xmax <- 1000
+plot(log(ber20_uniform_comp$mean), type = "l", xlim = c(0,xmax))
+lines(log(ber20_APT_comp$mean), col = "red", xlim = c(0,xmax))
+lines(log(ber20_AugUCB_comp$mean), col = "green", xlim = c(0,xmax))
+#lines(log(ber20_PI_uniform_prior_comp$mean), col = "blue", xlim = c(0,xmax))
+#lines(log(ber20_PI_informative_comp$mean), col = "blue", xlim = c(0,xmax))
+#lines(log(ber20_PI_informative_nosamples_comp$mean), col = "pink", xlim = c(0,xmax))
+lines(log(ber20_TTS_comp$mean), col = "orange", xlim = c(0,xmax))
+#lines(log(ber20_KL_comp$mean), col = "violet", xlim = c(0,xmax))
+lines(log(ber20_TTS_informative_comp$mean), col = "darkgrey", xlim = c(0,xmax))
+#lines(log(ber20_JC_informative_comp$mean), col = "darkgreen", xlim = c(0,xmax))
+lines(log(ber20_BUCB_informative_comp$mean), col = "darkgreen", xlim = c(0,xmax))
+lines(log(ber20_BUCB_inverse_horizon_comp$mean), col = "darkred", xlim = c(0,xmax))
+#lines(log(ber20_BUCB_comp$mean), col = "darkred", xlim = c(0,xmax))
+lines(seq(1,1961,by=2), log(ber20_BLUCB_comp$mean), col = "pink", xlim = c(0,xmax))
+```

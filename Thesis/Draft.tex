@@ -126,8 +126,8 @@ number of different designs for the banner, and it's not clear how many
 click-throughs they will gather.
 
 The idea now is that we would like to classify the banners into two
-distinct groups: A group with a mean conversion rate \(\mu_i\) below
-threshold \(\tau\), and a group with mean conversion rate \(\mu_i\)
+distinct groups: A group with mean conversion rates \(\mu_i\) below
+threshold \(\tau\), and a group with mean conversion rates \(\mu_i\)
 above threshold \(\tau\). This might be the optimization problem when we
 are concerned with not falling below a certain minimum level
 click-through rate with the banners we're choosing.
@@ -147,21 +147,21 @@ In any case, the problem boils down to the following. As standard in
 multi-armed bandit problems, we have \(K\) arms
 \(\mathcal{A} = \{1, \dots K\}\). We can pull arm \(k\) at time \(t\) to
 collect feedback in form of the random variable \(X_{k,t}\) which is
-distributed accoring to the arm's distribution \(\nu_k\). In general, we
-are concerned with estimating for each arm \(i\) the mean \(\mu_i\) of
-its distribution \(\nu_i\). In contrast to most bandit problems,
+distributed according to the arm's distribution \(\nu_k\). In general,
+we are concerned with estimating for each arm \(i\) the mean \(\mu_i\)
+of its distribution \(\nu_i\). In contrast to most bandit problems,
 however, we do not directly compare arms with each other by comparing
-their means. In the case of pure exploration bandits, it is for example
-necessary to compare the arms because one aims to find the best one. In
-the case of the thresholding bandit, however, we compare each arm's mean
-\(\mu_i\) individually against the threshold \(\tau \in \mathbb{R}\)
-which is known and fixed before the experiment. One might compare this
-to a pure exploration bandit in which the mean of the best arm is known
-upfront. We will see later that this fact leads to advantages in the
-design of algorithms which are not as readily available in other bandit
-settings.
+their means. That would for example be the case for pure exploration
+bandits, where it is necessary to compare the arms because one aims to
+find the best one relative to the others. In the case of the
+thresholding bandit, however, we compare each arm's mean \(\mu_i\)
+individually against the threshold \(\tau \in \mathbb{R}\) which is
+known and fixed before the experiment. One might compare this to a pure
+exploration bandit in which the mean of the best arm is known upfront.
+We will see later that this fact leads to advantages in the design of
+algorithms which are not as readily available in other bandit settings.
 
-In Locatelli (2016), the arms' distributions are assumed to follow a
+In Locatelli (2016), the arms' distributions are assumed to follow an
 \(R\)-sub-Gaussian distribution. Under this assumption, the authors are
 able to proof a general lower bound as well as an algorithm with a
 matching upper bound. Both hinge upon the \emph{complexity} of a given
@@ -185,8 +185,7 @@ problem, or the problem's complexity, might be given by
 adding additional arms leads to an increase in complexity (since we need
 to sample more of them), just as smaller \(\Delta_i\) will increase the
 complexity as arms become harder to classify. (WHERE DOES THIS
-COMPLEXITY ORIGINALLY COME FROM? WHAT IS ITs MOTIVATION? ITS NOT THAAAT
-NATURAL)
+COMPLEXITY ORIGINALLY COME FROM?)
 
 We also see that this definition may lose relevancy as we move away from
 \(R\)-sub-Gaussian distributions. (ADD QUICK EXAMPLE OF WHAT CHANGES;
@@ -196,11 +195,12 @@ Another characteristic uniquely identifying bandit problems is the
 regret measure that we aim to optimize. As explained during the
 introduction, multi-armed bandits traditionally optimize cumulative
 regret. The notion of regret considered in the thresholding bandit,
-however, is more akin to the regret in pure exploration bandits or the
-error probability in sequential hypothesis testing. Indeed, one can most
-easily describe the regret in the thresholding case as the probability
-of making a misclassification of any arm. Or, more rigorously, let us
-define the set of all arms with mean larger than the threshold,
+however, is more akin to the simple regret in pure exploration bandits
+or the error probability in sequential hypothesis testing. Indeed, one
+can most easily describe the regret in the thresholding case as the
+probability of making a misclassification of any arm. Or, more
+rigorously, let us define the set of all arms with mean larger than the
+threshold,
 \(\mathcal{S}_\tau = \{i \in \mathcal{A}: \mu_i \geq \tau\}\).
 Consequently,
 \(\mathcal{S}_\tau^C = \{i \in \mathcal{A}: \mu_i < \tau\}\). At the end
@@ -258,15 +258,16 @@ characteristics when compared with alternative algorithms.
 From the general setup, we already know how the algorithm will end.
 After it has drawn \(T\) samples, the algorithm makes its decision of
 which arms to include in the return sets solely on basis of the
-empirical means \(\hat{\mu}_i(T)\) estimated until time \(T\).
-Furthermore, the threshold and interval around the threshold were fixed
-upfront and serve as argument to the algorithm: \((\tau, \epsilon)\).
-For a given arm \(i\) and a given time \(t\), we let \(T_i(t)\)
-represent the number of samples drawn from arm \(i\) until time \(t\)
-(including). Consequently, the empirical mean of arm \(i\) at time \(t\)
-is given by \(\mu_i = \frac{1}{T_i(t)} \sum_{s=1}^{T_i(t)} X_{i,s}\)
-where \(X_{i,s}\) is the feedback sampled from distribution \(\nu_i\)
-when the arm is pulled for the \(s\)-th time.
+empirical means \(\hat{\mu}_i(T)\) estimated based on the samples drawn
+until time \(T\). Furthermore, the threshold and interval around the
+threshold were fixed upfront and serve as argument to the algorithm:
+\((\tau, \epsilon)\). For a given arm \(i\) and a given time \(t\), we
+let \(T_i(t)\) represent the number of samples drawn from arm \(i\)
+until time \(t\) (including). Consequently, the empirical mean of arm
+\(i\) at time \(t\) is given by
+\(\mu_i = \frac{1}{T_i(t)} \sum_{s=1}^{T_i(t)} X_{i,s}\) where
+\(X_{i,s}\) is the feedback sampled from distribution \(\nu_i\) when the
+arm is pulled for the \(s\)-th time.
 
 To be specific, the APT algorithm initiates by pulling each arm once.
 Then, for each \(t > K\), it calculates for every arm the values
@@ -291,8 +292,8 @@ threshold. In that case, \(\sqrt{T_i(t)}\) will raise \(B_i(t+1)\).
 Consequently, other arms farther away from the threshold will be sampled
 again. In this way, the algorithm tries to distribute the budget \(T\)
 over all arms so as to define a sampling rule optimizing the confidence
-of the final decision. Of course, that's just Glivenko-Cantelli and the
-CLT making sure \(B_i(t+1)\) is not degenerate.
+of the final decision. This is Glivenko-Cantelli and the CLT making sure
+\(B_i(t+1)\) is not degenerate. (?)
 
 \subsection{Discussion}\label{discussion}
 
@@ -322,7 +323,7 @@ Where the APT algorithm shows room for improvement is when it comes to
 settings with distributions that are not sub-Gaussian. This is mentioned
 in Locatelli et al. (2016). In general, the problem becomes that the
 assumptions for the bounds no longer hold; furthermore, the statistic
-\(B_i(t+1)\), and the term \(\hat{\Delta_i}(t)\) are motivated by
+\(B_i(t+1)\), and the term \(\hat{\Delta}_i(t)\) are motivated by
 (sub-)Gaussian distributions. The more one moves away from Gaussian-like
 distributions, the less appropriate this term becomes, however. In
 particular, the empirical mean will be less concentrated around the true
@@ -337,9 +338,11 @@ Another step towards dealing with non sub-Gaussianity is made by
 Mukherjee et al. (2017) who use an estimate of the variance additionally
 to the empirical mean in their Augmented UCB solution. Utilizing this
 additional information, the algorithm seems to perform better than for
-example APT, going from simulation results displayed in the paper. We
-will continue to discuss the Augmented UCB solution further in chapter
-3.
+example APT, going from simulation results displayed in the paper.
+However, the simulations deal exclusively with normal distributions, as
+the variance has to be bounded for the upper bound of the Augmented UCB
+to hold. We will continue to discuss the Augmented UCB solution in
+chapter 3.
 
 Yet another idea, again mentioned in Locatelli et al. (2016) is to show
 bounds based on the Kullback-Leibler divergence of the specific
@@ -348,15 +351,15 @@ Kullback-Leibler divergence in the lower bound proof is convenient and
 leads to the simple APT algorithm, it might not stay appropriate for
 distributions whose Kullback-Leibler divergence tends to differ from the
 Gaussian. This, for example, is the case for Bernoulli distributions at
-very small parameters \(\mu\). It's quite obvious simply by looking at
-examples that the Kullback-Leibler divergence of Bernoullis starts to
-lose any similarity to the plain quadratic approximation. The second
-graph then shows, that the actual Kullback-Leibler divergence of
-Bernoullis also has lost any symmetry over this range of parameter
-values. Given that Bernoulli distributions with very small parameter
-values arise naturally in many applications in website optimization and
-advertising click-through modeling, there is a need to tackle this
-problem.
+very small parameters \(\mu\). By looking at the graphical examples
+below it becomes obvious that the Kullback-Leibler divergence of
+Bernoullis starts to lose any similarity to the plain quadratic
+approximation. The second graph then shows that the actual
+Kullback-Leibler divergence of Bernoullis also has lost any symmetry
+over this range of parameter values. Given that Bernoulli distributions
+with very small parameter values arise naturally in many applications in
+website optimization and advertising click-through modeling, there is a
+need to tackle this problem.
 
 Refer also to page 6 in Kaufmann et al. (2016): ``This
 information-theoretic lower bound permits to interpret the quantity
@@ -392,15 +395,15 @@ where $\mathbb{E}_{\mathcal{B}^i}$ is the expectation according to the samples o
 \end{theorem}
 
 \emph{Proof of Theorem \ref{theorem:Locatelli2016Theorem1}}: In Theorem
-1 of Locatelli et al. (2016), a lower bound for the thresholding bandit
-problem is shown. The basic idea is as follows. The problem formulation
-considered in the paper describes bandit problems for sub-Gaussian
-distributions. To show a lower bound, we show that every algorithm is
-expected to make a certain error even if we restrict ourselves to a very
-restricted scenario. Even then, any algorithm will have a certain level
-of risk with which it cannot distinguish between the actual setting and
-slightly changed settings (under which the former answer leads to
-regret).
+\ref{theorem:Locatelli2016Theorem1} of Locatelli et al. (2016), a lower
+bound for the thresholding bandit problem is shown. The basic idea is as
+follows. The problem formulation considered in the paper describes
+bandit problems for sub-Gaussian distributions. To show a lower bound,
+we show that every algorithm is expected to make a certain error even if
+we restrict ourselves to a very restricted scenario. Even then, any
+algorithm will have a certain level of risk with which it cannot
+distinguish between the actual setting and slightly changed settings
+(under which the former answer leads to regret).
 
 To be more specific, consider a case in which we set \(\tau = 0\) and
 \(\epsilon = 0\) w.l.o.g. If we then choose all arms to have normally
@@ -459,7 +462,7 @@ to horizon \(T\), i.e.~according to the samples
 \((T_k)_{k\leq K}\) denotes the number of samples collected on arm \(k\)
 until time \(T\).
 
-\paragraph{Reminder about the goal of the
+\subsubsection{Reminder about the goal of the
 proof}\label{reminder-about-the-goal-of-the-proof}
 
 At this point, we have defined a finite set of problems of Gaussian
@@ -469,7 +472,7 @@ We will now proof a lower bound on the worst case regret of any
 algorithm; that is, the maximum error probability that even the best
 algorithm makes on this problem.
 
-\paragraph{Statistical Decision}\label{statistical-decision}
+\subsubsection{Statistical Decision}\label{statistical-decision}
 
 Given our formulation of the regret, the expected regret
 \(\mathbb{E}[\mathcal{L}(T)]\) corresponds directly to the probability
@@ -542,7 +545,7 @@ divergence, we easily see
 & = - \frac{1}{t} \sum_{s=1}^{t} 2 X_{k,s} \Delta_k
 \end{align*}
 
-\paragraph{Change of Distribution}\label{change-of-distribution}
+\subsubsection{Change of Distribution}\label{change-of-distribution}
 
 We are now ready to state the change of distribution. As alluded to
 above, we consider how the probability changes for the event
@@ -561,7 +564,7 @@ Obviously, \(\hat{\KL}_{i,T_i}\) depends on the realized samples
 \(\hat{\KL}_{i,T_i}\) itself to incorporate the uncertainty involved in
 this metric.
 
-\paragraph{Concentration of the Empirical Kullback-Leibler
+\subsubsection{Concentration of the Empirical Kullback-Leibler
 Divergence}\label{concentration-of-the-empirical-kullback-leibler-divergence}
 
 For our problem, the Kullback-Leibler divergence of \(\nu_k'\) from
@@ -597,7 +600,7 @@ actually not interested in \(\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\)
 but in
 \(\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\).
 
-\paragraph{\texorpdfstring{Bounding \(T_i\) for
+\subsubsection{\texorpdfstring{Bounding \(T_i\) for
 \(\max_{i \in \{1,\dots,K\}}\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\)}{Bounding T\_i for \textbackslash{}max\_\{i \textbackslash{}in \textbackslash{}\{1,\textbackslash{}dots,K\textbackslash{}\}\}\textbackslash{}mathbb\{P\}\_\{\textbackslash{}mathcal\{B\}\^{}i\}(\textbackslash{}mathcal\{A\}\_i)}}\label{bounding-t_i-for-max_i-in-1dotskmathbbp_mathcalbimathcala_i}
 
 Part of our bound is
@@ -662,7 +665,7 @@ Thus:
 & = \mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp (- 3 \frac{T}{H} -16 \log(4(\log(T)+1)K))
 \end{align*}
 
-\paragraph{Bringing everything
+\subsubsection{Bringing everything
 together}\label{bringing-everything-together}
 
 Consider again the risk which we need to bound from equation
@@ -789,7 +792,9 @@ P(| \sum_{t=1}^{s} (X_{it} - \mu_i) | \geq s \epsilon) \leq
 2\exp (-\frac{\epsilon^2 s}{2 R^2}) \label{theorem2_hoeffding} 
 \end{equation}
 
-The Hoeffding inequality as used here is as follows:
+The Hoeffding inequality as used here is as follows (compare chapter 2.4
+in \href{http://www.stat.yale.edu/~pollard/Books/Mini/Basic.pdf}{David
+Pollard (2015)}):
 
 \begin{lemma}[Hoeffding's Inequality] \label{lemma:HoeffdingInequality}
 Consider $X_1, \dots, X_T$ independent random variables from R-sub-Gaussian distributions $\nu_i$ with mean $\mu_i$. Then, for any $\epsilon > 0$,
@@ -824,7 +829,7 @@ the proposed \(\epsilon\), that is, we need to show that under
 arms that are under \(\tau - \epsilon\) and accept those above
 \(\tau + \epsilon\).
 
-\paragraph{Step 2: Lower Bound on Number of Pulls of Difficult
+\subsubsection{Step 2: Lower Bound on Number of Pulls of Difficult
 Arm}\label{step-2-lower-bound-on-number-of-pulls-of-difficult-arm}
 
 In order to see that arms are correctly classified with large
@@ -870,7 +875,7 @@ This states a lower bound on the amount of pulls \(T_k(t)\) for an arm
 \(k\) that contributes more than average to the overall hardness of the
 problem.
 
-\paragraph{Step 3: Lower Bound on Number of Pulls of Simple
+\subsubsection{Step 3: Lower Bound on Number of Pulls of Simple
 Arm}\label{step-3-lower-bound-on-number-of-pulls-of-simple-arm}
 
 Next, we would like to derive bounds on the number of pulls of the
@@ -969,7 +974,7 @@ other arm \(i\):
 % T_i(t) & \geq & (1 - 4 \sqrt{2} \delta + 8\delta^2) \frac{T}{2H} \frac{1}{\Delta_i^2}
 \end{IEEEeqnarray*}
 
-\paragraph{Conclusion}\label{conclusion}
+\subsubsection{Conclusion}\label{conclusion}
 
 As stated before, we require the lower bound on \(T_i(t)\) in order to
 show that
@@ -1028,10 +1033,10 @@ appropriate for situations in which both \(\mu\) of the Bernoulli, and
 \(\tau\) are very close to 0 or 1.
 
 Even though the complexity \(H\) enjoys popularity in the literature of
-the best m arm identification problem, \(m \geq 1\), Kaufmann et al.
+the best \(m\) arm identification problem, \(m \geq 1\), Kaufmann et al.
 (2016) show explicitly that \(H\) is mainly useful for problems of
 Gaussian distributions. Indeed, they go so far as to define new measures
-of complexity that are based on information theoretic metrics. Using
+of complexity that are based on information theoretic measures Using
 those they then display \(H\) as an approximation to their measures in
 the case of Gaussian distributions. In turn, this makes apparent that
 especially Bernoulli distributions with small means have to be treated
@@ -1074,7 +1079,7 @@ general lower bound on the sample complexity \(\mathbb{E}_{\nu}[\tau]\)
 in the case of fixed confidence problems. This bound is given in their
 Theorem 4 (for common confidence levels of \(\delta \leq 0.15\)).
 
-\begin{theorem}[Kaufmann et al., 2016] \label{theorem:KaufmannEtAlTheorem4}
+\begin{theorem}[Theorem 4, Kaufmann et al., 2016] \label{theorem:KaufmannEtAlTheorem4}
 Let $\nu \in \mathcal{M}_m$, where $\mathcal{M}_m$ is the set of uniquely identifiable bandit models described above. Assume that $\mathcal{P}$ satisfies the continuity conditions in Assumption 3. Any $\delta$-PAC algorithm on $\mathcal{M}_m$ satisfies, for $\delta \leq 0.15$:
 
 \begin{equation*}
@@ -1087,8 +1092,8 @@ where $\der(x,y) := x \log(x/y) + (1-x) \log((1-x)/(1-y))$ is the binary relativ
 To proof this statement, we assume as before that the arms are ordered
 by their means decreasing in size. For a given \(\delta\)-PAC algorithm
 \(\mathcal{A} = ((A_t), \tau, \hat{S}_m)\), and under the continuity
-conditions, there exists for every arm \(a \in \{1, \dots, K\}\) an
-alternative model
+conditions (compare Kaufmann et al. (2016)), there exists for every arm
+\(a \in \{1, \dots, K\}\) an alternative model
 \(\nu' = (\nu_1, \dots, \nu_{a-1}, \nu_a', \nu_{a+1}, \dots, \nu_K)\).
 In this alternative model, only arm \(a\) is modified in accordance with
 the continuity conditions. Modified in such a way that measured by the
@@ -1218,7 +1223,7 @@ Given this definition, one can interpret the bound given in Theorem 12
 of Kaufmann et al. directly as a lower bound on the complexity
 \(\kappa_B(\nu)\) (note the inverse).
 
-\begin{theorem}[Kaufmann et al., 2016] \label{theorem:KaufmannEtAlTheorem12}
+\begin{theorem}[Theorem 12, Kaufmann et al., 2016] \label{theorem:KaufmannEtAlTheorem12}
 Let $\nu = (\nu_1, \nu_2)$ be a two-armed bandit model such that $\mu_1 > \mu_2$. In the fixed-budget setting, any consistent algorithm satisfies:
 
 \begin{equation*}
@@ -1372,10 +1377,10 @@ See p20!
 What remains is to present algorithms that are able to match the lower
 bounds derived so far.
 
-\paragraph{Matching algorithm
+\subsubsection{Matching algorithm
 strategies}\label{matching-algorithm-strategies}
 
-Given those lower bounds, all that is left is to find algorithms which
+Given these lower bounds, all that is left is to find algorithms which
 are able to match the complexity. Sadly, not straightforward for
 Bernoullis.
 
@@ -1432,8 +1437,8 @@ so that \(K(\theta^*,\theta) = K(\theta^*, \theta')\).
 Identification}\label{optimal-best-arm-identification}
 
 A very similar application of the KL divergence has been given in
-Garivier and Kaufmann to derive a lower bound on the sample complexity
-in the case of best arm identification. In particular, the
+Garivier and Kaufmann (2016) to derive a lower bound on the sample
+complexity in the case of best arm identification. In particular, the
 transportation Lemma 1 is used again. And a matching algorithm for
 \(K \geq 2\) arms is proposed.
 
@@ -1779,6 +1784,166 @@ that matches the lower bound, where the upper bound in Theorem
 \ref{theorem:GarivierAndKaufmannTheorem14} matches the lower bound from
 Theorem \ref{theorem:GarivierKaufmannTheorem1} using equation
 \eqref{bre_approx}.
+
+\newpage
+
+\section{KL and Bayesian Thresholding
+Bandits}\label{kl-and-bayesian-thresholding-bandits}
+
+\subsection{Introduction}\label{introduction}
+
+We have introduced the thresholding bandit problem in chapter 1. The APT
+algorith described in Locatelli et al. (2016) is able to match a lower
+bound (be more specific!) given in the same paper, and has several
+favorable characteristics such as its overall simplicity and it being an
+anytime algorithm. However, the bounds on the expected loss assume the
+arms' distributions to be \(R\)-sub-Gaussian. This is reflected in the
+algorithm's complexity measure
+\(H = \sum_{i=1}^K (\Delta_i^{\tau, \epsilon})^{-2}\), where
+\(\Delta_i^{\tau,\epsilon} = |\mu_i - \tau| + \epsilon\), which -- given
+the known threshold \(\tau \pm \epsilon\) -- only depends on the
+distribution's mean. This is appropriate for Gaussian arms with equal
+variances, but potentially inefficient for other kinds of distributions.
+
+In the case of Gaussian distributions with varying variances, for
+example, it makes sense to take the variance into account; after all,
+given two Gaussians with equal mean, intuitively we would prefer to get
+a sample from the distribution of larger variance.
+
+In the case of Gaussians, the complexity \(H\) is nice also because it
+reflects the Kullback-Leibler divergence between two Gaussians. And
+since Bernoulli distributions are bounded on the interval \([0,1]\),
+they are consequently sub-Gaussian, meaning that their Kullback-Leibler
+divergence can be approximated by the Gaussian one. However, while
+Bernoullis are sub-Gaussian, the approximation of their divergence by
+the Gaussian divergence becomes less and less optimal as the parameter
+(and thus mean) goes to \(0\) or \(1\), as shown in chapter 1. And while
+online advertisements might not be an obvious use case for thresholding
+bandits, they are just one real life scenario dominated by Bernoulli
+distributions with very small parameters. Thus it is worthwile to adapt
+current solutions of the thresholding bandit problem to cases in which
+the Gaussian Kullback-Leibler divergence is no longer an appropriate
+approximation.
+
+Large motiviation for the idea of adjusting the complexity measure (and
+thus the algorithms) to distributions more generally based on the
+Kullback-Leibler divergence stems from the work discussed in chapter 2,
+complexity measures were defined for the pure exploration bandits in
+terms of the Kullback-Leibler divergence. Based on this, the authors
+were for example able to point our differences between Gaussian and
+Bernoulli bandits. We expect that results in a similar vain could be
+derived for thresholding bandits.
+
+To this end, in the following, we first present an extension of mean
+based algorithms to an algorithm that incorporates empirical variances
+as described in Mukherjee et al. (2017). Afterwards, we propose and
+discuss potential further improvements based on Kullback-Leibler
+divergence and Bayesian posterior distributions. Finally, we compare the
+performance of different algorithms based on simulations and real world
+data sets.
+
+\subsection{Variance Based Algorithms for Thresholding
+Bandits}\label{variance-based-algorithms-for-thresholding-bandits}
+
+Mukherjee et al. (2017) propose an algorithm based on variance estimates
+called Augmented-UCB (AugUCB). The setting in which the algorithm is
+proposed is very similar to the setting in Locatelli et al. (2016). The
+algorithm itself, however, differs heavily from the APT algorithm. So is
+AugUCB for example not an anytime algorithm. Furthermore, arms can be
+deleted in every round if there are ``far enough'' away from the mean.
+Both the decision of which arm is played in a given round, and whether
+an arm is removed from the active set of arm, is based not only on the
+empirical mean estimate \(\mu_i(t)\), but also on a term \(s_i\) that is
+increasing linearly in the estimated standard deviation. While the APT
+algorithm plays the arm minimizing the quantity
+\(B_i(t+1) = \sqrt{T_i(t)} \hat{\Delta}_i(t) = \sqrt{T_i(t)} (|\hat{\mu}_i(t) - \tau| + \epsilon)\),
+AugUCB plays the arm minimizing the quantity
+\((\hat{\Delta}_i(t) - 2s_i)\), where \(s_i\) is based on the variance
+estimate \(\hat{v}_i\), and an exploration \(\psi_m\) term linear in
+\(T\), and an elimination parameter \(\rho\) (compare Algorithm 1 in
+Mukherjee et al., 2017):
+
+\begin{equation*}
+s_i = \sqrt{\frac{\rho \psi_m (\hat{v}_i + 1) \log(T \epsilon_m)}{4n_i}}
+\end{equation*}
+
+Consequently, the authors also introduce complexity measures which take
+the variance into account. From Gabillon et al. (2011) they use
+\(H_{\sigma, 1}= \sum_{i=1}^K \frac{\sigma_i + \sqrt{\sigma_i^2 + (16/3)\Delta_i}}{\Delta_i^2}\).
+Furthermore, with
+\(\stackrel{\sim}{\Delta}_i^2 = \frac{\Delta_i^2}{\sigma_i + \sqrt{\sigma_i^2 + (16/3)\Delta_i}}\),
+and with \(\stackrel{\sim}{\Delta}_{(i)}\) being an increasing ordering
+of \(\stackrel{\sim}{\Delta}_i\), the authors define a complexity
+corresponding to \(H_{CSAR,2}\) in Chen et al. (2014):
+
+\begin{equation*}
+H_{\sigma,2} = \max_{i \ in \mathcal{A}} \frac{i}{\stackrel{\sim}{\Delta}_{(i)}^2}.
+\end{equation*}
+
+While the latter complexity appears in the provided upper bound on the
+AugUCB algorithm's expected loss, it could be replaced by
+\(H_{\sigma, 1}\) since \(H_{\sigma, 2} \leq H_{\sigma,1}\).
+\(H_{\sigma,1}\) is of course more directly comparable to the complexity
+\(H\) that we are used to.
+
+While in the case of the APT algorithm the number of times a specific
+arm has been drawn \(T_i\) measures how concentrated the estimated mean
+is around the true mean (and thus for large \(T_i\) an arm is no longer
+drawn even if \(\hat{\mu}\) is close to \(\tau\)); in the case of the
+AugUCB algorithm this is regulated by the combination of the variance
+estimate \(\hat{v}_i\) and the exploration factor \(\psi_m\), where they
+ensure that certain arms are no longer pulled when the algorithm is
+sufficiently confident in its knowledge about the true mean. Therefore,
+when using a very similar favorable event in the proof of their upper
+bound, Mukherjee et al. (2017) have to bound the probability that an an
+arm is not removed from the active set after the a certain number of
+rounds -- even though the arm is above (respectively below) the
+threshold. If this probability is low, then this means that the
+algorithm is able to be certain about an arm's true mean \emph{quickly}
+by employing variance estimates. In comparison, Locatelli et al (2016)
+used bounds on on how often arms are drawn (\(T_i\)) to give a bound on
+the probability of the favorable event. In order to derive the bound,
+Mukherjee et al. (2017) use the Bernstein inequality.
+
+It has to be noted that Mukherjee et al. (2017) have to assume that the
+distributions have rewards bounded in \([0,1]\) in order to derive the
+bound on the probability that an arm has not been eliminated correctly
+in round \(T_i\). Thus, the distributions for which their upper bound
+holds are a subset of the sub-Gaussian distributions considered in
+Locatelli et al. (2016). However, it is not that the authors need to
+assume that the rewards are in \([0,1]\), but this was assumed so that
+the variance of the distribution is in \([0,1]\). Thus, the upper bound
+holds in particular for Gaussian distributions with variance
+\(\sigma^2 \in [0,1]\).
+
+Based on this assumption, the authors show that the probability that an
+arm has not been eliminated after \(m_i\) rounds is given by (compare
+equation (2) in Mukherjee et al., 2017):
+
+\begin{equation} \label{Mukherjee2017Equation2}
+\mathbb{P}(\hat{\mu}_i > \mu_i + 2s_i) \leq \mathbb{P} (\hat{\mu}_i > \mu_i + 2\bar{s}_i) + \mathbb{P}(\hat{v}_i \geq \sigma^2_i + \sqrt{\rho \epsilon_{T_i}})
+\end{equation}
+
+Compare Mukherjee et al. (2017) for the notation. Then it becomes clear
+that the left part of the RHS gives the probability that the mean
+estimate is out of wack, while the right term gives the probability that
+the variance is overestimated. The first term is bounded by the
+Bernstein inequality. In the cumulative regret setting, there exists a
+similar decomposition that bounds the expected number of pulls of a
+suboptimal arm. Compare for example chapter 3.1 in ``Thompson Sampling:
+An Asymptotically Optimal Finite Time Analysis'' by Kaufmann, Korda and
+Munos (2012). There they decompose the expected number of draws of an
+suboptimal arm for an optimistic (UCB like) into the probability that
+the optimal arm's mean is underestimated, and the probability that the
+UCB of the suboptimal arm is still very large. To give bounds for UCB
+algorithms, it is then shown that these two terms show a certain
+convergence. Mukherjee et al. do similarly for their variance based
+algorithm in the thresholding setting.
+
+(since the AugUCB eliminates arms, it is interesting to see how it
+behaves when the underlying CTR changes over time\ldots{})
+
+\subsection{New Approaches}\label{new-approaches}
 
 
 \end{document}

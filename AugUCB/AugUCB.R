@@ -75,20 +75,20 @@ AugUCB <- function(means, K = 4, rounds = 5000, rho = 1/3, tau = 0.5,
               mean_storage = mean_storage))
 }
 
-res <- AugUCB(means = c(0.1,0.2,0.45,0.7,0.9,0.55,0.38,0.95), K = 8, rounds = 10000)
-means <- c(0.55, 0.38, 0.95)
-variances <- c(0.5, 0.9, 1.7)
-system.time(res2 <- AugUCB(means = means, K = 3, rounds = 5000, 
-                          variances = variances, seed = 54))
+#res <- AugUCB(means = c(0.1,0.2,0.45,0.7,0.9,0.55,0.38,0.95), K = 8, rounds = 10000)
+#means <- c(0.55, 0.38, 0.95)
+#variances <- c(0.5, 0.9, 1.7)
+#system.time(res2 <- AugUCB(means = means, K = 3, rounds = 5000, 
+#                          variances = variances, seed = 54))
 #   user  system elapsed 
 #  2.025   0.040   2.076 
-lapply(res2$arm_list, length)
-res$active_set
-res$means
-means
-plot(res2$mean_storage[,1], type = "l")
-plot(res2$mean_storage[,2], type = "l")
-plot(res2$mean_storage[,3], type = "l")
+#lapply(res2$arm_list, length)
+#res$active_set
+#res$means
+#means
+#plot(res2$mean_storage[,1], type = "l")
+#plot(res2$mean_storage[,2], type = "l")
+#plot(res2$mean_storage[,3], type = "l")
 
 
 # Ideally it should also take an argument specifying how
@@ -249,16 +249,16 @@ AugUCB_from_data <- function(data, K = 4, rounds = 5000, rho = 1/3, tau = 0.5,
               mean_storage = mean_storage))
 }
 
-means <- c(0.55, 0.38, 0.95)
-variances <- c(0.5, 0.9, 1.7)
-simdata <- simulate_bandit_data_norm(3, means, variances)
-system.time(res <- AugUCB_from_data(simdata, K = 3, rounds = 5000, 
-                                    rho = 1/3, tau = 0.5, seed = 54))
+#means <- c(0.55, 0.38, 0.95)
+#variances <- c(0.5, 0.9, 1.7)
+#simdata <- simulate_bandit_data_norm(3, means, variances)
+#system.time(res <- AugUCB_from_data(simdata, K = 3, rounds = 5000, 
+#                                    rho = 1/3, tau = 0.5, seed = 54))
 #   user  system elapsed 
 #132.082  13.134 146.622 
-res$mean_storage
-res$means
-lapply(res$arm_list, length)
+#res$mean_storage
+#res$means
+#lapply(res$arm_list, length)
 ##############################################################
 # analyze behavior of parameters
 
@@ -276,19 +276,19 @@ get_si_factor <- function(psi, rounds) {
   sqrt(1/3*psi*log(rounds)/4/1)
 }
 
-K <- 2^(1:8)
-rounds <- 2^(8:16)
+#K <- 2^(1:8)
+#rounds <- 2^(8:16)
 
-paramss <- expand.grid(K, rounds)
-paramss %>% rename(K = Var1, rounds = Var2) %>%
-  mutate(rounds_per_K = rounds/K,
-         psi0 = get_psi0(rounds, K),
-         l0 = get_l0(rounds, psi0),
-         N0 = get_N0(K, l0),
-         si = get_si_factor(psi0, rounds)) %>%
-  mutate(psi0 = round(psi0,3)) %>%
-  arrange(rounds_per_K)
+#paramss <- expand.grid(K, rounds)
+#paramss %>% rename(K = Var1, rounds = Var2) %>%
+#  mutate(rounds_per_K = rounds/K,
+#         psi0 = get_psi0(rounds, K),
+#         l0 = get_l0(rounds, psi0),
+#         N0 = get_N0(K, l0),
+#         si = get_si_factor(psi0, rounds)) %>%
+#  mutate(psi0 = round(psi0,3)) %>%
+#  arrange(rounds_per_K)
 
-log(3/16*2*log(2))
-log(3/16*4*log(4))
-log(3/16*8*log(8))
+#log(3/16*2*log(2))
+#log(3/16*4*log(4))
+#log(3/16*8*log(8))

@@ -3,19 +3,19 @@
 # Locatelli et al. (2016)
 # Proceedings of the 33rd International Conference on Machine Learning
 
-means <- c(0.55, 0.38, 0.95)
-variances <- c(0.5, 0.9, 1.7)
-system.time(res_apt <- APT(means = means, K = 3, rounds = 5000, 
-                        variances = variances, seed = 54))
-lapply(res_apt$arm_list, length)
-res_apt$means
-means
-plot(x = c(0,5000), y = c(0,2), type = "n")
-lines(res_apt$mean_storage[,1])
-lines(res_apt$mean_storage[,2], col = "blue")
-lines(res_apt$mean_storage[,3], col = "red")
+#means <- c(0.55, 0.38, 0.95)
+#variances <- c(0.5, 0.9, 1.7)
+#system.time(res_apt <- APT(means = means, K = 3, rounds = 5000, 
+#                        variances = variances, seed = 54))
+#lapply(res_apt$arm_list, length)
+#res_apt$means
+#means
+#plot(x = c(0,5000), y = c(0,2), type = "n")
+#lines(res_apt$mean_storage[,1])
+#lines(res_apt$mean_storage[,2], col = "blue")
+#lines(res_apt$mean_storage[,3], col = "red")
 
-APT <- function(means, K = 4, rounds = 5000, tau = 0.5, epsilon = 0.1,
+APT <- function(means, K = 4, rounds = 5000, tau, epsilon,
                 variances = NA, verbose = FALSE, seed = NA
 ) {
   

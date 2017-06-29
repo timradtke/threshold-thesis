@@ -2,19 +2,19 @@
 # Common knowledge
 # Our ancestors
 
-means <- c(0.55, 0.38, 0.95)
-variances <- c(0.5, 0.9, 1.7)
-system.time(res_uniform <- uniform_bandit(means = means, K = 3, rounds = 5000, 
-                                          variances = variances, seed = 54))
+#means <- c(0.55, 0.38, 0.95)
+#variances <- c(0.5, 0.9, 1.7)
+#system.time(res_uniform <- uniform_bandit(means = means, K = 3, rounds = 5000, 
+#                                          variances = variances, seed = 54))
 # user  system elapsed 
 #0.533   0.065   0.603 
-lapply(res_uniform$arm_list, length)
-res_uniform$means
-means
-plot(x = c(0,5000), y = c(0,2), type = "n")
-lines(res_uniform$mean_storage[,1])
-lines(res_uniform$mean_storage[,2], col = "blue")
-lines(res_uniform$mean_storage[,3], col = "red")
+#lapply(res_uniform$arm_list, length)
+#res_uniform$means
+#means
+#plot(x = c(0,5000), y = c(0,2), type = "n")
+#lines(res_uniform$mean_storage[,1])
+#lines(res_uniform$mean_storage[,2], col = "blue")
+#lines(res_uniform$mean_storage[,3], col = "red")
 
 uniform_bandit <- function(means, K = 4, rounds = 5000,
                            variances = NA, verbose = FALSE, seed = NA) {

@@ -1,0 +1,202 @@
+---
+title: "Experiment Documentation"
+author: "Tim Radtke"
+date: "6/26/2017"
+output: html_document
+---
+
+```{r, echo = FALSE}
+current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/AugUCB/"
+```
+
+# First Experiment
+
+Just as in Locatelli et al. (2016). 
+
+```{r, echo = FALSE}
+mean_loc <- c(0.1, 0.1, 0.1, 
+              0.35, 0.45, 0.55, 0.65,
+              0.9, 0.9, 0.9)
+tau_loc <- 0.5
+epsilon_loc <- 0.1
+```
+
+While $\tau = 0.5$ and $\epsilon = 0.1$, we have 10 arms with the following means:
+
+```{r, echo = FALSE}
+mean_loc
+```
+
+Let's plot just the performance of APT and BUCB over 5000 simulations. We observe that APT (blue) and BUCB_squared (orange) perform extremely similar, while the simple BUCB (red) cannot keep up after about 200 observations.
+
+```{r, echo = FALSE}
+load(paste0(current_path, "loc_comp_APT.Rda"))
+load(paste0(current_path, "loc_comp_BUCB.Rda"))
+load(paste0(current_path, "loc_comp_BUCB_squared.Rda"))
+
+plot(c(0,1000), c(0, -10), type = "n")
+lines(log(loc_comp_APT), col = "blue")
+#lines(log(loc_comp_UNIFORM), col = "black")
+#lines(log(loc_comp_PI), col = "darkgreen")
+#lines(log(loc_comp_TTS), col = "lightgreen")
+lines(log(loc_comp_BUCB), col = "red")
+lines(log(loc_comp_BUCB_squared), col = "orange")
+#lines(log(loc_comp_KL), col = "lightblue")
+#lines(log(loc_comp_KL_not_tau), col = "blue")
+#lines(log(loc_comp_KL_horizon), col = "darkblue")
+#lines(log(loc_comp_KL_horizon2), col = "darkred")
+#lines(log(loc_comp_KL_horizon1), col = "red")
+```
+
+The next table shows how often each algorithm pulls each arm. As is to be expected, the arms above and below the threshold are pulled nearly perfectly symmetrically, as the threshold is at 0.5. Furthermore, it is obvious where APT and BUCB have their differences. BUCB clearly focuses on the two arms which are within the epsilon interval, and allocates respectively 40 observations less than APT to the two arms that are close to the epsilon interval but outside. Thus likely explaining the worse performance over time. This behavior is much less dramatic for BUCB_squared, where the two critical arms only receive 6 observations less respectively. However, there is no reason to believe at this point that BUCB_squared could be superior to APT.
+
+```{r, echo = FALSE}
+library(plyr)
+load(paste0(current_path, "loc_APT.Rda"))
+load(paste0(current_path, "loc_BUCB.Rda"))
+load(paste0(current_path, "loc_BUCB_squared.Rda"))
+#loc_UNIFORM_as <- colMeans(ldply(loc_UNIFORM, function(x) table(x$arm_sequence)))
+loc_APT_as <- colMeans(ldply(loc_APT, function(x) table(x$arm_sequence)))
+#loc_PI_as <- colMeans(ldply(loc_PI, function(x) table(x$arm_sequence)))
+#loc_TTS_as <- colMeans(ldply(loc_TTS, function(x) table(x$arm_sequence)))
+loc_BUCB_as <- colMeans(ldply(loc_BUCB, function(x) table(x$arm_sequence)))
+loc_BUCB_squared_as <- colMeans(ldply(loc_BUCB_squared, function(x) table(x$arm_sequence)))
+#loc_KL_as <- colMeans(ldply(loc_KL, function(x) table(x$arm_sequence)))
+#loc_KL_not_tau_as <- colMeans(ldply(loc_KL_not_tau, function(x) table(x$arm_sequence)))
+#loc_KL_horizon_as <- colMeans(ldply(loc_KL_horizon, function(x) table(x$arm_sequence)))
+
+round(data.frame(loc_APT_as, loc_BUCB_as, loc_BUCB_squared_as))
+```
+```{r, echo = FALSE}
+arm_seq_res_APT <- data.frame(t(laply(loc_APT, function(x) x$arm_sequence)))
+library(tidyr)
+library(dplyr)
+#arm_seq_table <- arm_seq_res %>% tbl_df() %>% mutate(index = 1:1000) %>%
+#  gather(key = iter, value = arm, -index) %>%
+#  group_by(index, arm) %>% summarize(count = n())
+
+library(ggplot2)
+arm_seq_res_APT %>% tbl_df() %>% mutate(index = 1:1000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  filter(index > 10) %>%
+  ggplot(aes(index, arm)) + geom_count(aes(size = ..prop.., group = index)) +
+  scale_size_area(max_size = 10)
+#ggplot(arm_seq_table[11:9910,], aes(index, arm)) + geom_tile(aes(fill = count))
+
+arm_seq_res_BUCB_squared <- data.frame(t(laply(loc_BUCB_squared, function(x) x$arm_sequence)))
+arm_seq_res_BUCB_squared %>% tbl_df() %>% mutate(index = 1:1000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  filter(index > 10) %>%
+  ggplot(aes(index, arm)) + geom_count(aes(size = ..prop.., group = index)) +
+  scale_size_area(max_size = 10)
+
+```
+
+# Experiment 2: Low threshold
+
+Again 5000 simulations à 1000 iterations. We have $\tau = 0.05$, $\epsilon = 0.005$, and the following means:
+
+```{r, echo = FALSE}
+mean_loc3 <- c(0.001, 0.005, 0.01, 0.015,
+               0.0475, 0.0525,
+               0.085, 0.09, 0.095, 0.099)
+tau_loc3 <- 0.05
+epsilon_loc3 <- 0.005
+
+mean_loc3
+```
+
+Interestingly, most algorithms we initially thought of as extensions start to fail hard in this case. (Darkblue is KL, lightblue is KL with epsilon. Darkgreen is PI, lightgreen is TTS)
+
+```{r, echo = FALSE}
+load(paste0(current_path, "loc3_comp_APT.Rda"))
+load(paste0(current_path, "loc3_comp_UNIFORM.Rda"))
+load(paste0(current_path, "loc3_comp_PI.Rda"))
+load(paste0(current_path, "loc3_comp_TTS.Rda"))
+load(paste0(current_path, "loc3_comp_KL.Rda"))
+load(paste0(current_path, "loc3_comp_KL_horizon1.Rda"))
+
+plot(c(0,1000), c(0, -4), type = "n")
+lines(log(loc3_comp_UNIFORM), col = "black")
+lines(log(loc3_comp_APT), col = "red")
+lines(log(loc3_comp_PI), col = "darkgreen")
+lines(log(loc3_comp_TTS), col = "lightgreen")
+#lines(log(loc3_comp_BUCB), col = "orange")
+#lines(log(loc3_comp_BUCB_squared), col = "darkorange")
+#lines(log(loc3_comp_BUCB_cubic), col = "violet")
+lines(log(loc3_comp_KL), col = "darkblue")
+lines(log(loc3_comp_KL_horizon1), col = "lightblue")
+```
+
+When we look at how often the algorithms pull each arm, we get a hint on what the problem is. The following table shows that the biggest difference between APT and all other adaptive algorithms is that APT pulls arms below the threshold (thus very close to zero mean) more often than those above the threshold, while all other algorithms try to do the opposite. They focus on the arms for which it is more likely to get successes, and which don't accumalate on a short interval due to the 0 lower limit.
+
+Why do PI and TTS focus on arm above the threshold? The other arms' posteriors are heavily jammed below the threshold and barely croach above tau. At first it seems to make sense that we want to focus on arms that give more than just zeroes. But as long as we have received zeroes exclusively from an arm, we can basically not say anything about it. So it makes sense to try to collect more information about it. A similar interpretation is reached when considering the Kullback-Leibler based methods.
+
+When calculating the KL divergence, we want to pull the arm next that minimizes the distance to tau (+- epsilon). However, as long as the observations are all zero, the estimated mean is zero and thus the KL divergence is ill defined. And so the arms are not pulled. According to the KL divergence, the distance from any other density is infinite.
+
+```{r, echo = FALSE}
+load(paste0(current_path, "loc3_APT.Rda"))
+load(paste0(current_path, "loc3_UNIFORM.Rda"))
+load(paste0(current_path, "loc3_PI.Rda"))
+load(paste0(current_path, "loc3_TTS.Rda"))
+load(paste0(current_path, "loc3_KL.Rda"))
+load(paste0(current_path, "loc3_KL_horizon1.Rda"))
+load(paste0(current_path, "loc3_BUCB.Rda"))
+load(paste0(current_path, "loc3_BUCB_squared.Rda"))
+load(paste0(current_path, "loc3_BUCB_cubic.Rda"))
+load(paste0(current_path, "loc3_comp_BUCB.Rda"))
+load(paste0(current_path, "loc3_comp_BUCB_squared.Rda"))
+load(paste0(current_path, "loc3_comp_BUCB_cubic.Rda"))
+
+loc3_UNIFORM_as <- colMeans(ldply(loc3_UNIFORM, function(x) table(x$arm_sequence)))
+loc3_APT_as <- colMeans(ldply(loc3_APT, function(x) table(x$arm_sequence)))
+loc3_PI_as <- colMeans(ldply(loc3_PI, function(x) table(x$arm_sequence)))
+loc3_TTS_as <- colMeans(ldply(loc3_TTS, function(x) table(x$arm_sequence)))
+loc3_BUCB_as <- colMeans(ldply(loc3_BUCB, function(x) table(x$arm_sequence)))
+loc3_BUCB_squared_as <- colMeans(ldply(loc3_BUCB_squared, function(x) table(x$arm_sequence)))
+loc3_BUCB_cubic_as <- colMeans(ldply(loc3_BUCB_cubic, function(x) table(x$arm_sequence)))
+loc3_KL_as <- colMeans(ldply(loc3_KL, function(x) table(x$arm_sequence)))
+loc3_KL_horizon1_as <- colMeans(ldply(loc3_KL_horizon1, function(x) table(x$arm_sequence)))
+
+round(data.frame(loc3_UNIFORM_as, loc3_APT_as,
+                 loc3_PI_as, loc3_TTS_as,
+                 loc3_KL_as, loc3_KL_horizon1_as))
+```
+
+The exact opposite happens when we dare to pull arms that maximize the distance between tau (+- epsilon) and their lower/upper bounds respectively. Because the distributions with mean below the threshold are very limited between 0 and tau, their upper bound is intuitively much further apart from tau than the lower bound of arms above tau can be (in fact, the distance of the lower bound is limited to 0.045 in this case). Thus, if we follow the BUCB_squared strategy, we quickly demand very high lower/upper bounds and thus very quickly start to focus on arms that are below the low threshold which is a good thing.
+
+The following graph shows again APT (red) and Uniform (black) against BUCB (blue), BUCB_squared (darkblue), BUCB_cubic (lightblue). The effect of the squared term is dramatic. 
+
+```{r, echo = FALSE}
+plot(c(0,1000), c(0, -4), type = "n")
+lines(log(loc3_comp_UNIFORM), col = "black")
+lines(log(loc3_comp_APT), col = "red")
+lines(log(loc3_comp_BUCB), col = "blue")
+lines(log(loc3_comp_BUCB_squared), col = "darkblue")
+lines(log(loc3_comp_BUCB_cubic), col = "lightblue")
+```
+
+This becomes even more apparent in the following table. Additionally, due to the quickly increasing confidence bounds, the arms within the epsilon interval aren't pulled as often, which helps a lot and is very different from APT. Interestingly, the simple BUCB suffers from the same problem as the other algorithms too.
+
+```{r,echo = FALSE} 
+round(data.frame(loc3_UNIFORM_as, loc3_APT_as,
+                 loc3_BUCB_as, loc3_BUCB_squared_as,
+                 loc3_PI_as, loc3_KL_horizon1_as))
+```
+
+```{r, echo = FALSE}
+arm_seq_res_APT <- data.frame(t(laply(loc3_APT, function(x) x$arm_sequence)))
+
+arm_seq_res_APT %>% tbl_df() %>% mutate(index = 1:1000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  filter(index > 10) %>%
+  ggplot(aes(index, arm)) + geom_count(aes(size = ..prop.., group = index)) +
+  scale_size_area(max_size = 10)
+
+arm_seq_res_BUCB_squared <- data.frame(t(laply(loc3_BUCB_squared, function(x) x$arm_sequence)))
+arm_seq_res_BUCB_squared %>% tbl_df() %>% mutate(index = 1:1000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  filter(index > 10) %>%
+  ggplot(aes(index, arm)) + geom_count(aes(size = ..prop.., group = index)) +
+  scale_size_area(max_size = 10)
+```
