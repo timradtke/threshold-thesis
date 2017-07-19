@@ -16,6 +16,119 @@ get_min <- function(x) {
 
 ##############################################################
 
+#mean_002 <- c(0.033, 0.033, 0.037, 0.037,
+#              0.031, 0.031, 0.039, 0.039,
+#              0.027, 0.027, 0.043, 0.043,
+#              0.02, 0.02, 0.05, 0.05,
+#              0.005, 0.005, 0.065, 0.065)
+#tau_002 <- 0.035
+#epsilon_002 <- 0.005#
+
+#set.seed(512)
+#testt <- data.frame(rep(NA, times = 500))
+#for(i in 1:length(mean_002)) {
+#  testt[[i]] <- as.numeric(purrr::rbernoulli(500, p  = mean_002[i]))
+#}
+#names(testt) <- paste0("V", 1:20)
+
+#aug_test <- AugUCB_from_tsdata(testt, rounds = 500, tau = tau_002, 
+#                               verbose = TRUE, seed = 46)
+
+# AugUCB Algorithm
+
+AugUCB_from_tsdata <- function(data, rounds = 5000, rho = 1/3, tau = NA,
+                               verbose = FALSE, seed = NA) {
+  if(!is.na(seed)) set.seed(seed)
+  K <- dim(data)[2]
+  
+  # initialize by pulling each arm once
+  arm_list <- diag(as.matrix(data[1:K,]))
+  arm_list <- as.list(arm_list)
+  
+  # initialize mean storage, arm sequence, and the counter
+  mean_storage <- matrix(unlist(lapply(arm_list, mean)), nrow = 1)
+  arm_sequence <- 1:K
+  
+  # Initialize the remaining parameters as in the paper
+  B <- 1:K # the active set of arms
+  m <- 0
+  epsilon <- 1
+  e <- exp(1) # ????????
+  M <- floor(0.5*log2(rounds/e))
+  psi <- rounds*epsilon/(128 * (log(3/16 * K * log(K)))^2)
+  l <- ceiling(2*psi*log(rounds * epsilon)/epsilon)
+  N <- K * l
+  
+  if(verbose) counter <- K
+  
+  for(i in (K+1):rounds) {
+    if(verbose) message(paste("this is round", i))
+    next_arm <- get_min(unlist(get_next_arm_augucb(arm_list, tau = tau, rho = rho,
+                                                   psi = psi, rounds = rounds, 
+                                                   epsilon = epsilon,
+                                                   active_set = B)))
+    arm_sequence <- c(arm_sequence, next_arm)
+    if(verbose) message("arm selecting done")
+    
+    arm_list[[next_arm]] <- c(arm_list[[next_arm]], data[i, next_arm])
+    mean_storage <- rbind(mean_storage, unlist(lapply(arm_list, mean)))
+    if(verbose) message("arm pulling done")
+    
+    if(verbose) counter <- counter + 1
+    if(verbose) message("Counter: ", counter)
+    
+    # delete arms should return a logical index for each arm in active set
+    B <- B[!unlist(delete_arms(arm_list, tau = tau, rho = rho,
+                               psi = psi, rounds = rounds, epsilon = epsilon,
+                               active_set = B))]
+    
+    if(verbose) message("B done")
+    if(verbose) message(B)
+    
+    if((i >= N) && (m <= M)) {
+      # reset parameters
+      epsilon <- epsilon/2
+      psi <- rounds * epsilon / (128*(log(3/16*K*log(K)))^2)
+      l <- ceiling( (2 * psi * log(rounds*epsilon))/epsilon )
+      N <- i + length(B) * l
+      m <- m+1
+    }
+  }
+  return(list(means = unlist(lapply(arm_list, mean)),
+              arm_list = arm_list,
+              active_set = B,
+              mean_storage = mean_storage,
+              arm_sequence = arm_sequence))
+}
+
+get_next_arm_augucb <- function(armls, tau, rho, psi, rounds, epsilon, active_set) {
+  get_metric <- function(x) {
+    xhat <- mean(x)
+    ni <- length(x)
+    vhat <- ifelse(is.na(var(x)),0,var(x))*(ni-1)/ni
+    si <- sqrt(rho * psi * (vhat+1) * log(rounds * epsilon)/4/ni)
+    return(abs(xhat - tau)-2*si)
+  }
+  res <- lapply(armls, get_metric)
+  res[-active_set] <- Inf
+  return(res)
+}
+
+delete_arms <- function(armls, tau = tau, rho = rho,
+                        psi = psi, rounds = rounds, epsilon = epsilon,
+                        active_set = B) {
+  eliminate <- function(x) {
+    xhat <- mean(x)
+    ni <- length(x)
+    vhat <- ifelse(is.na(var(x)),0,var(x))*(ni-1)/ni
+    si <- sqrt(rho * psi * (vhat+1) * log(rounds * epsilon)/4/ni)
+    return((xhat + si < tau - si) || (xhat - si > tau + si))
+  }
+  return(lapply(armls[active_set], eliminate))
+}
+
+##############################################################
+
 # APT Algorithm
 
 get_next_arm_apt <- function(armls, tau, rounds, epsilon) {
@@ -143,6 +256,95 @@ get_next_arm_kl_at_tau <- function(armls, tau, epsilon, current_round,
     ni <- length(x)
     KLhat <- kl_ber(xhat, tau) #- 1/current_round
     return(ni * ifelse(is.na(KLhat),0,KLhat))
+  }
+  lapply(armls, get_metric)
+}
+
+#############################################################
+
+# KL-UCB Algorithm
+
+get_complexity <- function(means, tau, epsilon) {
+  res <- vector(length = length(means))
+  for(i in 1:length(means)) {
+    res[i] <- max(kl_ber(means[i], tau), epsilon^2/2)
+  }
+  sum(1/res)
+}
+
+KLUCB_bandit_from_tsdata <- function(data, rounds = NA, 
+                                     tau, epsilon,
+                                     verbose = FALSE, seed = NA,
+                                     horizon = NA, H = NA) {
+  
+  if(!is.na(seed)) set.seed(seed)
+  K <- dim(data)[2]
+  exp_factor <- horizon/H
+  
+  # initialize by pulling each arm once
+  arm_list <- diag(as.matrix(data[1:K,]))
+  arm_list <- as.list(arm_list)
+  
+  # initialize mean storage and the counter
+  mean_storage <- matrix(unlist(lapply(arm_list, mean)), nrow = 1)
+  arm_sequence <- 1:K
+  
+  # initialize metric storage
+  metric_storage <- list()
+  
+  for(i in (K+1):rounds) {
+    if(verbose) message(paste("this is round", i))
+    metric_storage[[i-K]] <- unlist(get_next_arm_klucb(arm_list, 
+                                                      tau = tau,
+                                                      epsilon = epsilon,
+                                                      horizon = horizon,
+                                                      exp_factor = exp_factor))
+    
+    next_arm <- get_min(-metric_storage[[i-K]])
+    arm_sequence <- c(arm_sequence, next_arm)
+    
+    if(verbose) message("arm selecting done")
+    if(verbose) message(next_arm)
+    arm_list[[next_arm]] <- c(arm_list[[next_arm]], data[i, next_arm])
+    
+    mean_storage <- rbind(mean_storage, unlist(lapply(arm_list, mean)))
+    
+    if(verbose) message("arm pulling done")
+    
+  }
+  return(list(means = unlist(lapply(arm_list, mean)),
+              arm_list = arm_list,
+              arm_sequence = arm_sequence,
+              mean_storage = mean_storage#,
+              #metric_storage = metric_storage
+              ))
+}
+
+get_klub <- function(N_arm, mu_hat, exp_factor) {
+  potential_vals <- seq(mu_hat, 0.99999, by = 0.0005)
+  max(potential_vals[N_arm * kl_ber(mu_hat, potential_vals) 
+                            <= exp_factor])
+}
+
+get_kllb <- function(N_arm, mu_hat, exp_factor) {
+  potential_vals <- seq(0.00001, mu_hat, by = 0.0005)
+  min(potential_vals[N_arm * kl_ber(mu_hat, potential_vals) 
+                            <= exp_factor])
+}
+
+get_next_arm_klucb <- function(armls, tau, epsilon, horizon, exp_factor) {
+  get_metric <- function(x) {
+    if(is.na(horizon)) {
+      xhat <- mean(x)
+    } else {
+      xhat <- ifelse(mean(x) == 1, 1-1/horizon,
+                     ifelse(mean(x) == 0, 1/horizon, mean(x)))
+    }
+    ni <- length(x)
+    ul_tau_diff <- ifelse(xhat >= tau,
+                          tau - get_kllb(ni, xhat, exp_factor),
+                          get_klub(ni, xhat, exp_factor) - tau)
+    return(max(epsilon, ul_tau_diff))
   }
   lapply(armls, get_metric)
 }
@@ -306,7 +508,8 @@ TTS_from_tsdata <- function(data, rounds = 5000, tau, epsilon,
     next_arm <- draw_arm_tts(unlist(get_next_arm_PI(arm_list, tau = tau,
                                                     epsilon = epsilon,
                                                     alpha = alpha,
-                                                    beta = beta)))
+                                                    beta = beta,
+                                                    tadj = FALSE)))
     arm_sequence <- c(arm_sequence, next_arm)
     
     if(verbose) message("arm selecting done")
@@ -380,11 +583,24 @@ get_BayesUCB_metric <- function(x, rate, tau, epsilon,
   alpha_prime <- sum(x)+alpha
   beta_prime <- length(x)+beta-sum(x)
   posterior_mean <- alpha_prime/(alpha_prime+beta_prime)
+  #ni <- length(x)
   # depending on current mean estimate, give probability of error
   
   if(rate == "inverse") {
     upper_quantile <- qbeta(1-1/current_round, alpha_prime, beta_prime)
     lower_quantile <- qbeta(1/current_round, alpha_prime, beta_prime)
+  }
+  #if(rate == "klucb") {
+  #  upper_quantile <- qbeta(1-c/ni, alpha_prime, beta_prime)
+  #  lower_quantile <- qbeta(c/ni, alpha_prime, beta_prime)
+  #}
+  if(rate == "inverse_horizon_linear") {
+    upper_quantile <- qbeta(1-1/(rounds), alpha_prime, beta_prime)
+    lower_quantile <- qbeta(1/(rounds), alpha_prime, beta_prime)
+  }
+  if(rate == "inverse_horizon_linear_c") {
+    upper_quantile <- qbeta(1-1/(const*rounds), alpha_prime, beta_prime)
+    lower_quantile <- qbeta(1/(const*rounds), alpha_prime, beta_prime)
   }
   if(rate == "inverse_horizon") {
     upper_quantile <- qbeta(1-1/(current_round*log(rounds)), alpha_prime, beta_prime)
@@ -406,9 +622,17 @@ get_BayesUCB_metric <- function(x, rate, tau, epsilon,
     upper_quantile <- qbeta(1-1/current_round^3, alpha_prime, beta_prime)
     lower_quantile <- qbeta(1/current_round^3, alpha_prime, beta_prime)
   }
+  if(rate == "inverse_power5") {
+    upper_quantile <- qbeta(1-1/current_round^5, alpha_prime, beta_prime)
+    lower_quantile <- qbeta(1/current_round^5, alpha_prime, beta_prime)
+  }
   if(rate == "inverse_log") {
     upper_quantile <- qbeta(1-1/log(current_round), alpha_prime, beta_prime)
     lower_quantile <- qbeta(1/log(current_round), alpha_prime, beta_prime)
+  }
+  if(rate == "inverse_sqrt") {
+    upper_quantile <- qbeta(1-1/sqrt(current_round), alpha_prime, beta_prime)
+    lower_quantile <- qbeta(1/sqrt(current_round), alpha_prime, beta_prime)
   }
   
   if(with_epsilon) {

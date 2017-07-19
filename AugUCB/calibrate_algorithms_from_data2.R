@@ -41,6 +41,16 @@ loc2_APT[[5000]]
 loc2_comp_APT <- compare_to_ground_truth(mean_loc2, loc2_APT, tau_loc2, 
                                         epsilon_loc2)$mean
 save(loc2_comp_APT, file = paste0(current_path, "loc2_comp_APT.Rda"))
+
+########################################################################
+# Standard AugUCB
+system.time(loc2_AugUCB <- para_bandit_sim_AugUCB(data = data_list2, rounds = 1000, 
+                                                  tau = tau_loc2))
+save(loc2_AugUCB, file = paste0(current_path, "loc2_AugUCB.Rda"))
+loc2_comp_AugUCB <- compare_to_ground_truth(mean_loc2, loc2_AugUCB, tau_loc2, 
+                                            epsilon_loc2)$mean
+save(loc2_comp_AugUCB, file = paste0(current_path, "loc2_comp_AugUCB.Rda"))
+
 ########################################################################
 # Standard Uniform
 

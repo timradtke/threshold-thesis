@@ -1,0 +1,284 @@
+---
+output: pdf_document
+urlcolor: blue
+fontsize: 12pt
+---
+
+## Comparison of Suggested Algorithms Based on Synthetic Data
+
+In the following, we present results regarding the performance of difference algorithms. All experiments are based on the average error of algorithms over 5000 simulations. All experiments are with Bernoulli distributions as arms as in Locatelli et al. (2016).
+
+In general, we compare the following algorithms:
+
+- Uniform Sampling (UNIFORM)
+- Anytime Parameter-free Thresholding algorithm (APT), [Locatelli et al., 2016](http://proceedings.mlr.press/v48/locatelli16.html)
+- Augmented UCB (AugUCB), [Mukherjee et al., 2017](https://arxiv.org/pdf/1704.02281)
+- Kullback-Leibler Divergence-based Algorithm (KL)
+- Posterior Probability of Error-based Algorithm (PI)
+- Thompson Sampling-like Algorithm (TTS)
+- Bayes UCB Algorithm adapted for Thresholding Bandits (BUCB), compare *[On Bayesian Upper Confidence Bounds for Bandit Problems](http://proceedings.mlr.press/v22/kaufmann12.html)* by Kaufmann et al., 2012
+
+## Experiment 1
+
+The same as experiment 1 in Locatelli et al. (2016). We have the following means and thresholds:
+
+```{r, echo = FALSE, fig.height = 3}
+mean_loc <- c(0.1, 0.1, 0.1, 
+              0.35, 0.45, 0.55, 0.65,
+              0.9, 0.9, 0.9)
+tau_loc <- 0.5
+epsilon_loc <- 0.1
+
+plot(mean_loc, c(0.9,1,1.1,1,1,1,1,1.1,1,0.9), pch = 19, ylim = c(0.8,1.2), ylab = "", main = "Setup Experiment 1", xlab = "Mean Locations")
+abline(v=tau_loc)
+abline(v=tau_loc+epsilon_loc, lty=2)
+abline(v=tau_loc-epsilon_loc, lty=2)
+
+# Complexity:
+print("Complexity as defined in Locatelli et al. (2016):")
+round(sum((abs(mean_loc-tau_loc)+epsilon_loc)^(-2)))
+```
+
+The experiment results are as follows:
+
+```{r, echo = FALSE}
+current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/synthetic_experiments/"
+library(ggplot2)
+
+load(paste0(current_path, "loc_comp_APT.Rda"))
+load(paste0(current_path, "loc_comp_AugUCB.Rda"))
+load(paste0(current_path, "loc_comp_UNIFORM.Rda"))
+load(paste0(current_path, "loc_comp_PI.Rda"))
+load(paste0(current_path, "loc_comp_TTS.Rda"))
+load(paste0(current_path, "loc_comp_BUCB.Rda"))
+load(paste0(current_path, "loc_comp_BUCB_horizon.Rda"))
+load(paste0(current_path, "loc_comp_BUCB_squared.Rda"))
+load(paste0(current_path, "loc_comp_BUCB_power5.Rda"))
+load(paste0(current_path, "loc_comp_KL.Rda"))
+load(paste0(current_path, "loc_comp_KL_tau_horizon.Rda"))
+load(paste0(current_path, "loc_comp_KL_horizon1.Rda"))
+load(paste0(current_path, "loc_comp_KL_not_tau_horizon1000.Rda"))
+
+alg_names <- rep(c("APT", "AugUCB", "UNIFORM", "PI", "TTS", "BUCB", "BUCB_horizon", "BUCB_squared", "KL_at_tau", "KL_not_at_tau"), each = 991)
+index <- rep(10:1000, times = 10)
+alg_res <- log(c(loc_comp_APT, loc_comp_AugUCB, loc_comp_UNIFORM,
+             loc_comp_PI, loc_comp_TTS, loc_comp_BUCB, loc_comp_BUCB_horizon,
+             loc_comp_BUCB_squared, loc_comp_KL_tau_horizon,
+             loc_comp_KL_not_tau_horizon1000))
+loc1_comp_res <- data.frame(index = index, names = alg_names, 
+                            results = alg_res)
+ggplot(loc1_comp_res, aes(x = index, y = alg_res)) + geom_line(aes(group = alg_names, color = alg_names)) +
+  labs(title = "Experiment 1 Results", y = "log(Error)")
+```
+
+We clearly observe that most algorithms are able to solve this problem at more or less the same performance. Also, most algorithms are clearly superior to uniform sampling. The proposed new algorithms cannot perform better than APT. The BayesUCB algorithm without a $\log (T)$ horizon term in the denominator performs worse. Same for the KL-based algorithm that does not take the $\epsilon$ interval into account.
+
+\newpage
+
+## Experiment 2
+
+The same as experiment 3 in Locatelli et al. (2016). We have the following means, threshold (solid line), and epsilon interval (dashed line):
+
+```{r, echo = FALSE, fig.height = 3}
+mean_loc <- c(0.4-0.2^(1:4),
+              0.45, 0.55,
+              0.6+0.2^(5-(1:4)))
+tau_loc <- 0.5
+epsilon_loc <- 0.1
+
+plot(mean_loc, c(1,1,0.98,1.02,1,1,1.02,0.98,1,1), pch = 19, ylim = c(0.8,1.2), ylab = "", main = "Setup Experiment 2", xlab = "Mean Locations")
+abline(v=tau_loc)
+abline(v=tau_loc+epsilon_loc, lty=2)
+abline(v=tau_loc-epsilon_loc, lty=2)
+
+# Complexity:
+print("Complexity as defined in Locatelli et al. (2016):")
+round(sum((abs(mean_loc-tau_loc)+epsilon_loc)^(-2)))
+```
+
+The experiment results are as follows:
+
+```{r, echo = FALSE}
+current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/synthetic_experiments/"
+library(ggplot2)
+
+load(paste0(current_path, "loc2_comp_APT.Rda"))
+load(paste0(current_path, "loc2_comp_AugUCB.Rda"))
+load(paste0(current_path, "loc2_comp_UNIFORM.Rda"))
+load(paste0(current_path, "loc2_comp_PI.Rda"))
+load(paste0(current_path, "loc2_comp_TTS.Rda"))
+load(paste0(current_path, "loc2_comp_BUCB.Rda"))
+load(paste0(current_path, "loc2_comp_BUCB_horizon.Rda"))
+load(paste0(current_path, "loc2_comp_BUCB_squared.Rda"))
+#load(paste0(current_path, "loc2_comp_BUCB_power5.Rda"))
+load(paste0(current_path, "loc2_comp_KL.Rda"))
+load(paste0(current_path, "loc2_comp_KL_tau_horizon.Rda"))
+#load(paste0(current_path, "loc2_comp_KL_horizon1.Rda"))
+load(paste0(current_path, "loc2_comp_KL_not_tau_horizon1000.Rda"))
+
+alg_names <- rep(c("APT", "AugUCB", "UNIFORM", "PI", "TTS", "BUCB", "BUCB_horizon", "BUCB_squared", "KL_at_tau", "KL_not_at_tau"), each = 991)
+index <- rep(10:1000, times = 10)
+alg_res <- log(c(loc2_comp_APT, loc2_comp_AugUCB, loc2_comp_UNIFORM,
+             loc2_comp_PI, loc2_comp_TTS, loc2_comp_BUCB, loc2_comp_BUCB_horizon,
+             loc2_comp_BUCB_squared, loc2_comp_KL_tau_horizon,
+             loc2_comp_KL_not_tau_horizon1000))
+loc2_comp_res <- data.frame(index = index, names = alg_names, 
+                            results = alg_res)
+ggplot(loc2_comp_res, aes(x = index, y = alg_res)) + geom_line(aes(group = alg_names, color = alg_names)) +
+  labs(title = "Experiment 2 Results", y = "log(Error)")
+```
+
+In terms of relative performance across algorithms, the results are very similar to experiment 1, in that most algorithms have a very similar performance. Also, again uniform sampling, the BUCB without the $\log(T)$ horizon denominator, and the KL without $\epsilon$ interval perform clearly worse. This is the only experiment where the algorithm PI (posterior probability of error based) comes in at first place at the end.
+
+\newpage
+
+## Experiment 3
+
+This is the first of three experiments at a very small threshold and with accordingly small means for again 10 arms. As before, the arms are distributed symmetrically around the threshold. We let the algorithms run for more iterations than previously. The means, threshold, intervals are as follows:
+
+```{r, echo = FALSE, fig.height = 3}
+mean_loc <- c(0.001, 0.005, 0.01, 0.015,
+               0.0475, 0.0525,
+               0.085, 0.09, 0.095, 0.099)
+tau_loc <- 0.05
+epsilon_loc <- 0.005
+
+plot(mean_loc, c(1,1,1,1,1,1,1,1,1,1), pch = 19, ylim = c(0.8,1.2), ylab = "", main = "Setup Experiment 3", xlab = "Mean Locations")
+abline(v=tau_loc)
+abline(v=tau_loc+epsilon_loc, lty=2)
+abline(v=tau_loc-epsilon_loc, lty=2)
+
+# Complexity:
+print("Complexity as defined in Locatelli et al. (2016):")
+round(sum((abs(mean_loc-tau_loc)+epsilon_loc)^(-2)))
+```
+
+The results are as follows:
+
+```{r, echo = FALSE}
+
+load(paste0(current_path, "loc3_comp_APT.Rda"))
+load(paste0(current_path, "loc3_comp_UNIFORM.Rda"))
+load(paste0(current_path, "loc3_comp_BUCB.Rda"))
+load(paste0(current_path, "loc3_comp_BUCB_horizon.Rda"))
+load(paste0(current_path, "loc3_comp_TTS.Rda"))
+load(paste0(current_path, "loc3_comp_PI.Rda"))
+load(paste0(current_path, "loc3_comp_AugUCB.Rda"))
+load(paste0(current_path, "loc3_comp_KL_tau_horizon.Rda"))
+load(paste0(current_path, "loc3_comp_KL_horizon.Rda"))
+
+alg_names <- rep(c("APT", "AugUCB", "UNIFORM", "PI", "TTS", "BUCB", "BUCB_horizon", "KL_at_tau", "KL_not_at_tau"), each = 2491)
+index <- rep(10:2500, times = 9)
+alg_res <- log(c(loc3_comp_APT, loc3_comp_AugUCB, loc3_comp_UNIFORM,
+             loc3_comp_PI, loc3_comp_TTS, loc3_comp_BUCB,
+             loc3_comp_BUCB_horizon, loc3_comp_KL_tau_horizon,
+             loc3_comp_KL_horizon))
+loc3_comp_res <- data.frame(index = index, names = alg_names, 
+                            results = alg_res)
+ggplot(loc3_comp_res, aes(x = index, y = alg_res)) + geom_line(aes(group = alg_names, color = alg_names)) +
+  labs(title = "Experiment 3 Results", y = "log(Error)")
+```
+
+The performance of the algorithms is now clearly different than in the first two experiments at the perfectly symmetric threshold at 0.5. Now, the uniform sampling strategy performs better or similarly to many of the algorithms. The algorithm based on the posterior probability of error (PI) performs worst, followed by the KL-based algorithm *without* epsilon interval. At 2500 iterations, the KL-based algorithm *with* epsilon interval is improving faster than the APT algorithm. Both of their rates are still worse than uniform sampling. Only the AugUCB algorithm eventually catches up on uniform sampling and is better after 2000 iterations. Only the BayesUCB algorithm *with* $log(T)$ horizon term in the denominator performs clearly better than everything else.
+
+\newpage
+
+## Experiment 4
+
+We now consider an experiment with even smaller threshold, in which the majority of arms is below the threshold, and the arms are clearly asymmetric around the threshold. We have run the experiment for 2000 observations. Three of the arms are expected to have only one or two observations of value 1 in the entire sample.
+
+```{r, echo = FALSE, fig.height = 3}
+mean_loc <- c(0.0005, 0.001, 0.001, 0.005, 0.009,
+               0.02, 0.0275, 0.0325, 0.04,
+               0.08, 0.09)
+tau_loc <- 0.03
+epsilon_loc <- 0.005
+
+plot(mean_loc, c(1,0.98,1.02,1,1,1,1,1,1,1,1), pch = 19, ylim = c(0.8,1.2), ylab = "", main = "Setup Experiment 4", xlab = "Mean Locations")
+abline(v=tau_loc)
+abline(v=tau_loc+epsilon_loc, lty=2)
+abline(v=tau_loc-epsilon_loc, lty=2)
+
+# Complexity:
+print("Complexity as defined in Locatelli et al. (2016):")
+round(sum((abs(mean_loc-tau_loc)+epsilon_loc)^(-2)))
+```
+
+The results are as follows:
+
+```{r, echo = FALSE}
+load(file = paste0(current_path, "loc4_comp_UNIFORM.Rda"))
+load(file = paste0(current_path, "loc4_comp_APT.Rda"))
+load(file = paste0(current_path, "loc4_comp_AugUCB.Rda"))
+load(file = paste0(current_path, "loc4_comp_KL_tau_horizon.Rda"))
+load(file = paste0(current_path, "loc4_comp_TTS.Rda"))
+load(file = paste0(current_path, "loc4_comp_BUCB_sqrt.Rda"))
+load(file = paste0(current_path, "loc4_comp_BUCB.Rda"))
+load(file = paste0(current_path, "loc4_comp_BUCB_horizon.Rda"))
+#load(file = paste0(current_path, "loc4_comp_BUCB_horizon5.Rda"))
+load(file = paste0(current_path, "loc4_comp_BUCB_squared.Rda"))
+
+alg_names <- rep(c("APT", "AugUCB", "UNIFORM", "TTS","BUCB_sqrt", "BUCB", "BUCB_horizon", "BUCB_squared", "KL_at_tau"), each = 1990)
+index <- rep(11:2000, times = 9)
+alg_res <- log(c(loc4_comp_APT, loc4_comp_AugUCB, loc4_comp_UNIFORM,
+                 loc4_comp_TTS, loc4_comp_BUCB_sqrt, loc4_comp_BUCB,
+                 loc4_comp_BUCB_horizon, loc4_comp_BUCB_squared,
+                 loc4_comp_KL_tau_horizon))
+loc4_comp_res <- data.frame(index = index, names = alg_names, 
+                            results = alg_res)
+ggplot(loc4_comp_res, aes(x = index, y = alg_res)) + geom_line(aes(group = alg_names, color = alg_names)) +
+  labs(title = "Experiment 4 Results", y = "log(Error)")
+```
+
+Again, the KL-based algorithm cannot improve over uniform sampling. Both APT and AugUCB improve upon uniform sampling and perform equally well until iteration 2000. This time, the Thompson Sampling-like algorithm (TTS) performs clearly better than APT after half of the budget. Both previously considered Bayes-UCB algorithms perform clearly better than the competition. However even they still have a mean error of about 0.22 after 2000 samples. which is large compared to the other experiments. The new Bayes-UCB algorithm with a squared term $T_i^2$ in the denominator first performs very bad, but then improves very rapidly until iteration 2000. In contrast, the Bayes-UCB algorithm with a $\sqrt(T_i)$ term performs bad.
+
+\newpage
+
+## Experiment 5
+
+In contrast to experiment 4, we now consider again an asymmetric problem, but shifted away from 0. We have the same amount of arms on both sides of the threshold, with 2 arms on each side that are symmetrically positioned around the threshold, but then two arms with very small means. The epsilon interval is now of size 0.02 in contrast to the previous 0.01. The setup is as follows:
+
+```{r, echo = FALSE, fig.height = 3}
+mean_loc <- c(0.0005, 0.001,
+               0.05, 0.055,
+               0.065, 0.075,
+               0.085, 0.09,
+               0.1, 0.1)
+tau_loc <- 0.07
+epsilon_loc <- 0.01
+
+plot(mean_loc, c(0.98,1.02,1,1,1,1,1,1,1.02,0.98), pch = 19, ylim = c(0.8,1.2), ylab = "", main = "Setup Experiment 5", xlab = "Mean Locations")
+abline(v=tau_loc)
+abline(v=tau_loc+epsilon_loc, lty=2)
+abline(v=tau_loc-epsilon_loc, lty=2)
+
+# Complexity:
+print("Complexity as defined in Locatelli et al. (2016):")
+round(sum((abs(mean_loc-tau_loc)+epsilon_loc)^(-2)))
+```
+
+The results are as follows:
+
+```{r, echo = FALSE}
+load(paste0(current_path, "loc5_comp_APT.Rda"))
+load(paste0(current_path, "loc5_comp_AugUCB.Rda"))
+load(paste0(current_path, "loc5_comp_TTS.Rda"))
+load(paste0(current_path, "loc5_comp_BUCB.Rda"))
+load(paste0(current_path, "loc5_comp_BUCB_horizon.Rda"))
+load(paste0(current_path, "loc5_comp_BUCB_squared.Rda"))
+load(paste0(current_path, "loc5_comp_UNIFORM.Rda"))
+
+alg_names <- c(rep(c("APT", "AugUCB", "UNIFORM", "TTS"), each = 2491), rep("BUCB", times = 1991), rep(c("BUCB_horizon", "BUCB_squared"), each = 2491))
+index <- c(rep(10:2500, times = 4), 10:2000, rep(10:2500, times = 2))
+alg_res <- log(c(loc5_comp_APT, loc5_comp_AugUCB, loc5_comp_UNIFORM,
+                 loc5_comp_TTS, loc5_comp_BUCB,
+                 loc5_comp_BUCB_horizon, loc5_comp_BUCB_squared))
+loc5_comp_res <- data.frame(index = index, names = alg_names, 
+                            results = alg_res)
+ggplot(loc5_comp_res, aes(x = index, y = alg_res)) + geom_line(aes(group = alg_names, color = alg_names)) +
+  labs(title = "Experiment 5 Results", y = "log(Error)")
+```
+
+This problem seems to be the hardest for the tested algorithms in terms of the error after 2000 and 2500 iterations respectively. This is very much in contrast to the complexity measure $H$ as defined in Locatelli et al. (2016). According to which experiments 3 and 4 are harder. However, the complexity measure does not take into consideration where in the means are located, only their position in relation to the threshold.
+
+Again, BUCB_horizon comes in first. This time, BUCB_squared is performing very well as well, at least when compared to APT and AugUCB. AugUCB actually performs worse than APT until this point. And TTS manages to cross APT in performance after close to 2500 iterations. Due to the high error metric, it might be useful to run the algorithms for more iterations on this problem to observe long-term behavior. Especially with regard to their current rate of improvement.

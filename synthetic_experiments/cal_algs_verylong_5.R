@@ -6,11 +6,11 @@
 current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/AugUCB/"
 source(paste0(current_path, "run_from_data.R"))
 source(paste0(current_path, "run_parallelized_from_data.R"))
+current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/synthetic_experiments/"
 
 ########################################################################
 # Create the data
 
-# do 2000 rounds
 mean_loc5 <- c(0.0005, 0.001,
                0.05, 0.055,
                0.065, 0.075,
@@ -18,8 +18,9 @@ mean_loc5 <- c(0.0005, 0.001,
                0.1, 0.1)
 tau_loc5 <- 0.07
 epsilon_loc5 <- 0.01
+H_loc5 <- get_complexity(mean_loc5, tau_loc5, epsilon_loc5)
 
-plot(mean_loc5, rep(1,10))
+plot(mean_loc5, rep(1,10), main = paste0("Complexity: ", round(H_loc5)))
 abline(v=tau_loc5)
 abline(v=tau_loc5+epsilon_loc5, lty=2)
 abline(v=tau_loc5-epsilon_loc5, lty=2)
@@ -27,77 +28,270 @@ abline(v=tau_loc5-epsilon_loc5, lty=2)
 data_list5 <- list()
 set.seed(256)
 for(j in 1:5000) {
-  curr_data <- data.frame(rep(NA, times = 1000))
+  curr_data <- data.frame(rep(NA, times = 6000))
   for(i in 1:length(mean_loc5)) {
-    curr_data[[i]] <- as.numeric(purrr::rbernoulli(1000, p  = mean_loc5[i]))
+    curr_data[[i]] <- as.numeric(purrr::rbernoulli(6000, p  = mean_loc5[i]))
   }
   names(curr_data) <- paste0("V", rep(1:length(mean_loc5)))
   data_list5[[j]] <- curr_data
 }
 
-data_list5_long <- list()
+data_list5_8000 <- list()
 set.seed(256)
 for(j in 1:5000) {
-  curr_data <- data.frame(rep(NA, times = 2000))
+  curr_data <- data.frame(rep(NA, times = 8000))
   for(i in 1:length(mean_loc5)) {
-    curr_data[[i]] <- as.numeric(purrr::rbernoulli(2000, p  = mean_loc5[i]))
+    curr_data[[i]] <- as.numeric(purrr::rbernoulli(8000, p  = mean_loc5[i]))
   }
   names(curr_data) <- paste0("V", rep(1:length(mean_loc5)))
-  data_list5_long[[j]] <- curr_data
+  data_list5_8000[[j]] <- curr_data
 }
 
 ########################################################################
-# Standard APT Algorithm
-# a seed is built in
-system.time(loc5_APT <- para_bandit_sim_APT(data = data_list5, rounds = 2000, 
-                                            tau = tau_loc5, epsilon = epsilon_loc5))
-# user  system elapsed 
-#6.508   3.544 300.383
-save(loc5_APT, file = paste0(current_path, "loc5_APT.Rda"))
-load(file = paste0(current_path, "loc5_APT.Rda"))
-loc5_comp_APT <- compare_to_ground_truth(mean_loc5, loc5_APT, tau_loc5, 
-                                         epsilon_loc5)$mean
-save(loc5_comp_APT, file = paste0(current_path, "loc5_comp_APT.Rda"))
-rm(loc5_APT)
+
+system.time(loc5_KLUCB72_long <- para_bandit_sim_KLUCB(data = data_list5_8000, 
+                                                       rounds = 8000, 
+                                                       tau = tau_loc5, 
+                                                       epsilon = epsilon_loc5,
+                                                       horizon = 5.5*H_loc5,
+                                                       H = H_loc5))
+save(loc5_KLUCB72_long, file = paste0(current_path, "loc5_KLUCB72_long.Rda"))
+loc5_comp_KLUCB72_long <- compare_to_ground_truth(mean_loc5, loc5_KLUCB72_long, 
+                                                  tau_loc5, 
+                                                  epsilon_loc5)$mean
+save(loc5_comp_KLUCB72_long, file = paste0(current_path, 
+                                           "loc5_comp_KLUCB72_long.Rda"))
+
+########################################################################
+# add the KLUCB Tests
+
+error_bound <- function(n, H, K) {
+  (K*n+H)*exp(-n/H)
+}
+
+plot(1:360000, log(error_bound(1:360000, H_loc5, 11)), type = "l",
+     ylim = c(-6,12), main = round(H_loc5))
+abline(h=log(0.2))
+
+data_list5_8000_small <- data_list5_8000[1:500]
+rm(data_list5)
 gc()
+
+system.time(loc5_KLUCB200 <- para_bandit_sim_KLUCB(data = data_list5_8000_small, 
+                                                     rounds = 2000, 
+                                                     tau = tau_loc5, 
+                                                     epsilon = epsilon_loc5,
+                                                     horizon = 200000,
+                                                     H = H_loc5))
+save(loc5_KLUCB200, file = paste0(current_path, "loc5_KLUCB200.Rda"))
+loc5_comp_KLUCB200 <- compare_to_ground_truth(mean_loc5, loc5_KLUCB200, 
+                                                tau_loc5, 
+                                                epsilon_loc5)$mean
+save(loc5_comp_KLUCB200, file = paste0(current_path, 
+                                         "loc5_comp_KLUCB200.Rda"))
+
+###
+
+system.time(loc5_KLUCB5 <- para_bandit_sim_KLUCB(data = data_list5_8000_small, 
+                                                   rounds = 2000, 
+                                                   tau = tau_loc5, 
+                                                   epsilon = epsilon_loc5,
+                                                   horizon = 5000,
+                                                   H = H_loc5))
+save(loc5_KLUCB5, file = paste0(current_path, "loc5_KLUCB5.Rda"))
+loc5_comp_KLUCB5 <- compare_to_ground_truth(mean_loc5, loc5_KLUCB5, 
+                                              tau_loc5, 
+                                              epsilon_loc5)$mean
+save(loc5_comp_KLUCB5, file = paste0(current_path, 
+                                     "loc5_comp_KLUCB5.Rda"))
+
+###
+
+system.time(loc5_KLUCB96 <- para_bandit_sim_KLUCB(data = data_list5_8000_small, 
+                                                 rounds = 2000, 
+                                                 tau = tau_loc5, 
+                                                 epsilon = epsilon_loc5,
+                                                 horizon = 8*H_loc5,
+                                                 H = H_loc5))
+save(loc5_KLUCB96, file = paste0(current_path, "loc5_KLUCB96.Rda"))
+loc5_comp_KLUCB96 <- compare_to_ground_truth(mean_loc5, loc5_KLUCB96, 
+                                            tau_loc5, 
+                                            epsilon_loc5)$mean
+save(loc5_comp_KLUCB96, file = paste0(current_path, 
+                                     "loc5_comp_KLUCB96.Rda"))
+
+###
+
+system.time(loc5_KLUCB36 <- para_bandit_sim_KLUCB(data = data_list5_8000_small, 
+                                                  rounds = 2000, 
+                                                  tau = tau_loc5, 
+                                                  epsilon = epsilon_loc5,
+                                                  horizon = 3*H_loc5,
+                                                  H = H_loc5))
+save(loc5_KLUCB36, file = paste0(current_path, "loc5_KLUCB36.Rda"))
+loc5_comp_KLUCB36 <- compare_to_ground_truth(mean_loc5, loc5_KLUCB36, 
+                                             tau_loc5, 
+                                             epsilon_loc5)$mean
+save(loc5_comp_KLUCB36, file = paste0(current_path, 
+                                      "loc5_comp_KLUCB36.Rda"))
+
+###
+
+system.time(loc5_KLUCB72 <- para_bandit_sim_KLUCB(data = data_list5_8000_small, 
+                                                  rounds = 2000, 
+                                                  tau = tau_loc5, 
+                                                  epsilon = epsilon_loc5,
+                                                  horizon = 5.5*H_loc5,
+                                                  H = H_loc5))
+save(loc5_KLUCB72, file = paste0(current_path, "loc5_KLUCB72.Rda"))
+loc5_comp_KLUCB72 <- compare_to_ground_truth(mean_loc5, loc5_KLUCB72, 
+                                             tau_loc5, 
+                                             epsilon_loc5)$mean
+save(loc5_comp_KLUCB72, file = paste0(current_path, 
+                                      "loc5_comp_KLUCB72.Rda"))
+
+###
+
+system.time(loc5_KLUCB60 <- para_bandit_sim_KLUCB(data = data_list5_8000_small, 
+                                                  rounds = 2000, 
+                                                  tau = tau_loc5, 
+                                                  epsilon = epsilon_loc5,
+                                                  horizon = 4.7*H_loc5,
+                                                  H = H_loc5))
+save(loc5_KLUCB60, file = paste0(current_path, "loc5_KLUCB60.Rda"))
+loc5_comp_KLUCB60 <- compare_to_ground_truth(mean_loc5, loc5_KLUCB60, 
+                                             tau_loc5, 
+                                             epsilon_loc5)$mean
+save(loc5_comp_KLUCB60, file = paste0(current_path, 
+                                      "loc5_comp_KLUCB60.Rda"))
 
 ########################################################################
 # Standard APT Algorithm
 # a seed is built in
-system.time(loc5_APT_long <- para_bandit_sim_APT(data = data_list5_long, rounds = 2000, 
+system.time(loc5_APT_long <- para_bandit_sim_APT(data = data_list5, rounds = 6000, 
                                             tau = tau_loc5, epsilon = epsilon_loc5))
-# user  system elapsed 
-#10.555   6.750 796.915 
+# user   system  elapsed 
+#25.142   19.384 3997.529 
 save(loc5_APT_long, file = paste0(current_path, "loc5_APT_long.Rda"))
-load(file = paste0(current_path, "loc5_APT_long.Rda"))
+#load(file = paste0(current_path, "loc5_APT_long.Rda"))
 loc5_comp_APT_long <- compare_to_ground_truth(mean_loc5, loc5_APT_long, tau_loc5, 
                                          epsilon_loc5)$mean
 save(loc5_comp_APT_long, file = paste0(current_path, "loc5_comp_APT_long.Rda"))
+#load(file = paste0(current_path, "loc5_comp_APT_long.Rda"))
 rm(loc5_APT_long)
 gc()
+
+########################################################################
+
+loc5_BUCB <- para_bandit_sim_bucb(data = data_list5, rounds = 2000, 
+                                  rate = "inverse",
+                                  tau = tau_loc5, epsilon = epsilon_loc5, 
+                                  alpha = tau_loc5, beta = 1-tau_loc5)
+save(loc5_BUCB, file = paste0(current_path, "loc5_BUCB.Rda"))
+load(file = paste0(current_path, "loc5_BUCB.Rda"))
+loc5_comp_BUCB <- compare_to_ground_truth(mean_loc5, loc5_BUCB, 
+                                          tau_loc5, epsilon_loc5)$mean
+save(loc5_comp_BUCB, file = paste0(current_path, "loc5_comp_BUCB.Rda"))
+load(file = paste0(current_path, "loc5_comp_BUCB.Rda"))
+
+########################################################################
+
+loc5_BUCB_horizon_long <- para_bandit_sim_bucb(data = data_list5, rounds = 6000, 
+                                          rate = "inverse_horizon",
+                                          tau = tau_loc5, epsilon = epsilon_loc5, 
+                                          alpha = tau_loc5, beta = 1-tau_loc5)
+save(loc5_BUCB_horizon_long, 
+     file = paste0(current_path, "loc5_BUCB_horizon_long.Rda"))
+loc5_comp_BUCB_horizon_long <- compare_to_ground_truth(mean_loc5, 
+                                                  loc5_BUCB_horizon_long,
+                                                  tau_loc5,
+                                                  epsilon_loc5)$mean
+save(loc5_comp_BUCB_horizon_long, file = paste0(current_path, "loc5_comp_BUCB_horizon_long.Rda"))
+#load(file = paste0(current_path, "loc5_comp_BUCB_horizon_long.Rda"))
+
+# super long
+
+loc5_BUCB_horizon_long_8000 <- para_bandit_sim_bucb(data = data_list5_8000, 
+                                               rounds = 8000, 
+                                               rate = "inverse_horizon",
+                                               tau = tau_loc5, 
+                                               epsilon = epsilon_loc5, 
+                                               alpha = tau_loc5, 
+                                               beta = 1-tau_loc5)
+save(loc5_BUCB_horizon_long_8000, 
+     file = paste0(current_path, "loc5_BUCB_horizon_long_8000.Rda"))
+loc5_comp_BUCB_horizon_long_8000 <- compare_to_ground_truth(mean_loc5, 
+                                                       loc5_BUCB_horizon_long_8000,
+                                                       tau_loc5,
+                                                       epsilon_loc5)$mean
+save(loc5_comp_BUCB_horizon_long_8000, file = paste0(current_path, 
+                                                     "loc5_comp_BUCB_horizon_long_8000.Rda"))
+
+########################################################################
+
+loc5_BUCB_squared_long <- para_bandit_sim_bucb(data = data_list5, rounds = 6000, 
+                                          rate = "inverse_squared",
+                                          tau = tau_loc5, epsilon = epsilon_loc5, 
+                                          alpha = tau_loc5, beta = 1-tau_loc5)
+save(loc5_BUCB_squared_long, file = paste0(current_path, "loc5_BUCB_squared_long.Rda"))
+#load(file = paste0(current_path, "loc5_BUCB_squared_long.Rda"))
+loc5_comp_BUCB_squared_long <- compare_to_ground_truth(mean_loc5, loc5_BUCB_squared_long, 
+                                                  tau_loc5, epsilon_loc5)$mean
+save(loc5_comp_BUCB_squared_long,
+     file = paste0(current_path, "loc5_comp_BUCB_squared_long.Rda"))
+#load(file = paste0(current_path, "loc5_comp_BUCB_squared_long.Rda"))
+rm(loc5_BUCB_squared_long)
+gc()
+
+########################################################################
+
+loc5_TTS <- para_bandit_sim_TTS(data = data_list5, rounds = 2500,
+                                tau = tau_loc5, epsilon = epsilon_loc5,
+                                alpha = tau_loc5, beta = 1 - tau_loc5)
+save(loc5_TTS, file = paste0(current_path, "loc5_TTS.Rda"))
+#load(file = paste0(current_path, "loc5_TTS.Rda"))
+loc5_comp_TTS <- compare_to_ground_truth(mean_loc5, loc5_TTS, 
+                                         tau_loc5, epsilon_loc5)$mean
+save(loc5_comp_TTS, file = paste0(current_path, "loc5_comp_TTS.Rda"))
+rm(loc5_TTS)
+gc()
+
 ########################################################################
 # Standard AugUCB
-system.time(loc5_AugUCB <- para_bandit_sim_AugUCB(data = data_list5, rounds = 1000, 
+system.time(loc5_AugUCB <- para_bandit_sim_AugUCB(data = data_list5, rounds = 2500, 
                                                   tau = tau_loc5))
 save(loc5_AugUCB, file = paste0(current_path, "loc5_AugUCB.Rda"))
 loc5_comp_AugUCB <- compare_to_ground_truth(mean_loc5, loc5_AugUCB, tau_loc5, 
                                             epsilon_loc5)$mean
 save(loc5_comp_AugUCB, file = paste0(current_path, "loc5_comp_AugUCB.Rda"))
 
+# now with 8000
+
+system.time(loc5_AugUCB_8000 <- para_bandit_sim_AugUCB(data = data_list5_8000,
+                                                       rounds = 8000, 
+                                                       tau = tau_loc5))
+#user    system   elapsed 
+#54.274    59.920 21740.161 
+save(loc5_AugUCB_8000, file = paste0(current_path, "loc5_AugUCB_8000.Rda"))
+loc5_comp_AugUCB_8000 <- compare_to_ground_truth(mean_loc5, loc5_AugUCB_8000, 
+                                                 tau_loc5, 
+                                                 epsilon_loc5)$mean
+save(loc5_comp_AugUCB_8000, file = paste0(current_path, 
+                                          "loc5_comp_AugUCB_8000.Rda"))
+
 ########################################################################
 
 # Standard Uniform
 system.time(loc5_UNIFORM <- para_bandit_sim_uniform(data = data_list5, 
-                                                    rounds = 1000))
-# user  system elapsed 
-# 6.268   3.400 211.002 
+                                                    rounds = 2500))
 save(loc5_UNIFORM, file = paste0(current_path, "loc5_UNIFORM.Rda"))
-load(file = paste0(current_path, "loc5_UNIFORM.Rda"))
+#load(file = paste0(current_path, "loc5_UNIFORM.Rda"))
 loc5_comp_UNIFORM <- compare_to_ground_truth(mean_loc5, loc5_UNIFORM, tau_loc5, 
                                              epsilon_loc5)$mean
 save(loc5_comp_UNIFORM, file = paste0(current_path, "loc5_comp_UNIFORM.Rda"))
 rm(loc5_UNIFORM)
 gc()
+
 ########################################################################
 # Do KL by comparing against tau directly
 
@@ -208,53 +402,14 @@ gc()
 
 ########################################################################
 
-loc5_BUCB <- para_bandit_sim_bucb(data = data_list5, rounds = 1000, 
-                                  rate = "inverse",
-                                  tau = tau_loc5, epsilon = epsilon_loc5, 
-                                  alpha = tau_loc5, beta = 1-tau_loc5)
-save(loc5_BUCB, file = paste0(current_path, "loc5_BUCB.Rda"))
-load(file = paste0(current_path, "loc5_BUCB.Rda"))
-loc5_comp_BUCB <- compare_to_ground_truth(mean_loc5, loc5_BUCB, 
-                                          tau_loc5, epsilon_loc5)$mean
-save(loc5_comp_BUCB, file = paste0(current_path, "loc5_comp_BUCB.Rda"))
-
-########################################################################
-
-loc5_BUCB_long <- para_bandit_sim_bucb(data = data_list5_long, rounds = 2000, 
-                                  rate = "inverse",
-                                  tau = tau_loc5, epsilon = epsilon_loc5, 
-                                  alpha = tau_loc5, beta = 1-tau_loc5)
-save(loc5_BUCB_long, file = paste0(current_path, "loc5_BUCB_long.Rda"))
-load(file = paste0(current_path, "loc5_BUCB_long.Rda"))
-loc5_comp_BUCB_long <- compare_to_ground_truth(mean_loc5, loc5_BUCB_long, 
-                                          tau_loc5, epsilon_loc5)$mean
-save(loc5_comp_BUCB_long, file = paste0(current_path, "loc5_comp_BUCB_long.Rda"))
-rm(loc5_BUCB_long)
-gc()
-########################################################################
-
-loc5_BUCB_squared <- para_bandit_sim_bucb(data = data_list5, rounds = 1000, 
-                                          rate = "inverse_squared",
-                                          tau = tau_loc5, epsilon = epsilon_loc5, 
-                                          alpha = tau_loc5, beta = 1-tau_loc5)
-save(loc5_BUCB_squared, file = paste0(current_path, "loc5_BUCB_squared.Rda"))
-load(file = paste0(current_path, "loc5_BUCB_squared.Rda"))
-loc5_comp_BUCB_squared <- compare_to_ground_truth(mean_loc5, loc5_BUCB_squared, 
-                                                  tau_loc5, epsilon_loc5)$mean
-save(loc5_comp_BUCB_squared, file = paste0(current_path, "loc5_comp_BUCB_squared.Rda"))
-rm(loc5_BUCB_squared)
-gc()
-
-########################################################################
-
 loc5_BUCB_squared_long <- para_bandit_sim_bucb(data = data_list5_long, rounds = 2000, 
-                                          rate = "inverse_squared",
-                                          tau = tau_loc5, epsilon = epsilon_loc5, 
-                                          alpha = tau_loc5, beta = 1-tau_loc5)
+                                               rate = "inverse_squared",
+                                               tau = tau_loc5, epsilon = epsilon_loc5, 
+                                               alpha = tau_loc5, beta = 1-tau_loc5)
 save(loc5_BUCB_squared_long, file = paste0(current_path, "loc5_BUCB_squared_long.Rda"))
 load(file = paste0(current_path, "loc5_BUCB_squared_long.Rda"))
 loc5_comp_BUCB_squared_long <- compare_to_ground_truth(mean_loc5, loc5_BUCB_squared_long, 
-                                                  tau_loc5, epsilon_loc5)$mean
+                                                       tau_loc5, epsilon_loc5)$mean
 save(loc5_comp_BUCB_squared_long, file = paste0(current_path, "loc5_comp_BUCB_squared_long.Rda"))
 rm(loc5_BUCB_squared_long)
 gc()
@@ -272,13 +427,13 @@ save(loc5_comp_BUCB_cubic, file = paste0(current_path, "loc5_comp_BUCB_cubic.Rda
 ########################################################################
 
 loc5_BUCB_power5 <- para_bandit_sim_bucb(data = data_list5, rounds = 1000, 
-                                        rate = "inverse_power5",
-                                        tau = tau_loc5, epsilon = epsilon_loc5, 
-                                        alpha = tau_loc5, beta = 1-tau_loc5)
+                                         rate = "inverse_power5",
+                                         tau = tau_loc5, epsilon = epsilon_loc5, 
+                                         alpha = tau_loc5, beta = 1-tau_loc5)
 save(loc5_BUCB_power5, file = paste0(current_path, "loc5_BUCB_power5.Rda"))
 load(file = paste0(current_path, "loc5_BUCB_power5.Rda"))
 loc5_comp_BUCB_power5 <- compare_to_ground_truth(mean_loc5, loc5_BUCB_power5, 
-                                                tau_loc5, epsilon_loc5)$mean
+                                                 tau_loc5, epsilon_loc5)$mean
 save(loc5_comp_BUCB_power5, file = paste0(current_path, "loc5_comp_BUCB_power5.Rda"))
 rm(loc5_BUCB_power5)
 gc()
@@ -329,29 +484,42 @@ save(loc5_comp_BUCB_horizon5, file = paste0(current_path, "loc5_comp_BUCB_horizo
 
 ########################################################################
 
-plot(c(0,2000), c(0,-1), type = "n")
-lines(log(loc5_comp_APT_long), col = "blue")
-lines(log(loc5_comp_BUCB_long), col = "red")
-lines(log(loc5_comp_BUCB_squared_long), col = "green")
+load(paste0(current_path, "loc5_comp_APT_long.Rda"))
+load(paste0(current_path, "loc5_comp_APT.Rda"))
+load(paste0(current_path, "loc5_comp_AugUCB.Rda"))
+load(paste0(current_path, "loc5_comp_AugUCB_8000.Rda"))
+load(paste0(current_path, "loc5_comp_TTS.Rda"))
+load(paste0(current_path, "loc5_comp_BUCB.Rda"))
+load(paste0(current_path, "loc5_comp_BUCB_horizon_long.Rda"))
+load(paste0(current_path, "loc5_comp_BUCB_horizon_long_8000.Rda"))
+load(paste0(current_path, "loc5_comp_BUCB_squared_long.Rda"))
+load(paste0(current_path, "loc5_comp_KLUCB200.Rda"))
+load(paste0(current_path, "loc5_comp_KLUCB96.Rda"))
+load(paste0(current_path, "loc5_comp_KLUCB72.Rda"))
+load(paste0(current_path, "loc5_comp_KLUCB60.Rda"))
+load(paste0(current_path, "loc5_comp_KLUCB36.Rda"))
+load(paste0(current_path, "loc5_comp_KLUCB5.Rda"))
+load(paste0(current_path, "loc5_comp_KLUCB72_long.Rda"))
 
-plot(c(0,1000), c(0, -0.5), type = "n")
+plot(c(0,8000), c(0,-5), type = "n")
+lines(log(loc5_comp_APT_long), col = "blue")
 lines(log(loc5_comp_APT), col = "blue")
-lines(log(loc5_comp_UNIFORM), col = "black")
-#lines(log(loc5_comp_PI), col = "darkgreen")
-#lines(log(loc5_comp_PI_tadj), col = "pink")
 lines(log(loc5_comp_TTS), col = "lightblue")
 lines(log(loc5_comp_BUCB), col = "green")
-lines(log(loc5_comp_BUCB_squared), col = "red")
-lines(log(loc5_comp_BUCB_cubic), col = "darkgreen")
-lines(log(loc5_comp_BUCB_power5), col = "darkblue")
-#lines(log(loc5_comp_BUCB_squared_no_eps), col = "darkred")
-lines(log(loc5_comp_BUCB_horizon), col = "pink")
-lines(log(loc5_comp_BUCB_horizon5), col = "darkred")
-#lines(log(loc5_comp_KL), col = "lightblue")
-#lines(log(loc5_comp_KL_not_tau), col = "blue")
-#lines(log(loc5_comp_KL_horizon), col = "darkblue")
-#lines(log(loc5_comp_KL_horizon2), col = "darkred")
-lines(log(loc5_comp_KL_horizon1), col = "green")
+lines(log(loc5_comp_BUCB_horizon_long), col = "pink")
+lines(log(loc5_comp_BUCB_horizon_long_8000), col = "red")
+lines(log(loc5_comp_BUCB_squared_long), col = "red")
+lines(log(loc5_comp_AugUCB), col = "grey")
+lines(log(loc5_comp_AugUCB_8000), col = "grey")
+lines(log(loc5_comp_KLUCB200), col = "blue")
+lines(log(loc5_comp_KLUCB96), col = "red")
+lines(log(loc5_comp_KLUCB60), col = "blue")
+lines(log(loc5_comp_KLUCB36), col = "red")
+lines(log(loc5_comp_KLUCB72), col = "green")
+lines(log(loc5_comp_KLUCB5), col = "red")
+lines(log(loc5_comp_KLUCB72_long), col = "darkgreen")
+abline(h = log(0.1), lty = 2)
+abline(h = log(0.01), lty = 2)
 
 ########################################################################
 

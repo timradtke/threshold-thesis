@@ -40,9 +40,9 @@ compare_to_ground_truth <- function(true_means, sim_res, tau, epsilon) {
   true_classification_down <- which(true_means < tau-epsilon)
   
   get_iter_error <- function(x, true_class_up, true_class_down) {
-    ifelse(true_class_up %in% which(x > tau) && 
-             true_class_down %in% which(x < tau),
-           0,1)
+    ifelse(sum(true_class_up %in% which(x >= tau)) == length(true_class_up) &
+             sum(true_class_down %in% which(x < tau)) == length(true_class_down),
+           0, 1)
   }
   
   get_error <- function(res_df, ...) {
@@ -57,6 +57,39 @@ compare_to_ground_truth <- function(true_means, sim_res, tau, epsilon) {
   
   return(list(mean = comp_mean, full = comp_list))
 }
+
+#############################################################################
+
+# Get the average performance over all simulations
+
+# expect a list of matrices of size rounds x K as input from the simulations,
+# as well as a vector with the true means of length K to compare agains
+compare_to_cv_data <- function(mean_list, sim_res, thresh, eps) {
+  
+  get_iter_error <- function(x, true_class_up, true_class_down) {
+    ifelse(sum(true_class_up %in% which(x >= thresh)) == length(true_class_up) &&
+             sum(true_class_down %in% which(x < thresh)) == length(true_class_down),
+           0,1)
+  }
+  
+  iter_error_vectors <- list()
+  
+  for(i in 1:length(sim_res)) {
+    true_classification_up <- which(mean_list[[i]] > thresh+eps)
+    true_classification_down <- which(mean_list[[i]] < thresh-eps)
+    
+    iter_error_vectors[[i]] <- apply(sim_res[[i]]$mean_storage, 1, get_iter_error,
+                                     true_class_up = true_classification_up,
+                                     true_class_down = true_classification_down)
+  }
+  
+  comp_mean <- rowMeans(as.data.frame(iter_error_vectors, 
+                                      col.names = 1:length(iter_error_vectors)))
+  
+  return(list(mean = comp_mean, full = iter_error_vectors))
+}
+
+#################################################################################
 
 #################################################################################
 # input has to be a list of different data frames
@@ -75,7 +108,7 @@ para_bandit_sim_APT <- function(data, seed = NA, do_verbose = FALSE, ...) {
   gc()
   cl <- makeCluster(max(1,detectCores()-1))
   registerDoParallel(cl)
-  res <- foreach(j = 1:reps, .errorhandling = 'remove',
+  res <- foreach(j = 1:reps, #.errorhandling = 'remove',
           .export = c("APT_from_tsdata", "get_next_arm_apt",
                       "get_min"), 
           .verbose = do_verbose, .inorder = TRUE) %dopar% {
@@ -85,6 +118,32 @@ para_bandit_sim_APT <- function(data, seed = NA, do_verbose = FALSE, ...) {
                  arm_sequence = alg_res$arm_sequence,
                  input_data = data[[j]])
             }
+  stopCluster(cl)
+  return(res)
+}
+
+#################################################################################
+
+para_bandit_sim_AugUCB <- function(data, seed = NA, do_verbose = FALSE, ...) {
+  require(foreach)
+  require(doParallel)
+  
+  # assume that data is a list of data frames
+  reps <- length(data)
+  
+  gc()
+  cl <- makeCluster(max(1,detectCores()-1))
+  registerDoParallel(cl)
+  res <- foreach(j = 1:reps, .errorhandling = 'remove',
+                 .export = c("AugUCB_from_tsdata", "get_next_arm_augucb",
+                             "get_min", "delete_arms"), 
+                 .verbose = do_verbose, .inorder = TRUE) %dopar% {
+                   alg_res <- AugUCB_from_tsdata(data = data[[j]], 
+                                                 seed = 512+j, ...)
+                   list(mean_storage = alg_res$mean_storage,
+                        arm_sequence = alg_res$arm_sequence,
+                        input_data = data[[j]])
+                 }
   stopCluster(cl)
   return(res)
 }
@@ -101,7 +160,7 @@ para_bandit_sim_KL <- function(data, seed = NA, do_verbose = FALSE, ...) {
   gc()
   cl <- makeCluster(max(1,detectCores()-1))
   registerDoParallel(cl)
-  foreach(j = 1:reps, .errorhandling = 'remove',
+  res <- foreach(j = 1:reps, .errorhandling = 'remove',
           .export = c("KL_bandit_from_tsdata", "get_next_arm_kl",
                       "get_min", "kl_ber", "get_next_arm_kl_at_tau"), 
           .verbose = do_verbose, .inorder = TRUE) %dopar% {
@@ -110,7 +169,35 @@ para_bandit_sim_KL <- function(data, seed = NA, do_verbose = FALSE, ...) {
                         list(mean_storage = alg_res$mean_storage,
                              arm_sequence = alg_res$arm_sequence,
                              input_data = data[[j]])
-                      }
+          }
+  stopCluster(cl)
+  return(res)
+}
+
+#################################################################################
+
+para_bandit_sim_KLUCB <- function(data, seed = NA, do_verbose = FALSE, ...) {
+  require(foreach)
+  require(doParallel)
+  
+  # assume that data is a list of data frames
+  reps <- length(data)
+  
+  gc()
+  cl <- makeCluster(max(1,detectCores()-1))
+  registerDoParallel(cl)
+  res <- foreach(j = 1:reps, .errorhandling = 'remove',
+          .export = c("KLUCB_bandit_from_tsdata", "get_next_arm_klucb",
+                      "get_min", "kl_ber", "get_klub", "get_kllb"), 
+          .verbose = do_verbose, .inorder = TRUE) %dopar% {
+            alg_res <- KLUCB_bandit_from_tsdata(data = data[[j]], 
+                                                seed = 512+j, ...)
+            list(mean_storage = alg_res$mean_storage,
+                 arm_sequence = alg_res$arm_sequence,
+                 input_data = data[[j]])
+          }
+  stopCluster(cl)
+  return(res)
 }
 
 #################################################################################
@@ -177,7 +264,7 @@ para_bandit_sim_TTS <- function(data, seed = NA, do_verbose = FALSE, ...) {
   gc()
   cl <- makeCluster(max(1,detectCores()-1))
   registerDoParallel(cl)
-  foreach(j = 1:reps, .errorhandling = 'remove',
+  foreach(j = 1:reps, #.errorhandling = 'remove',
           .export = c("TTS_from_tsdata", "get_next_arm_PI",
                       "draw_arm_tts", "get_posterior_mean"),
           .verbose = do_verbose, .inorder = TRUE) %dopar% {
