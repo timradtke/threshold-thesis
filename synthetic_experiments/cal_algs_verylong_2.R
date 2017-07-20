@@ -40,6 +40,8 @@ for(j in 1:5000) {
 load(paste0(current_path, "/loc2_comp_BUCB_horizon_4000.Rda"))
 load(paste0(current_path, "/loc2_comp_APT_2000.Rda"))
 load(paste0(current_path, "/loc2_comp_AugUCB_2000.Rda"))
+load(paste0(current_path, "/loc2_comp_KLUCB80_long.Rda"))
+load(paste0(current_path, "/loc2_comp_KLUCB15_long.Rda"))
 
 plot(c(0,2000), c(0, -9), type = "n")
 lines(log(loc2_comp_BUCB_horizon_4000), col = "blue")
@@ -82,6 +84,18 @@ loc2_comp_APT_2000 <- compare_to_ground_truth(mean_loc2, loc2_APT_2000, tau_loc2
 save(loc2_comp_APT_2000, file = paste0(current_path, "loc2_comp_APT_2000.Rda"))
 rm(loc2_APT)
 gc()
+
+########################################################################
+
+system.time(loc2_UNIFORM_2000 <- para_bandit_sim_uniform(data = data_list2, 
+                                                         rounds = 2000))
+save(loc2_UNIFORM_2000, file = paste0(current_path, "loc2_UNIFORM_2000.Rda"))
+loc2_comp_UNIFORM_2000 <- compare_to_ground_truth(mean_loc2, 
+                                                  loc2_UNIFORM_2000, 
+                                                  tau_loc2, 
+                                                  epsilon_loc2)$mean
+save(loc2_comp_UNIFORM_2000, file = paste0(current_path, 
+                                           "loc2_comp_UNIFORM_2000.Rda"))
 
 ########################################################################
 # Standard AugUCB

@@ -1,0 +1,239 @@
+---
+output: html_document
+urlcolor: blue
+fontsize: 12pt
+---
+
+## Comparison of Suggested Algorithms Based on Synthetic Data
+
+In the following, we present results regarding the performance of difference algorithms. All experiments are based on the average error of algorithms over 5000 simulations. All experiments are with Bernoulli distributions as arms as in Locatelli et al. (2016).
+
+In general, we compare the following algorithms:
+
+- Uniform Sampling (UNIFORM)
+- Anytime Parameter-free Thresholding algorithm (APT), [Locatelli et al., 2016](http://proceedings.mlr.press/v48/locatelli16.html)
+- Augmented UCB (AugUCB), [Mukherjee et al., 2017](https://arxiv.org/pdf/1704.02281)
+- Kullback-Leibler Divergence-based Algorithm (KL)
+- Posterior Probability of Error-based Algorithm (PI)
+- Thompson Sampling-like Algorithm (TTS)
+- Bayes UCB Algorithm adapted for Thresholding Bandits (BUCB), compare *[On Bayesian Upper Confidence Bounds for Bandit Problems](http://proceedings.mlr.press/v22/kaufmann12.html)* by Kaufmann et al., 2012
+
+```{r, echo = FALSE}
+current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/AugUCB/"
+source(paste0(current_path, "run_from_data.R"))
+source(paste0(current_path, "run_parallelized_from_data.R"))
+current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/synthetic_experiments/"
+library(ggplot2)
+```
+
+## Experiment 1
+
+The same as experiment 1 in Locatelli et al. (2016). We have the following means and thresholds:
+
+```{r, echo = FALSE, fig.height = 3}
+mean_loc1 <- c(0.1, 0.1, 0.1, 
+              0.35, 0.45, 0.55, 0.65,
+              0.9, 0.9, 0.9)
+tau_loc1 <- 0.5
+epsilon_loc1 <- 0.1
+H_loc1 <- get_complexity(mean_loc1, tau_loc1, epsilon_loc1)
+
+plot(mean_loc1, c(0.9,1,1.1,1,1,1,1,1.1,1,0.9), pch = 19, ylim = c(0.8,1.2), ylab = "", main = paste0("Setup Experiment 1 - Complexity of ", round(H_loc1)), xlab = "Mean Locations")
+abline(v=tau_loc1)
+abline(v=tau_loc1+epsilon_loc1, lty=2)
+abline(v=tau_loc1-epsilon_loc1, lty=2)
+```
+
+The experiment results are as follows:
+
+```{r, echo = FALSE}
+load(paste0(current_path, "loc_comp_APT.Rda"))
+load(paste0(current_path, "loc_comp_AugUCB.Rda"))
+load(paste0(current_path, "loc_comp_UNIFORM.Rda"))
+load(paste0(current_path, "loc_comp_PI.Rda"))
+load(paste0(current_path, "loc_comp_TTS.Rda"))
+load(paste0(current_path, "loc_comp_BUCB.Rda"))
+load(paste0(current_path, "loc_comp_BUCB_horizon.Rda"))
+load(paste0(current_path, "loc_comp_BUCB_squared.Rda"))
+load(paste0(current_path, "loc_comp_BUCB_power5.Rda"))
+load(paste0(current_path, "loc_comp_KL.Rda"))
+load(paste0(current_path, "loc_comp_KL_tau_horizon.Rda"))
+load(paste0(current_path, "loc_comp_KL_horizon1.Rda"))
+load(paste0(current_path, "loc_comp_KL_not_tau_horizon1000.Rda"))
+
+alg_names <- rep(c("APT", "AugUCB", "UNIFORM", "PI", "TTS", "BUCB", "BUCB_horizon", "BUCB_squared", "KL_at_tau", "KL_not_at_tau"), each = 991)
+index <- rep(10:1000, times = 10)
+alg_res <- log(c(loc_comp_APT, loc_comp_AugUCB, loc_comp_UNIFORM,
+             loc_comp_PI, loc_comp_TTS, loc_comp_BUCB, loc_comp_BUCB_horizon,
+             loc_comp_BUCB_squared, loc_comp_KL_tau_horizon,
+             loc_comp_KL_not_tau_horizon1000))
+loc1_comp_res <- data.frame(index = index, names = alg_names, 
+                            results = alg_res)
+ggplot(loc1_comp_res, aes(x = index, y = alg_res)) + geom_line(aes(group = alg_names, color = alg_names)) +
+  labs(title = "Experiment 1 Results", y = "log(Error)")
+```
+
+We clearly observe that most algorithms are able to solve this problem at more or less the same performance. Also, most algorithms are clearly superior to uniform sampling. The proposed new algorithms cannot perform better than APT. The BayesUCB algorithm without a $\log (T)$ horizon term in the denominator performs worse. Same for the KL-based algorithm that does not take the $\epsilon$ interval into account.
+
+\newpage
+
+## Experiment 2
+
+The same as experiment 3 in Locatelli et al. (2016). We have the following means, threshold (solid line), and epsilon interval (dashed line):
+
+```{r, echo = FALSE, fig.height = 3}
+mean_loc2 <- c(0.4-0.2^(1:4),
+               0.45, 0.55,
+               0.6+0.2^(5-(1:4)))
+tau_loc2 <- 0.5
+epsilon_loc2 <- 0.1
+H_loc2 <- get_complexity(mean_loc2, tau_loc2, epsilon_loc2)
+
+plot(mean_loc2, c(1,1,0.98,1.02,1,1,1.02,0.98,1,1), pch = 19, ylim = c(0.8,1.2), ylab = "", xlab = "Mean Locations", main = paste0("Setup Experiment 2 - Complexity of ", round(H_loc2)))
+abline(v=tau_loc2)
+abline(v=tau_loc2+epsilon_loc2, lty=2)
+abline(v=tau_loc2-epsilon_loc2, lty=2)
+```
+
+The experiment results are as follows:
+
+```{r, echo = FALSE}
+library(ggplot2)
+
+load(paste0(current_path, "/loc2_comp_BUCB_horizon_4000.Rda"))
+load(paste0(current_path, "/loc2_comp_APT_2000.Rda"))
+load(paste0(current_path, "/loc2_comp_AugUCB_2000.Rda"))
+load(paste0(current_path, "/loc2_comp_KLUCB80_long.Rda"))
+load(paste0(current_path, "/loc2_comp_UNIFORM_2000.Rda"))
+
+alg_names <- c(rep(c("Uniform", "APT", "AugUCB", "B-UCB"), each = 1991), rep("KL-UCB", 1491))
+index <- c(rep(10:2000, times = 4), 10:1500)
+alg_res <- log(c(loc2_comp_UNIFORM_2000, loc2_comp_APT_2000, loc2_comp_AugUCB_2000, loc2_comp_BUCB_horizon_4000[1:1991], loc2_comp_KLUCB80_long))
+loc2_comp_res <- data.frame(Round = index, Algorithm = alg_names, 
+                            results = alg_res)
+ggplot(loc2_comp_res, aes(x = Round, y = alg_res)) + geom_line(aes(group = Algorithm, color = Algorithm)) + geom_hline(aes(yintercept = log(0.01)), linetype = 2) +
+  labs(title = "Experiment 2 Results", y = "log(Error)", subtitle = "Horizontal Bar at 0.05 Average Error")
+```
+
+
+
+\newpage
+
+## Experiment 3
+
+This is the first of three experiments at a very small threshold and with accordingly small means for again 10 arms. As before, the arms are distributed symmetrically around the threshold. We let the algorithms run for more iterations than previously. The means, threshold, intervals are as follows:
+
+```{r, echo = FALSE, fig.height = 3}
+mean_loc3 <- c(0.001, 0.005, 0.01, 0.015,
+               0.0475, 0.0525,
+               0.085, 0.09, 0.095, 0.099)
+tau_loc3 <- 0.05
+epsilon_loc3 <- 0.005
+H_loc3 <- get_complexity(mean_loc3, tau_loc3, epsilon_loc3)
+
+plot(mean_loc3, c(1,1,1,1,1,1,1,1,1,1), pch = 19, ylim = c(0.8,1.2), ylab = "", xlab = "Mean Locations", main = paste0("Setup Experiment 3 - Complexity of ", round(H_loc3)))
+abline(v=tau_loc3)
+abline(v=tau_loc3+epsilon_loc3, lty=2)
+abline(v=tau_loc3-epsilon_loc3, lty=2)
+```
+
+The results are as follows:
+
+```{r, echo = FALSE}
+load(paste0(current_path, "/loc3_comp_BUCB_horizon_7000.Rda"))
+load(paste0(current_path, "/loc3_comp_AugUCB_7000.Rda"))
+load(paste0(current_path, "/loc3_comp_KLUCB370_5000.Rda"))
+load(paste0(current_path, "/loc3_comp_UNIFORM_7000.Rda"))
+load(paste0(current_path, "/loc3_comp_APT_7000.Rda"))
+
+alg_names <- c(rep(c("Uniform", "APT", "AugUCB", "B-UCB"), each = 6991), rep("KL-UCB", 4991))
+index <- c(rep(10:7000, times = 4), 10:5000)
+alg_res <- log(c(loc3_comp_UNIFORM_7000, loc3_comp_APT_7000, loc3_comp_AugUCB_7000, loc3_comp_BUCB_horizon_7000, loc3_comp_KLUCB370_5000))
+loc3_comp_res <- data.frame(index = index, names = alg_names, 
+                            results = alg_res)
+ggplot(loc3_comp_res, aes(x = index, y = alg_res)) + geom_line(aes(group = alg_names, color = alg_names)) + geom_hline(aes(yintercept = log(0.01)), linetype = 2) +
+  labs(title = "Experiment 3 Results", subtitle = paste0("Complexity of ", round(H_loc3)), y = "log(Error)")
+```
+
+
+
+\newpage
+
+## Experiment 4
+
+We now consider an experiment with even smaller threshold, in which the majority of arms is below the threshold, and the arms are clearly asymmetric around the threshold. We have run the experiment for 2000 observations. Three of the arms are expected to have only one or two observations of value 1 in the entire sample.
+
+```{r, echo = FALSE, fig.height = 3}
+mean_loc4 <- c(0.0005, 0.001, 0.001, 0.005, 0.009,
+               0.02, 0.0275, 0.0325, 0.04,
+               0.08, 0.09)
+tau_loc4 <- 0.03
+epsilon_loc4 <- 0.005
+H_loc4 <- get_complexity(mean_loc4, tau_loc4, epsilon_loc4)
+
+plot(mean_loc4, c(1,0.98,1.02,1,1,1,1,1,1,1,1), pch = 19, ylim = c(0.8,1.2), ylab = "", xlab = "Mean Locations", main = paste0("Setup Experiment 4 - Complexity of ", round(H_loc4)))
+abline(v=tau_loc4)
+abline(v=tau_loc4+epsilon_loc4, lty=2)
+abline(v=tau_loc4-epsilon_loc4, lty=2)
+```
+
+The results are as follows:
+
+```{r, echo = FALSE}
+load(paste0(current_path, "loc4_comp_BUCB_horizon_8000.Rda"))
+load(paste0(current_path, "loc4_comp_AugUCB_8000.Rda"))
+load(paste0(current_path, "loc4_comp_APT_8000.Rda"))
+load(paste0(current_path, "loc4_comp_KLUCB90_long.Rda"))
+load(paste0(current_path, "loc4_comp_UNIFORM_8000.Rda"))
+
+alg_names <- rep(c("Uniform", "APT", "AugUCB", "B-UCB", "KL-UCB"), each = 7990)
+index <- rep(11:8000, times = 5)
+alg_res <- log(c(loc4_comp_UNIFORM_8000, loc4_comp_APT_8000, loc4_comp_AugUCB_8000, loc4_comp_BUCB_horizon_8000, loc4_comp_KLUCB90_long))
+loc4_comp_res <- data.frame(Round = index, Algorithm = alg_names, 
+                            results = alg_res)
+ggplot(loc4_comp_res, aes(x = Round, y = alg_res)) + geom_line(aes(group = Algorithm, color = Algorithm)) + geom_hline(aes(yintercept = log(0.01)), linetype = 2) +
+  labs(title = "Experiment 4 Results", subtitle = paste0("Complexity of ", round(H_loc4)), y = "log(Error)")
+```
+
+
+
+\newpage
+
+## Experiment 5
+
+In contrast to experiment 4, we now consider again an asymmetric problem, but shifted away from 0. We have the same amount of arms on both sides of the threshold, with 2 arms on each side that are symmetrically positioned around the threshold, but then two arms with very small means. The epsilon interval is now of size 0.02 in contrast to the previous 0.01. The setup is as follows:
+
+```{r, echo = FALSE, fig.height = 3}
+mean_loc5 <- c(0.0005, 0.001,
+               0.05, 0.055,
+               0.065, 0.075,
+               0.085, 0.09,
+               0.1, 0.1)
+tau_loc5 <- 0.07
+epsilon_loc5 <- 0.01
+H_loc5 <- get_complexity(mean_loc5, tau_loc5, epsilon_loc5)
+
+plot(mean_loc5, c(0.98,1.02,1,1,1,1,1,1,1.02,0.98), pch = 19, ylim = c(0.8,1.2), ylab = "", xlab = "Mean Locations", main = paste0("Setup Experiment 5 - Complexity of ", round(H_loc5)))
+abline(v=tau_loc5)
+abline(v=tau_loc5+epsilon_loc5, lty=2)
+abline(v=tau_loc5-epsilon_loc5, lty=2)
+```
+
+The results are as follows:
+
+```{r, echo = FALSE}
+load(paste0(current_path, "loc5_comp_KLUCB72_long.Rda"))
+load(paste0(current_path, "loc5_comp_BUCB_horizon_long_8000.Rda"))
+load(paste0(current_path, "loc5_comp_AugUCB_8000.Rda"))
+load(paste0(current_path, "loc5_comp_APT_8000.Rda"))
+load(paste0(current_path, "loc5_comp_UNIFORM_8000.Rda"))
+
+alg_names <- c(rep(c("Uniform", "APT", "AugUCB", "B-UCB", "KL-UCB"), each = 7991))
+index <- c(rep(10:8000, times = 5))
+alg_res <- log(c(loc5_comp_UNIFORM_8000, loc5_comp_APT_8000, loc5_comp_AugUCB_8000, loc5_comp_BUCB_horizon_long_8000, loc5_comp_KLUCB72_long))
+loc5_comp_res <- data.frame(Index = index, Algorithm = alg_names, 
+                            results = alg_res)
+ggplot(loc5_comp_res, aes(x = Index, y = alg_res)) + geom_line(aes(group = Algorithm, color = Algorithm)) + geom_hline(aes(yintercept = log(0.01)), linetype = 2) +
+  labs(title = "Experiment 5 Results", subtitle = paste0("Complexity of ", round(H_loc5)), y = "log(Error)")
+```
+

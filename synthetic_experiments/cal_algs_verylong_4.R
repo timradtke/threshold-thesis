@@ -152,6 +152,18 @@ loc4_comp_UNIFORM <- compare_to_ground_truth(mean_loc4, loc4_UNIFORM, tau_loc4,
 save(loc4_comp_UNIFORM, file = paste0(current_path, "loc4_comp_UNIFORM.Rda"))
 rm(loc4_UNIFORM)
 gc()
+
+########################################################################
+# Standard Uniform
+system.time(loc4_UNIFORM_8000 <- para_bandit_sim_uniform(data = data_list4_8000, 
+                                                         rounds = 8000))
+save(loc4_UNIFORM_8000, file = paste0(current_path, "loc4_UNIFORM_8000.Rda"))
+loc4_comp_UNIFORM_8000 <- compare_to_ground_truth(mean_loc4, loc4_UNIFORM_8000, 
+                                                  tau_loc4, 
+                                                  epsilon_loc4)$mean
+save(loc4_comp_UNIFORM_8000, file = paste0(current_path,
+                                           "loc4_comp_UNIFORM_8000.Rda"))
+
 ########################################################################
 # Standard APT Algorithm
 # a seed is built in
@@ -167,6 +179,20 @@ save(loc4_comp_APT, file = paste0(current_path, "loc4_comp_APT.Rda"))
 load(file = paste0(current_path, "loc4_comp_APT.Rda"))
 rm(loc4_APT)
 gc()
+
+########################################################################
+# Standard APT Algorithm
+# a seed is built in
+system.time(loc4_APT_8000 <- para_bandit_sim_APT(data = data_list4_8000, 
+                                                 rounds = 8000, 
+                                                 tau = tau_loc4, 
+                                                 epsilon = epsilon_loc4))
+save(loc4_APT_8000, file = paste0(current_path, "loc4_APT_8000.Rda"))
+loc4_comp_APT_8000 <- compare_to_ground_truth(mean_loc4, loc4_APT_8000, 
+                                              tau_loc4, 
+                                              epsilon_loc4)$mean
+save(loc4_comp_APT_8000, file = paste0(current_path, 
+                                       "loc4_comp_APT_8000.Rda"))
 
 ########################################################################
 # KL-UCB Algorithm with tuned exploration rate through horizon=40000
@@ -606,6 +632,7 @@ save(loc4_comp_BUCB_horizon5, file = paste0(current_path, "loc4_comp_BUCB_horizo
 
 load(file = paste0(current_path, "loc4_comp_UNIFORM.Rda"))
 load(file = paste0(current_path, "loc4_comp_APT.Rda"))
+load(file = paste0(current_path, "loc4_comp_APT_8000.Rda"))
 load(file = paste0(current_path, "loc4_comp_AugUCB.Rda"))
 load(file = paste0(current_path, "loc4_comp_AugUCB_8000.Rda"))
 load(file = paste0(current_path, "loc4_comp_KL_tau_horizon.Rda"))
@@ -630,7 +657,8 @@ load(paste0(current_path, "loc4_comp_KLUCB90.Rda"))
 load(paste0(current_path, "loc4_comp_KLUCB24100.Rda"))
 load(paste0(current_path, "loc4_comp_AugUCB.Rda"))
 load(paste0(current_path, "loc4_comp_AugUCB_8000.Rda"))
-load(paste0(current_path, "loc4_KLUCB90_long.Rda"))
+load(paste0(current_path, "loc4_comp_APT_8000.Rda"))
+load(paste0(current_path, "loc4_comp_KLUCB90_long.Rda"))
 
 plot(c(0,8000), c(0, -5), type = "n")
 lines(log(loc4_comp_BUCB_horizon_8000), col = "red")
@@ -640,7 +668,9 @@ lines(log(loc4_comp_BUCB_squared_long), col = "pink")
 lines(log(loc4_comp_KLUCB180), col = "blue")
 lines(log(loc4_comp_KLUCB90), col = "darkblue")
 lines(log(loc4_comp_KLUCB90), col = "darkblue")
+lines(log(loc4_comp_UNIFORM), col = "darkblue")
 lines(log(loc4_comp_APT), col = "green")
+lines(log(loc4_comp_APT_8000), col = "green")
 lines(log(loc4_comp_AugUCB), col = "grey")
 lines(log(loc4_comp_AugUCB_8000), col = "black")
 lines(log(loc4_comp_BUCB_linearhorizon_long), col = "blue")

@@ -168,6 +168,38 @@ save(loc5_comp_KLUCB60, file = paste0(current_path,
 ########################################################################
 # Standard APT Algorithm
 # a seed is built in
+system.time(loc5_APT_8000 <- para_bandit_sim_APT(data = data_list5_8000, 
+                                                 rounds = 8000, 
+                                                 tau = tau_loc5, 
+                                                 epsilon = epsilon_loc5))
+# user   system  elapsed 
+#25.142   19.384 3997.529 
+save(loc5_APT_8000, file = paste0(current_path, "loc5_APT_8000.Rda"))
+#load(file = paste0(current_path, "loc5_APT_long.Rda"))
+loc5_comp_APT_8000 <- compare_to_ground_truth(mean_loc5, loc5_APT_8000, 
+                                              tau_loc5, 
+                                              epsilon_loc5)$mean
+save(loc5_comp_APT_8000, file = paste0(current_path, "loc5_comp_APT_8000.Rda"))
+#load(file = paste0(current_path, "loc5_comp_APT_long.Rda"))
+rm(loc5_APT_8000)
+gc()
+
+system.time(loc5_UNIFORM_8000 <- para_bandit_sim_uniform(data = data_list5_8000, 
+                                                         rounds = 8000))
+save(loc5_UNIFORM_8000, file = paste0(current_path, "loc5_UNIFORM_8000.Rda"))
+#load(file = paste0(current_path, "loc5_UNIFORM.Rda"))
+loc5_comp_UNIFORM_8000 <- compare_to_ground_truth(mean_loc5, 
+                                                  loc5_UNIFORM_8000, 
+                                                  tau_loc5, 
+                                                  epsilon_loc5)$mean
+save(loc5_comp_UNIFORM_8000, file = paste0(current_path, 
+                                           "loc5_comp_UNIFORM_8000.Rda"))
+rm(loc5_UNIFORM_8000)
+gc()
+
+########################################################################
+# Standard APT Algorithm
+# a seed is built in
 system.time(loc5_APT_long <- para_bandit_sim_APT(data = data_list5, rounds = 6000, 
                                             tau = tau_loc5, epsilon = epsilon_loc5))
 # user   system  elapsed 
@@ -487,11 +519,9 @@ save(loc5_comp_BUCB_horizon5, file = paste0(current_path, "loc5_comp_BUCB_horizo
 load(paste0(current_path, "loc5_comp_APT_long.Rda"))
 load(paste0(current_path, "loc5_comp_APT.Rda"))
 load(paste0(current_path, "loc5_comp_AugUCB.Rda"))
-load(paste0(current_path, "loc5_comp_AugUCB_8000.Rda"))
 load(paste0(current_path, "loc5_comp_TTS.Rda"))
 load(paste0(current_path, "loc5_comp_BUCB.Rda"))
 load(paste0(current_path, "loc5_comp_BUCB_horizon_long.Rda"))
-load(paste0(current_path, "loc5_comp_BUCB_horizon_long_8000.Rda"))
 load(paste0(current_path, "loc5_comp_BUCB_squared_long.Rda"))
 load(paste0(current_path, "loc5_comp_KLUCB200.Rda"))
 load(paste0(current_path, "loc5_comp_KLUCB96.Rda"))
@@ -500,6 +530,8 @@ load(paste0(current_path, "loc5_comp_KLUCB60.Rda"))
 load(paste0(current_path, "loc5_comp_KLUCB36.Rda"))
 load(paste0(current_path, "loc5_comp_KLUCB5.Rda"))
 load(paste0(current_path, "loc5_comp_KLUCB72_long.Rda"))
+load(paste0(current_path, "loc5_comp_BUCB_horizon_long_8000.Rda"))
+load(paste0(current_path, "loc5_comp_AugUCB_8000.Rda"))
 
 plot(c(0,8000), c(0,-5), type = "n")
 lines(log(loc5_comp_APT_long), col = "blue")
