@@ -91,6 +91,47 @@ compare_to_cv_data <- function(mean_list, sim_res, thresh, eps) {
 
 #################################################################################
 
+# The result is a very long data frame where each row is a (round, arm)
+# combination and specifies which arm was wrong in that round; since the
+# data frame carries information on all iterations of the simulation,
+# some combinations will (and should!) be repeated; this way it's perfect
+# for further piping into ggplot to discover which arms are classified
+# wrong by the algorithm at what stage of the sampling process
+
+# REQUIRES plyr AND IS SLOW!
+
+get_wrong_arms_per_round <- function(true_means, sim_res, tau, epsilon) {
+  n <- length(true_means)
+  message(paste0("Comparing ", length(sim_res), " simulations."))
+  true_classification_up <- which(true_means > tau+epsilon)
+  true_classification_down <- which(true_means < tau-epsilon)
+  
+  get_wrong_arms_in_iter <- function(x, true_class_up, true_class_down) {
+    arms <- sort(c(true_class_up[!(true_class_up %in% which(x >= tau))],
+                   true_class_down[!(true_class_down %in% which(x < tau))]))
+    ifelse(length(arms) == 0, NA, arms)
+  }
+  
+  get_wrong_arms <- function(res_df, ...) {
+    larms <- alply(res_df$mean_storage, .margins = 1, get_wrong_arms_in_iter, ...,
+                   .expand = TRUE)
+    dfarms <- data.frame(round = rep(0, n), arm = 1:n)
+    for(i in 1:length(larms)) {
+      dfarms <- rbind(dfarms,
+                      data.frame(round = rep(i, length(larms[[i]])),
+                                 arm = larms[[i]]))
+    }
+    return(dfarms)
+  }
+  
+  comp_list <- ldply(sim_res, get_wrong_arms, 
+                     true_class_up = true_classification_up,
+                     true_class_down = true_classification_down,
+                     .progress = "text")
+  
+  return(comp_list)
+}
+
 #################################################################################
 # input has to be a list of different data frames
 # each data frame is a run of the algorithm

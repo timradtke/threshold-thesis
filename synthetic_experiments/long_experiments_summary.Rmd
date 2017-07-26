@@ -19,11 +19,16 @@ In general, we compare the following algorithms:
 - Bayes UCB Algorithm adapted for Thresholding Bandits (BUCB), compare *[On Bayesian Upper Confidence Bounds for Bandit Problems](http://proceedings.mlr.press/v22/kaufmann12.html)* by Kaufmann et al., 2012
 
 ```{r, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+
 current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/AugUCB/"
 source(paste0(current_path, "run_from_data.R"))
 source(paste0(current_path, "run_parallelized_from_data.R"))
 current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/synthetic_experiments/"
 library(ggplot2)
+library(ggjoy)
+library(dplyr)
+library(tidyr)
 ```
 
 ## Experiment 1
@@ -237,3 +242,258 @@ ggplot(loc5_comp_res, aes(x = Index, y = alg_res)) + geom_line(aes(group = Algor
   labs(title = "Experiment 5 Results", subtitle = paste0("Complexity of ", round(H_loc5)), y = "log(Error)")
 ```
 
+## Joy Plots of Algorithm Sampling Choices
+
+### Experiment 3
+
+```{r, echo = FALSE}
+load(file = paste0(current_path, "arm_seq_loc2.Rda"))
+
+arm_seq_APT_loc2 %>% tbl_df() %>% 
+  mutate(index = 1:2000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 10, index <= 1500) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.2, size = 0.2) + theme_joy() +
+  labs(title = "APT")
+
+arm_seq_BUCB_loc2 %>% tbl_df() %>% 
+  mutate(index = 1:4000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 10, index <= 1500) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.2, size = 0.2) + theme_joy() +
+  labs(title = "Bayes-UCB")
+
+arm_seq_KLUCB_loc2 %>% tbl_df() %>% 
+  mutate(index = 1:1500) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 10) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.2, size = 0.2) + theme_joy() +
+  labs(title = "KL-UCB")
+
+arm_seq_AugUCB_loc2 %>% tbl_df() %>% 
+  mutate(index = 1:2000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 10, index <= 1500) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.2, size = 0.2) + theme_joy() +
+  labs(title = "Augmented UCB")
+```
+
+### Experiment 3
+
+```{r, echo = FALSE}
+load(file = paste0(current_path, "arm_seq_loc3.Rda"))
+
+arm_seq_APT_loc3 %>% tbl_df() %>% 
+  mutate(index = 1:7000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 10, index <= 5000) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.5, size = 0.2) + theme_joy() +
+  labs(title = "APT")
+
+arm_seq_BUCB_loc3 %>% tbl_df() %>% 
+  mutate(index = 1:7000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 10, index <= 5000) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.5, size = 0.2) + theme_joy() +
+  labs(title = "Bayes-UCB")
+
+arm_seq_KLUCB_loc3 %>% tbl_df() %>% 
+  mutate(index = 1:5000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 10) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.5, size = 0.2) + theme_joy() +
+  labs(title = "KL-UCB")
+
+arm_seq_AugUCB_loc3 %>% tbl_df() %>% 
+  mutate(index = 1:7000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 10, index <= 5000) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.5, size = 0.2) + theme_joy() +
+  labs(title = "Augmented UCB")
+```
+
+### Experiment 4
+
+```{r, echo = FALSE}
+load(file = paste0(current_path, "arm_seq_loc4.Rda"))
+
+arm_seq_APT_loc4 %>% tbl_df() %>% 
+  mutate(index = 1:8000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 11) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.2, size = 0.2) + theme_joy() +
+  labs(title = "APT")
+
+arm_seq_BUCB_loc4 %>% tbl_df() %>% 
+  mutate(index = 1:8000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 11) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.2, size = 0.2) + theme_joy() +
+  labs(title = "Bayes-UCB")
+
+arm_seq_KLUCB_loc4 %>% tbl_df() %>% 
+  mutate(index = 1:8000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 11) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.2, size = 0.2) + theme_joy() +
+  labs(title = "KL-UCB")
+
+arm_seq_AugUCB_loc4 %>% tbl_df() %>% 
+  mutate(index = 1:8000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 11) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.2, size = 0.2) + theme_joy() +
+  labs(title = "Augmented UCB")
+```
+
+### Experiment 5
+
+```{r, echo = FALSE}
+load(file = paste0(current_path, "arm_seq_loc5.Rda"))
+
+arm_seq_APT_loc5 %>% tbl_df() %>% 
+  mutate(index = 1:8000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 10) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.5, size = 0.2) + theme_joy() +
+  labs(title = "APT")
+
+arm_seq_BUCB_loc5 %>% tbl_df() %>% 
+  mutate(index = 1:8000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 10) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.5, size = 0.2) + theme_joy() +
+  labs(title = "Bayes-UCB")
+
+arm_seq_KLUCB_loc5 %>% tbl_df() %>% 
+  mutate(index = 1:8000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 10) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.5, size = 0.2) + theme_joy() +
+  labs(title = "KL-UCB")
+
+arm_seq_AugUCB_loc5 %>% tbl_df() %>% 
+  mutate(index = 1:8000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 10) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.5, size = 0.2) + theme_joy() +
+  labs(title = "Augmented UCB")
+```
+
+```{r, echo = FALSE, include = FALSE}
+arm_seq_APT_loc5 %>% tbl_df() %>% 
+  mutate(index = 1:8000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = index, y = arm)) +
+  geom_joy(scale = 2) + theme_joy() +
+  scale_y_discrete(expand = c(0.01, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(title = "APT")
+
+arm_seq_APT_loc5 %>% tbl_df() %>% 
+  mutate(index = 1:8000) %>%
+  filter(index <= 2000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  filter(index %in% seq(11,4000, by = 100)) %>%
+  mutate(index = as.factor(index)) %>%
+  ggplot(aes(x = arm, y = index)) +
+  geom_joy(stat = "binline", binwidth = 1, scale = 0.9) + theme_joy() +
+  scale_y_discrete(expand = c(0.01, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(title = "APT")
+```
+
+```{r, echo = FALSE}
+load(file = paste0(current_path, "wrong_arms_BUCB_loc2.Rda"))
+head(wrong_arms_BUCB_loc2,100)
+wrong_arms_BUCB_loc2 %>%
+  filter(!is.na(arm), round > 10) %>%
+  group_by(round, arm) %>%
+  summarize(n = n()) %>%
+  ungroup() %>%
+  mutate(arm = as.factor(arm)) %>%
+  ggplot(aes(x = round, y = arm, height = n)) +
+  geom_joy(stat = "identity", scale = 1.8, size = 0.2) + theme_joy() +
+  labs(title = "Bayes-UCB - Experiment 2")
+```
