@@ -42,11 +42,13 @@ load(paste0(current_path, "/loc3_comp_AugUCB_7000.Rda"))
 load(paste0(current_path, "/loc3_comp_KLUCB370_5000.Rda"))
 load(paste0(current_path, "/loc3_comp_UNIFORM_7000.Rda"))
 load(paste0(current_path, "/loc3_comp_APT_7000.Rda"))
+load(paste0(current_path, "/loc3_comp_LR_7000.Rda"))
 
 plot(c(0,7000), c(0, -9), type = "n")
 lines(log(loc3_comp_BUCB_horizon_7000), col = "blue")
 #lines(log(loc3_comp_BUCB_horizon), col = "lightblue")
 #lines(log(loc3_comp_APT), col = "pink")
+lines(log(loc3_comp_LR_7000), col = "green")
 lines(log(loc3_comp_APT_7000), col = "red")
 lines(log(loc3_comp_UNIFORM_7000), col = "black")
 #lines(log(loc3_comp_AugUCB), col = "grey")
@@ -88,18 +90,30 @@ save(loc3_comp_AugUCB_7000, file = paste0(current_path,
                                           "loc3_comp_AugUCB_7000.Rda"))
 
 ########################################################################
-# Standard AugUCB
+# Standard APT
 system.time(loc3_APT_7000 <- para_bandit_sim_APT(data = data_list3, 
                                                  rounds = 7000, 
                                                  tau = tau_loc3, 
                                                  epsilon = epsilon_loc3))
-#     user    system   elapsed 
-#46.915    50.807 18671.723
+
 save(loc3_APT_7000, file = paste0(current_path, "loc3_APT_7000.Rda"))
 loc3_comp_APT_7000 <- compare_to_ground_truth(mean_loc3, loc3_APT_7000, 
                                                  tau_loc3, epsilon_loc3)$mean
 save(loc3_comp_APT_7000, file = paste0(current_path, 
                                        "loc3_comp_APT_7000.Rda"))
+
+########################################################################
+# Standard Likelihood Ratio
+system.time(loc3_LR_7000 <- para_bandit_sim_LR(data = data_list3, 
+                                               rounds = 7000, 
+                                               tau = tau_loc3, 
+                                               epsilon = epsilon_loc3))
+
+save(loc3_LR_7000, file = paste0(current_path, "loc3_LR_7000.Rda"))
+loc3_comp_LR_7000 <- compare_to_ground_truth(mean_loc3, loc3_LR_7000, 
+                                             tau_loc3, epsilon_loc3)$mean
+save(loc3_comp_LR_7000, file = paste0(current_path, 
+                                       "loc3_comp_LR_7000.Rda"))
 
 ########################################################################
 

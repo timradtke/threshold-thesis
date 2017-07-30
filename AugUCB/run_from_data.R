@@ -686,6 +686,63 @@ get_next_arm_uniform <- function(armls) {
 
 ##############################################################
 
+# Likelihood Ratio based Algorithm
+
+LR_bandit_from_tsdata <- function(data, rounds = 5000, tau, epsilon,
+                                  verbose = FALSE, seed = NA) {
+  
+  if(!is.na(seed)) set.seed(seed)
+  K <- dim(data)[2]
+  
+  # initialize by pulling each arm once
+  arm_list <- diag(as.matrix(data[1:K,]))
+  arm_list <- as.list(arm_list)
+  
+  # initialize mean storage and the counter
+  mean_storage <- matrix(unlist(lapply(arm_list, mean)), nrow = 1)
+  arm_sequence <- 1:K
+  
+  for(i in (K+1):rounds) {
+    if(verbose) message(paste("this is round", i))
+    next_arm <- get_min(-unlist(get_next_arm_lr(arm_list, tau = tau,
+                                                epsilon = epsilon)))
+    arm_sequence <- c(arm_sequence, next_arm)
+    
+    if(verbose) message("arm selecting done")
+    if(verbose) message(next_arm)
+    arm_list[[next_arm]] <- c(arm_list[[next_arm]], data[i, next_arm])
+    
+    mean_storage <- rbind(mean_storage, unlist(lapply(arm_list, mean)))
+    
+    if(verbose) message("arm pulling done")
+    
+  }
+  return(list(means = unlist(lapply(arm_list, mean)),
+              arm_list = arm_list,
+              arm_sequence = arm_sequence,
+              mean_storage = mean_storage))
+}
+
+lr_ber <- function(x,S,N) {
+  # here, S/N is the empirical mean (successes over trials)
+  # while x represents some H0 mean we test against
+  (x/(S/N))^(S) * ((1-x)/(1-S/N))^(N-S)
+}
+
+get_next_arm_lr <- function(armls, tau, epsilon) {
+  get_metric <- function(x) {
+    successes <- sum(x)
+    trials <- length(x)
+    LRhat <- ifelse(successes/trials >= tau,
+                    lr_ber(tau-epsilon, successes, trials),
+                    lr_ber(tau+epsilon, successes, trials))
+    return(LRhat)
+  }
+  lapply(armls, get_metric)
+}
+
+##############################################################
+
 
 #mean_002 <- c(0.033, 0.033, 0.037, 0.037,
 #              0.031, 0.031, 0.039, 0.039,

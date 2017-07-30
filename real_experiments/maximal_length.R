@@ -115,6 +115,22 @@ gc()
 
 
 ########################################################################
+# LR Algorithm
+system.time(amo1_LR <- para_bandit_sim_LR(data = data_amo1, rounds = 7580, 
+                                            tau = tau_amo1, epsilon = epsilon_amo1))
+save(amo1_LR, file = paste0(current_path, "amo1_LR.Rda"))
+#load(paste0(current_path, "amo1_LR.Rda"))
+amo1_comp_LR <- compare_to_ground_truth(data_amo1_mean_firsthalf, amo1_LR, 
+                                         tau_amo1, epsilon_amo1)$mean
+amo1_compholdout_LR <- compare_to_ground_truth(data_amo1_mean_secondhalf, amo1_LR, 
+                                                tau_amo1, epsilon_amo1)$mean
+
+save(amo1_comp_LR, file = paste0(current_path, "amo1_comp_LR.Rda"))
+save(amo1_compholdout_LR, file = paste0(current_path, "amo1_compholdout_LR.Rda"))
+rm(amo1_LR)
+gc()
+
+########################################################################
 # Standard Uniform
 system.time(amo1_UNIFORM <- para_bandit_sim_uniform(data = data_amo1, 
                                                     rounds = 7580))
@@ -203,6 +219,11 @@ data_amo1_mean_firsthalf > 3/60
 data_amo1_mean_firsthalf < 1/60
 load(paste0(current_path, "amo1_comp_APT.Rda"))
 load(paste0(current_path, "amo1_comp_BUCB.Rda"))
+load(paste0(current_path, "amo1_comp_KLUCB.Rda"))
+load(paste0(current_path, "amo1_comp_AugUCB.Rda"))
+load(paste0(current_path, "amo1_comp_UNIFORM.Rda"))
+load(paste0(current_path, "amo1_comp_TTS.Rda"))
+load(paste0(current_path, "amo1_comp_LR.Rda"))
 plot(c(0,8000), c(0, -8), type = "n")
 lines(log(amo1_comp_UNIFORM), col = "black")
 lines(log(amo1_comp_APT), col = "blue")
@@ -210,12 +231,18 @@ lines(log(amo1_comp_AugUCB), col = "red")
 lines(log(amo1_comp_BUCB), col = "green")
 lines(log(amo1_comp_KLUCB), col = "darkgreen")
 lines(log(amo1_comp_TTS), col = "violet")
+lines(log(amo1_comp_LR), col = "darkblue")
 abline(h = log(0.1), lty = 2)
 
 data_amo1_mean_secondhalf > 3/60
 data_amo1_mean_secondhalf < 1/60
 load(paste0(current_path, "amo1_compholdout_BUCB.Rda"))
 load(paste0(current_path, "amo1_compholdout_APT.Rda"))
+load(paste0(current_path, "amo1_compholdout_UNIFORM.Rda"))
+load(paste0(current_path, "amo1_compholdout_KLUCB.Rda"))
+load(paste0(current_path, "amo1_compholdout_AugUCB.Rda"))
+load(paste0(current_path, "amo1_compholdout_TTS.Rda"))
+load(paste0(current_path, "amo1_compholdout_LR.Rda"))
 plot(c(0,8000), c(0, -4), type = "n")
 lines(log(amo1_compholdout_UNIFORM), col = "black")
 lines(log(amo1_compholdout_APT), col = "blue")
@@ -223,4 +250,5 @@ lines(log(amo1_compholdout_AugUCB), col = "red")
 lines(log(amo1_compholdout_BUCB), col = "green")
 lines(log(amo1_compholdout_KLUCB), col = "darkgreen")
 lines(log(amo1_compholdout_TTS), col = "violet")
+lines(log(amo1_compholdout_LR), col = "darkblue")
 abline(h = log(0.1), lty = 2)

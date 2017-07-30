@@ -177,6 +177,7 @@ data_amo2_mean_firsthalf > 3/60
 data_amo2_mean_firsthalf < 1/60
 load(paste0(current_path, "amo2_comp_APT.Rda"))
 load(paste0(current_path, "amo2_comp_BUCB.Rda"))
+load(paste0(current_path, "amo2_comp_UNIFORM.Rda"))
 plot(c(0,8000), c(0, -8), type = "n")
 lines(log(amo2_comp_UNIFORM), col = "black")
 lines(log(amo2_comp_APT), col = "blue")
@@ -190,6 +191,7 @@ data_amo2_mean_secondhalf > 3/60
 data_amo2_mean_secondhalf < 1/60
 load(paste0(current_path, "amo2_compholdout_BUCB.Rda"))
 load(paste0(current_path, "amo2_compholdout_APT.Rda"))
+load(paste0(current_path, "amo2_compholdout_UNIFORM.Rda"))
 plot(c(0,8000), c(0, -6), type = "n")
 lines(log(amo2_compholdout_UNIFORM), col = "black")
 lines(log(amo2_compholdout_APT), col = "blue")

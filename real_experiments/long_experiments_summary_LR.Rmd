@@ -1,0 +1,179 @@
+---
+title: "Experiments with LR-based Strategy"
+output: pdf_document
+---
+
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+
+current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/AugUCB/"
+source(paste0(current_path, "run_from_data.R"))
+source(paste0(current_path, "run_parallelized_from_data.R"))
+current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/synthetic_experiments/"
+library(ggplot2)
+library(ggjoy)
+library(dplyr)
+library(tidyr)
+```
+
+
+In the following experiments which are all based on 5000 iterations, we consider the following algorithms:
+
+- APT (Locatelli et al. (2016))
+- UNIFORM
+- LR Likelihood Ratio based strategy
+- AugUCB Augmented-UCB (Mukherjee et al., 2017)
+- B-UCB Bayes-UCB (adapted from "On Bayesian Upper Confidence Bounds for Bandit Problems" by Kaufmann, Cappé, Garivier, 2012)
+- KL-UCB (adapted version of fixed budget KL-LUCB-E in "Information Complexity in Bandit Subset Selection" by Kaufmann, Kalyanakrishnan, 2013)
+- TTS Thompson-Sampling based strategy adapted for thresholding problem (only in the problem on real data).
+
+## Experiment 2
+
+The same as experiment 3 in Locatelli et al. (2016). We have the following means, threshold (solid line), and epsilon interval (dashed line):
+
+```{r, echo = FALSE, fig.height = 3}
+mean_loc2 <- c(0.4-0.2^(1:4),
+               0.45, 0.55,
+               0.6+0.2^(5-(1:4)))
+tau_loc2 <- 0.5
+epsilon_loc2 <- 0.1
+H_loc2 <- get_complexity(mean_loc2, tau_loc2, epsilon_loc2)
+
+plot(mean_loc2, c(1,1,0.98,1.02,1,1,1.02,0.98,1,1), pch = 19, ylim = c(0.8,1.2), ylab = "", xlab = "Mean Locations", main = paste0("Setup Experiment 2 - Complexity of ", round(H_loc2)))
+abline(v=tau_loc2)
+abline(v=tau_loc2+epsilon_loc2, lty=2)
+abline(v=tau_loc2-epsilon_loc2, lty=2)
+```
+
+The experiment results are as follows:
+
+```{r, echo = FALSE}
+library(ggplot2)
+
+load(paste0(current_path, "/loc2_comp_BUCB_horizon_4000.Rda"))
+load(paste0(current_path, "/loc2_comp_APT_2000.Rda"))
+load(paste0(current_path, "/loc2_comp_AugUCB_2000.Rda"))
+load(paste0(current_path, "/loc2_comp_KLUCB80_long.Rda"))
+load(paste0(current_path, "/loc2_comp_UNIFORM_2000.Rda"))
+load(paste0(current_path, "/loc2_comp_LR_2000.Rda"))
+
+alg_names <- c(rep(c("Uniform", "APT", "AugUCB", "B-UCB", "LR"), each = 1991), rep("KL-UCB", 1491))
+index <- c(rep(10:2000, times = 5), 10:1500)
+alg_res <- log(c(loc2_comp_UNIFORM_2000, loc2_comp_APT_2000, loc2_comp_AugUCB_2000, loc2_comp_BUCB_horizon_4000[1:1991], loc2_comp_LR_2000, loc2_comp_KLUCB80_long))
+loc2_comp_res <- data.frame(Round = index, Algorithm = alg_names, 
+                            results = alg_res)
+ggplot(loc2_comp_res, aes(x = Round, y = alg_res)) + geom_line(aes(group = Algorithm, color = Algorithm)) + geom_hline(aes(yintercept = log(0.01)), linetype = 2) +
+  labs(title = "Experiment 2 Results", y = "log(Error)", subtitle = "Horizontal Bar at 0.05 Average Error")
+```
+
+
+
+\newpage
+
+## Experiment 3
+
+This is the first of three experiments at a very small threshold and with accordingly small means for again 10 arms. As before, the arms are distributed symmetrically around the threshold. We let the algorithms run for more iterations than previously. The means, threshold, intervals are as follows:
+
+```{r, echo = FALSE, fig.height = 3}
+mean_loc3 <- c(0.001, 0.005, 0.01, 0.015,
+               0.0475, 0.0525,
+               0.085, 0.09, 0.095, 0.099)
+tau_loc3 <- 0.05
+epsilon_loc3 <- 0.005
+H_loc3 <- get_complexity(mean_loc3, tau_loc3, epsilon_loc3)
+
+plot(mean_loc3, c(1,1,1,1,1,1,1,1,1,1), pch = 19, ylim = c(0.8,1.2), ylab = "", xlab = "Mean Locations", main = paste0("Setup Experiment 3 - Complexity of ", round(H_loc3)))
+abline(v=tau_loc3)
+abline(v=tau_loc3+epsilon_loc3, lty=2)
+abline(v=tau_loc3-epsilon_loc3, lty=2)
+```
+
+The results are as follows:
+
+```{r, echo = FALSE}
+load(paste0(current_path, "/loc3_comp_BUCB_horizon_7000.Rda"))
+load(paste0(current_path, "/loc3_comp_AugUCB_7000.Rda"))
+load(paste0(current_path, "/loc3_comp_KLUCB370_5000.Rda"))
+load(paste0(current_path, "/loc3_comp_UNIFORM_7000.Rda"))
+load(paste0(current_path, "/loc3_comp_APT_7000.Rda"))
+load(paste0(current_path, "/loc3_comp_LR_7000.Rda"))
+
+alg_names <- c(rep(c("Uniform", "APT", "AugUCB", "B-UCB", "LR"), each = 6991), rep("KL-UCB", 4991))
+index <- c(rep(10:7000, times = 5), 10:5000)
+alg_res <- log(c(loc3_comp_UNIFORM_7000, loc3_comp_APT_7000, loc3_comp_AugUCB_7000, loc3_comp_BUCB_horizon_7000, loc3_comp_LR_7000, loc3_comp_KLUCB370_5000))
+loc3_comp_res <- data.frame(index = index, names = alg_names, 
+                            results = alg_res)
+ggplot(loc3_comp_res, aes(x = index, y = alg_res)) + geom_line(aes(group = alg_names, color = alg_names)) + geom_hline(aes(yintercept = log(0.01)), linetype = 2) +
+  labs(title = "Experiment 3 Results", subtitle = paste0("Complexity of ", round(H_loc3)), y = "log(Error)")
+```
+
+
+\newpage
+
+## Experiment on Real Data
+
+This experiment is based on data from Amorelie where each observation is based on whether or not a page had viewers during the minute. Thus, one round has observations for 7580 minutes, or a little more than 5 days. We observe that the mean of the data fluctuates over time. If we consider a moving average the observations with a window of 60*24 minutes, and compare it against a data set that was drawn randomly from Bernoulli distributions based on the sample means from the real data, we clearly see time dependency:
+
+```{r, echo = FALSE, fig.height = 4}
+current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/"
+
+load(paste0(current_path, "data_amo1_mean_firsthalf"))
+load(paste0(current_path, "data_amo1_mean_secondhalf"))
+load(paste0(current_path, "data_amo1.Rda"))
+tau_amo1 <- 3/60
+epsilon_amo1 <- 1/60
+
+data <- data_amo1[[1]]
+rm(data_amo1)
+#gc()
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+real_mean <- unlist(lapply(data, mean))
+H_real <- get_complexity(real_mean, tau_amo1, epsilon_amo1)
+
+
+syn_data <- data.frame(rep(NA, times = 7580))
+set.seed(124632728)
+for(i in 1:length(real_mean)) {
+  syn_data[[i]] <- as.numeric(purrr::rbernoulli(7580, p  = real_mean[i]))
+}
+names(syn_data) <- names(real_mean)
+
+real_daily <- data.frame(source = rep("Real", 6141),
+                         index = 1:6141,
+                        lapply(data, FUN = zoo::rollapply, width = 24*60, mean)) %>%
+  gather(arm, mean, -index, -source)
+syn_daily <- data.frame(source = rep("Synthetic", 6141),
+                        index = 1:6141,
+                        lapply(syn_data, FUN = zoo::rollapply, width = 24*60, mean)) %>%
+  gather(arm, mean, -index, -source)
+
+rbind(real_daily, syn_daily) %>%
+  ggplot(aes(x = index, y = mean, group = arm, color = arm)) +
+  geom_line() + geom_hline(aes(yintercept = tau_amo1)) + geom_hline(aes(yintercept = tau_amo1+epsilon_amo1), linetype = 2) + geom_hline(aes(yintercept = tau_amo1-epsilon_amo1), linetype = 2) +
+  facet_grid(.~source) + labs(title = "Moving average over 24*60 observations (1 day)", subtitle = "Horizontal Bar indicates the threshold")
+
+```
+
+The results on the **real** data are as follows:
+
+```{r, echo = FALSE}
+load(paste0(current_path, "amo1_comp_BUCB.Rda"))
+load(paste0(current_path, "amo1_comp_APT.Rda"))
+load(paste0(current_path, "amo1_comp_UNIFORM.Rda"))
+load(paste0(current_path, "amo1_comp_KLUCB.Rda"))
+load(paste0(current_path, "amo1_comp_AugUCB.Rda"))
+load(paste0(current_path, "amo1_comp_TTS.Rda"))
+load(paste0(current_path, "amo1_comp_LR.Rda"))
+
+alg_names <- c(rep(c("Uniform", "APT", "AugUCB", "B-UCB", "KL-UCB", "TTS", "LR"), each = 7571))
+index <- c(rep(10:7580, times = 7))
+alg_res <- log(c(amo1_comp_UNIFORM, amo1_comp_APT, amo1_comp_AugUCB, amo1_comp_BUCB, amo1_comp_KLUCB, amo1_comp_TTS, amo1_comp_LR))
+loc3_comp_res <- data.frame(index = index, names = alg_names, 
+                            results = alg_res)
+ggplot(loc3_comp_res, aes(x = index, y = alg_res)) + geom_line(aes(group = alg_names, color = alg_names)) +
+  labs(title = "Experiment on Real Data Results", subtitle = paste0("Sample Mean Complexity of ", round(H_real)), y = "log(Error)")
+```
