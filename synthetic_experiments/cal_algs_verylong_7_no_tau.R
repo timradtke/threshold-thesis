@@ -95,12 +95,12 @@ save(loc7nt_comp_APT_10000, file = paste0(current_path,
 ########################################################################
 
 loc7nt_BUCB_horizon_10000 <- para_bandit_sim_bucb(data = data_list7_10000, 
-                                               rounds = 10000, 
-                                               rate = "inverse_horizon",
-                                               tau = tau_loc7nt, 
-                                               epsilon = epsilon_loc7nt, 
-                                               alpha = tau_loc7nt, 
-                                               beta = 1-tau_loc7nt)
+                                                  rounds = 10000, 
+                                                  rate = "inverse_horizon",
+                                                  tau = tau_loc7nt, 
+                                                  epsilon = epsilon_loc7nt, 
+                                                  alpha = tau_loc7nt, 
+                                                  beta = 1-tau_loc7nt)
 save(loc7nt_BUCB_horizon_10000, 
      file = paste0(current_path, "loc7nt_BUCB_horizon_10000.Rda"))
 loc7nt_comp_BUCB_horizon_10000 <- compare_to_ground_truth(mean_loc7nt, 
@@ -142,6 +142,7 @@ save(loc7nt_comp_AugUCB_10000, file = paste0(current_path,
 load(file = paste0(current_path, "loc7nt_comp_UNIFORM_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_APT_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_LR_10000.Rda"))
+load(file = paste0(current_path, "loc7nt_comp_BUCB_horizon_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_AugUCB_10000.Rda"))
 
 plot(c(0,10000), c(0, -5), type = "n")
