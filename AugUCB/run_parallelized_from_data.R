@@ -164,6 +164,33 @@ para_bandit_sim_APT <- function(data, seed = NA, do_verbose = FALSE, ...) {
 }
 
 #################################################################################
+# EVT Algorithm
+
+para_bandit_sim_EVT <- function(data, seed = NA, do_verbose = FALSE, ...) {
+  require(foreach)
+  require(doParallel)
+  
+  # assume that data is a list of data frames
+  reps <- length(data)
+  
+  gc()
+  cl <- makeCluster(max(1,detectCores()-1))
+  registerDoParallel(cl)
+  res <- foreach(j = 1:reps, #.errorhandling = 'remove',
+                 .export = c("EVT_from_tsdata", "get_next_arm_evt",
+                             "get_min"), 
+                 .verbose = do_verbose, .inorder = TRUE) %dopar% {
+                   alg_res <- EVT_from_tsdata(data = data[[j]], 
+                                              seed = 512+j, ...)
+                   list(mean_storage = alg_res$mean_storage,
+                        arm_sequence = alg_res$arm_sequence,
+                        input_data = data[[j]])
+                 }
+  stopCluster(cl)
+  return(res)
+}
+
+#################################################################################
 # input has to be a list of different data frames
 # each data frame is a run of the algorithm
 # in the end, return a list of lists
@@ -182,10 +209,83 @@ para_bandit_sim_LR <- function(data, seed = NA, do_verbose = FALSE, ...) {
   registerDoParallel(cl)
   res <- foreach(j = 1:reps, #.errorhandling = 'remove',
                  .export = c("LR_bandit_from_tsdata", "get_next_arm_lr",
-                             "get_min", "lr_ber"), 
+                             "get_min", "lr_ber", "lr_gaussian", "lr_exponential",
+                             "get_next_arm_lr_gaussian", "get_next_arm_lr_exponential"), 
                  .verbose = do_verbose, .inorder = TRUE) %dopar% {
                    alg_res <- LR_bandit_from_tsdata(data = data[[j]], 
                                               seed = 512+j, ...)
+                   list(mean_storage = alg_res$mean_storage,
+                        arm_sequence = alg_res$arm_sequence,
+                        input_data = data[[j]])
+                 }
+  stopCluster(cl)
+  return(res)
+}
+
+para_bandit_sim_LR_gaussian <- function(data, seed = NA, do_verbose = FALSE, ...) {
+  require(foreach)
+  require(doParallel)
+  
+  # assume that data is a list of data frames
+  reps <- length(data)
+  
+  gc()
+  cl <- makeCluster(max(1,detectCores()-1))
+  registerDoParallel(cl)
+  res <- foreach(j = 1:reps, #.errorhandling = 'remove',
+                 .export = c("LR_bandit_from_tsdata_gaussian", "get_min", 
+                             "kl_gaussian", "get_next_arm_kl_gaussian"), 
+                 .verbose = do_verbose, .inorder = TRUE) %dopar% {
+                   alg_res <- LR_bandit_from_tsdata_gaussian(data = data[[j]], 
+                                                    seed = 512+j, ...)
+                   list(mean_storage = alg_res$mean_storage,
+                        arm_sequence = alg_res$arm_sequence,
+                        input_data = data[[j]])
+                 }
+  stopCluster(cl)
+  return(res)
+}
+
+para_bandit_sim_LR_exponential <- function(data, seed = NA, do_verbose = FALSE, ...) {
+  require(foreach)
+  require(doParallel)
+  
+  # assume that data is a list of data frames
+  reps <- length(data)
+  
+  gc()
+  cl <- makeCluster(max(1,detectCores()-1))
+  registerDoParallel(cl)
+  res <- foreach(j = 1:reps, #.errorhandling = 'remove',
+                 .export = c("LR_bandit_from_tsdata_exponential", "get_min", 
+                             "kl_exponential", "get_next_arm_kl_exponential"), 
+                 .verbose = do_verbose, .inorder = TRUE) %dopar% {
+                   alg_res <- LR_bandit_from_tsdata_exponential(data = data[[j]], 
+                                                             seed = 512+j, ...)
+                   list(mean_storage = alg_res$mean_storage,
+                        arm_sequence = alg_res$arm_sequence,
+                        input_data = data[[j]])
+                 }
+  stopCluster(cl)
+  return(res)
+}
+
+para_bandit_sim_LR_poisson <- function(data, seed = NA, do_verbose = FALSE, ...) {
+  require(foreach)
+  require(doParallel)
+  
+  # assume that data is a list of data frames
+  reps <- length(data)
+  
+  gc()
+  cl <- makeCluster(max(1,detectCores()-1))
+  registerDoParallel(cl)
+  res <- foreach(j = 1:reps, #.errorhandling = 'remove',
+                 .export = c("LR_bandit_from_tsdata_poisson", "get_min", 
+                             "kl_poisson", "get_next_arm_kl_poisson"), 
+                 .verbose = do_verbose, .inorder = TRUE) %dopar% {
+                   alg_res <- LR_bandit_from_tsdata_poisson(data = data[[j]], 
+                                                            seed = 512+j, ...)
                    list(mean_storage = alg_res$mean_storage,
                         arm_sequence = alg_res$arm_sequence,
                         input_data = data[[j]])

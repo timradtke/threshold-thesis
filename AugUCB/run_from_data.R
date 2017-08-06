@@ -421,70 +421,6 @@ get_posterior_mean <- function(x, alpha, beta) {
 
 ##############################################################
 
-# Probability of Improvement
-
-BETA_from_tsdata <- function(data, rounds, tau, epsilon,
-                             alpha, beta, verbose = FALSE, 
-                             seed = NA) {
-  
-  if(!is.na(seed)) set.seed(seed)
-  K <- dim(data)[2]
-  
-  # initialize by pulling each arm once
-  arm_list <- diag(as.matrix(data[1:K,]))
-  arm_list <- as.list(arm_list)
-  
-  # initialize mean storage and the counter
-  mean_storage <- matrix(unlist(lapply(arm_list, mean)), nrow = 1)
-  arm_sequence <- 1:K
-  
-  for(i in (K+1):rounds) {
-    if(verbose) message(paste("this is round", i))
-    # NOTE THE MINUS SIGN; find the arm that MAXIMIZES the error probability
-    next_arm <- get_min(-unlist(get_next_arm_BETA(arm_list, tau = tau,
-                                                  epsilon = epsilon,
-                                                  alpha = alpha,
-                                                  beta = beta)))
-    arm_sequence <- c(arm_sequence, next_arm)
-    
-    if(verbose) message("arm selecting done")
-    arm_list[[next_arm]] <- c(arm_list[[next_arm]], data[i, next_arm])
-    mean_storage <- rbind(mean_storage, unlist(lapply(arm_list,
-                                                      get_posterior_mean,
-                                                      alpha = alpha,
-                                                      beta = beta)))
-    
-    if(verbose) message("arm pulling done")
-    
-  }
-  return(list(means = unlist(lapply(arm_list, mean)),
-              arm_list = arm_list,
-              arm_sequence = arm_sequence,
-              mean_storage = mean_storage))
-}
-
-get_next_arm_BETA <- function(armls, tau, epsilon,
-                              alpha, beta) {
-  get_metric <- function(x) {
-    alpha_prime <- sum(x)+alpha
-    beta_prime <- length(x)+beta-sum(x)
-    posterior_mean <- alpha_prime/(alpha_prime+beta_prime)
-    border <- ifelse(posterior_mean >= tau, tau-epsilon, tau+epsilon)
-    alpha_alt <- border * (length(x)+alpha+beta)
-    beta_alt <- (1-border) * (length(x)+alpha+beta)
-    act_vec <- rbeta(100000, alpha_prime, beta_prime)
-    alt_vec <- rbeta(100000, alpha_alt, beta_alt)
-    if(posterior_mean >= tau) {
-      mean(act_vec < alt_vec)
-    } else {
-      mean(act_vec > alt_vec)
-    }
-  }
-  lapply(armls, get_metric)
-}
-
-##############################################################
-
 # Threshold Thompson Sampling
 
 TTS_from_tsdata <- function(data, rounds = 5000, tau, epsilon,
@@ -534,7 +470,7 @@ draw_arm_tts <- function(x) {
 
 ##############################################################
 
-# Bayes UCB
+# Bayes-UCB
 
 BayesUCB_from_tsdata <- function(data, rounds = 5000, tau, epsilon,
                                  alpha = 1, beta = 1, 
@@ -687,6 +623,7 @@ get_next_arm_uniform <- function(armls) {
 ##############################################################
 
 # Likelihood Ratio based Algorithm
+# for Bernoulli distribution
 
 LR_bandit_from_tsdata <- function(data, rounds = 5000, tau, epsilon,
                                   verbose = FALSE, seed = NA) {
@@ -704,8 +641,10 @@ LR_bandit_from_tsdata <- function(data, rounds = 5000, tau, epsilon,
   
   for(i in (K+1):rounds) {
     if(verbose) message(paste("this is round", i))
+    
     next_arm <- get_min(-unlist(get_next_arm_lr(arm_list, tau = tau,
                                                 epsilon = epsilon)))
+    
     arm_sequence <- c(arm_sequence, next_arm)
     
     if(verbose) message("arm selecting done")
@@ -739,6 +678,252 @@ get_next_arm_lr <- function(armls, tau, epsilon) {
     return(LRhat)
   }
   lapply(armls, get_metric)
+}
+
+##############################################################
+
+# for Normal distribution
+# actually uses log(-LikelihoodRatio) as the test statistic since
+# the LR goes to 0 too quickly
+# -> kl_gaussian
+
+LR_bandit_from_tsdata_gaussian <- function(data, rounds = 5000, tau, epsilon,
+                                  verbose = FALSE, seed = NA) {
+  
+  if(!is.na(seed)) set.seed(seed)
+  K <- dim(data)[2]
+  
+  # initialize by pulling each arm once
+  arm_list <- diag(as.matrix(data[1:K,]))
+  arm_list <- as.list(arm_list)
+  
+  # initialize mean storage and the counter
+  mean_storage <- matrix(unlist(lapply(arm_list, mean)), nrow = 1)
+  arm_sequence <- 1:K
+  
+  for(i in (K+1):rounds) {
+    if(verbose) message(paste("this is round", i))
+    
+    next_arm <- get_min(unlist(get_next_arm_kl_gaussian(arm_list, tau = tau,
+                                                         epsilon = epsilon)))
+    
+    arm_sequence <- c(arm_sequence, next_arm)
+    
+    if(verbose) message("arm selecting done")
+    if(verbose) message(next_arm)
+    arm_list[[next_arm]] <- c(arm_list[[next_arm]], data[i, next_arm])
+    
+    mean_storage <- rbind(mean_storage, unlist(lapply(arm_list, mean)))
+    
+    if(verbose) message("arm pulling done")
+    
+  }
+  return(list(means = unlist(lapply(arm_list, mean)),
+              arm_list = arm_list,
+              arm_sequence = arm_sequence,
+              mean_storage = mean_storage))
+}
+
+lr_gaussian <- function(x, tau, mu, n) {
+  sigma_tau <- 1/n*sum((x-tau)^2)
+  sigma_emp <- 1/n*sum((x-mu)^2)
+  prod(dnorm(x, tau, sqrt(sigma_tau))) / prod(dnorm(x, mu, sqrt(sigma_emp)))
+}
+
+kl_gaussian <- function(x, tau, mu, n) {
+  sigma_tau <- 1/n*sum((x-tau)^2)
+  sigma_emp <- 1/n*sum((x-mu)^2)
+  ifelse(sigma_emp == 0, -Inf, n*log(sqrt(sigma_tau)/sqrt(sigma_emp)))
+}
+
+get_next_arm_lr_gaussian <- function(armls, tau, epsilon) {
+  get_metric <- function(x) {
+    successes <- sum(x)
+    trials <- length(x)
+    LRhat <- ifelse(successes/trials >= tau,
+                    lr_gaussian(x, tau-epsilon, successes/trials, trials),
+                    lr_gaussian(x, tau+epsilon, successes/trials, trials))
+    return(LRhat)
+  }
+  lapply(armls, get_metric)
+}
+
+get_next_arm_kl_gaussian <- function(armls, tau, epsilon) {
+  get_metric <- function(x) {
+    LRhat <- ifelse(mean(x) >= tau,
+                    kl_gaussian(x, tau-epsilon, mean(x), length(x)),
+                    kl_gaussian(x, tau+epsilon, mean(x), length(x)))
+    return(LRhat)
+  }
+  lapply(armls, get_metric)
+}
+
+##############################################################
+
+LR_bandit_from_tsdata_exponential <- function(data, rounds = 5000, tau, epsilon,
+                                      verbose = FALSE, seed = NA) {
+  
+  if(!is.na(seed)) set.seed(seed)
+  K <- dim(data)[2]
+  
+  # initialize by pulling each arm once
+  arm_list <- diag(as.matrix(data[1:K,]))
+  arm_list <- as.list(arm_list)
+  
+  # initialize mean storage and the counter
+  mean_storage <- matrix(unlist(lapply(arm_list, mean)), nrow = 1)
+  arm_sequence <- 1:K
+  
+  for(i in (K+1):rounds) {
+    if(verbose) message(paste("this is round", i))
+    
+    next_arm <- get_min(unlist(get_next_arm_kl_exponential(arm_list, tau = tau,
+                                                           epsilon = epsilon)))
+    
+    arm_sequence <- c(arm_sequence, next_arm)
+    
+    if(verbose) message("arm selecting done")
+    if(verbose) message(next_arm)
+    arm_list[[next_arm]] <- c(arm_list[[next_arm]], data[i, next_arm])
+    
+    mean_storage <- rbind(mean_storage, unlist(lapply(arm_list, mean)))
+    
+    if(verbose) message("arm pulling done")
+    
+  }
+  return(list(means = unlist(lapply(arm_list, mean)),
+              arm_list = arm_list,
+              arm_sequence = arm_sequence,
+              mean_storage = mean_storage))
+}
+
+lr_exponential <- function(x, mu, tau) {
+  prod(dexp(x, 1/tau))/prod(dexp(x, 1/mu))
+}
+
+kl_exponential <- function(n, mu, tau) {
+  n*(log(tau/mu)+mu/tau-1)
+}
+
+get_next_arm_kl_exponential <- function(armls, tau, epsilon) {
+  get_metric <- function(x) {
+    LRhat <- ifelse(mean(x) >= tau,
+                    kl_exponential(length(x), mean(x), tau-epsilon),
+                    kl_exponential(length(x), mean(x), tau+epsilon))
+    return(LRhat)
+  }
+  lapply(armls, get_metric)
+}
+
+
+##############################################################
+
+LR_bandit_from_tsdata_poisson <- function(data, rounds = 5000, tau, epsilon,
+                                          verbose = FALSE, seed = NA) {
+  
+  if(!is.na(seed)) set.seed(seed)
+  K <- dim(data)[2]
+  
+  # initialize by pulling each arm once
+  arm_list <- diag(as.matrix(data[1:K,]))
+  arm_list <- as.list(arm_list)
+  
+  # initialize mean storage and the counter
+  mean_storage <- matrix(unlist(lapply(arm_list, mean)), nrow = 1)
+  arm_sequence <- 1:K
+  
+  for(i in (K+1):rounds) {
+    if(verbose) message(paste("this is round", i))
+    
+    next_arm <- get_min(unlist(get_next_arm_kl_poisson(arm_list, tau = tau,
+                                                       epsilon = epsilon)))
+    
+    arm_sequence <- c(arm_sequence, next_arm)
+    
+    if(verbose) message("arm selecting done")
+    if(verbose) message(next_arm)
+    arm_list[[next_arm]] <- c(arm_list[[next_arm]], data[i, next_arm])
+    
+    mean_storage <- rbind(mean_storage, unlist(lapply(arm_list, mean)))
+    
+    if(verbose) message("arm pulling done")
+    
+  }
+  return(list(means = unlist(lapply(arm_list, mean)),
+              arm_list = arm_list,
+              arm_sequence = arm_sequence,
+              mean_storage = mean_storage))
+}
+
+lr_poisson <- function(x, mu, tau) {
+  prod(dpois(x, tau))/prod(dpois(x, mu))
+}
+
+kl_poisson <- function(n, mu, tau) {
+  n * (tau - mu + log(mu/tau)*mu)
+}
+
+get_next_arm_kl_poisson <- function(armls, tau, epsilon) {
+  get_metric <- function(x) {
+    LRhat <- ifelse(mean(x) >= tau,
+                    kl_poisson(length(x), mean(x), tau-epsilon),
+                    kl_poisson(length(x), mean(x), tau+epsilon))
+    return(LRhat)
+  }
+  lapply(armls, get_metric)
+}
+
+##############################################################
+
+# EVT Algorithm
+
+get_next_arm_evt <- function(armls, tau, rounds, epsilon) {
+  get_metric <- function(x) {
+    xhat <- mean(x)
+    ni <- length(x)
+    varhat <- (ni-1)/ni*var(x)
+    return(sqrt(ni) * (sqrt(varhat+(abs(xhat-tau)+epsilon))-sqrt(varhat)))
+  }
+  lapply(armls, get_metric)
+}
+
+EVT_from_tsdata <- function(data, rounds = 5000, tau, epsilon,
+                            verbose = FALSE, seed = NA) {
+  
+  if(!is.na(seed)) set.seed(seed)
+  K <- dim(data)[2]
+  
+  # initialize by pulling each arm TWICE! to get a variance if not bernoulli
+  arm_list_init <- rbind(diag(as.matrix(data[1:K,])), 
+                         diag(as.matrix(data[(K+1):(2*K),])))
+  arm_list <- list()
+  for(i in 1:K) {
+    arm_list[[i]] <- arm_list_init[,i]
+  }
+  
+  # initialize mean storage, arm sequence, and the counter
+  mean_storage <- matrix(unlist(lapply(arm_list, mean)), nrow = 1)
+  arm_sequence <- c(1:K,1:K)
+  
+  for(i in (2*K+1):rounds) {
+    if(verbose) message(paste("this is round", i))
+    next_arm <- get_min(unlist(get_next_arm_evt(arm_list, tau = tau, 
+                                                rounds = rounds, 
+                                                epsilon = epsilon)))
+    arm_sequence <- c(arm_sequence, next_arm)
+    
+    if(verbose) message("arm selecting done")
+    arm_list[[next_arm]] <- c(arm_list[[next_arm]], data[i, next_arm])
+    mean_storage <- rbind(mean_storage, unlist(lapply(arm_list, mean)))
+    
+    if(verbose) message("arm pulling done")
+    
+  }
+  return(list(means = unlist(lapply(arm_list, mean)),
+              arm_list = arm_list,
+              input = data,
+              arm_sequence = arm_sequence,
+              mean_storage = mean_storage))
 }
 
 ##############################################################

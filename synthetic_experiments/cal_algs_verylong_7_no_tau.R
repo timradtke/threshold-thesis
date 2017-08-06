@@ -113,21 +113,10 @@ rm(loc7nt_BUCB_horizon_10000)
 gc()
 
 ########################################################################
-# Standard AugUCB
-system.time(loc7nt_AugUCB <- para_bandit_sim_AugUCB(data = data_list7, 
-                                                  rounds = 2000, 
-                                                  tau = tau_loc7nt))
-save(loc7nt_AugUCB, file = paste0(current_path, "loc7nt_AugUCB.Rda"))
-load(file = paste0(current_path, "loc7nt_AugUCB.Rda"))
-loc7nt_comp_AugUCB <- compare_to_ground_truth(mean_loc7nt, loc7nt_AugUCB, tau_loc7nt, 
-                                            epsilon_loc7nt)$mean
-save(loc7nt_comp_AugUCB, file = paste0(current_path, "loc7nt_comp_AugUCB.Rda"))
-
-# now with 10000
 
 system.time(loc7nt_AugUCB_10000 <- para_bandit_sim_AugUCB(data = data_list7_10000, 
-                                                       rounds = 10000, 
-                                                       tau = tau_loc7nt))
+                                                          rounds = 10000, 
+                                                          tau = tau_loc7nt))
 #user    system   elapsed 
 #60.824    67.047 24179.679 
 save(loc7nt_AugUCB_10000, file = paste0(current_path, "loc7nt_AugUCB_10000.Rda"))
@@ -146,7 +135,8 @@ load(file = paste0(current_path, "loc7nt_comp_BUCB_horizon_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_AugUCB_10000.Rda"))
 
 plot(c(0,10000), c(0, -5), type = "n")
-lines(log(loc7nt_comp_BUCB_horizon_10000), col = "red")
+lines(log(loc7nt_comp_BUCB_horizon_10000), col = "green")
 lines(log(loc7nt_comp_UNIFORM_10000), col = "darkblue")
-lines(log(loc7nt_comp_APT_10000), col = "green")
+lines(log(loc7nt_comp_APT_10000), col = "red")
 lines(log(loc7nt_comp_LR_10000), col = "darkred")
+lines(log(loc7nt_comp_AugUCB_10000), col = "darkgreen")
