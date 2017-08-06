@@ -1,0 +1,379 @@
+\documentclass[12pt,]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\PassOptionsToPackage{usenames,dvipsnames}{color} % color is loaded by hyperref
+\hypersetup{unicode=true,
+            pdftitle={APT Upper Bound},
+            colorlinks=true,
+            linkcolor=Maroon,
+            citecolor=Blue,
+            urlcolor=blue,
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{APT Upper Bound}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{}
+  \preauthor{}\postauthor{}
+  \date{}
+  \predate{}\postdate{}
+
+\usepackage[retainorgcmds]{IEEEtrantools}
+\usepackage{bm}
+\usepackage{amsmath}
+\usepackage{bbm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newcommand{\KL}{\,\text{KL}}
+\newcommand{\der}{\,\text{d}}
+
+\begin{document}
+\maketitle
+
+{
+\hypersetup{linkcolor=black}
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\subsection{Upper Bound on Loss of
+APT}\label{upper-bound-on-loss-of-apt}
+
+\begin{theorem}[Locatelli et al., 2016] \label{theorem:LocatelliTheorem4}
+Let $K \geq 0$, $T \geq 2K$, and consider a problem $\mathbb{B}$. Assume that
+all arms $\nu_k$ of the problem are R-sub-Gaussian with means $\mu_k$. Let $\tau
+\in \mathbb{R}, \epsilon \geq 0$.
+
+Algorithm APT's expected loss is upper bounded on this problem as 
+\begin{equation*} \mathbb{E}(\mathcal{L}(T)) \leq \exp
+(-\frac{1}{64R^2}\frac{T}{H} + 2 \log (T) + 1)K)) \end{equation*}
+
+where we remind that $H = \sum_i (|\mu_i - \tau | + \epsilon)^{-2}$ and where
+$\mathbb{E}$ is the expectation according to the samples of the problem.
+\end{theorem}
+
+\emph{Proof of Theorem \ref{theorem:LocatelliTheorem4}:}
+
+In order to bound the expected loss of the APT algorithm, we want to
+find an event on which the algorithm would correctly seperate arms from
+the threshold, that is, on the event a seperation condition holds. We
+then want to show that with large probability, this \emph{favorable}
+event does indeed hold. Consequently, the expected loss (probability of
+an error) will correspond to the probability that the favorable event
+does not hold after all as this leads the seperation condition to fail,
+and the algorithm to classify at least one arm incorrectly.
+
+While this is the general idea, we have to jump between seperation
+condition, favorable event, and large probability.
+
+\subsubsection{Separation Condition}\label{separation-condition}
+
+As noted in Zhong et al. (2017), a simple requirement to correctly
+classify arms at the final round is the following. For every arm
+\(i \in \{1, ..., K\}\) at round \(T\),
+
+\[
+\hat{\mu}_{i,T_i(n)} \geq \mu_i - \frac{\mu_i - \tau + \epsilon}{2} \quad \text{if} \quad \mu_i \geq \tau
+\] or
+
+\[
+\hat{\mu}_{i,T_i(n)} \leq \mu_i + \frac{\tau - \mu_i + \epsilon}{2} \quad \text{if} \quad \mu_i < \tau
+\] Or simply in terms of the gap between the arm and the threshold as
+used as index by the algorithm,
+
+\[
+| \hat{\mu}_{i, T_i(n)} - \mu_i | \leq \frac{|\mu_i - \tau| + \epsilon}{2} = \frac{\Delta_i}{2}.
+\]
+
+Intuitively, the conditions make sense as they ensure that the current
+mean estimate is closer to the true mean than to the threshold.
+Consequently, there is no possible arrangement left in which the
+condition would hold, but the arm be classified incorrectly. Assuming
+\(\mu_i < \tau\) and \(\epsilon = 0\), an incorrect classification would
+require \(\mu_i < \tau \leq \hat{\mu_i}\). But then
+\(| \hat{\mu}_{i, T_i(n)} - \mu_i | \geq |\mu_i - \tau|\), violating the
+separation condition.
+
+Thus, we need to show that in the very final round, this condition holds
+for every arm \(i \in \{1,...,K\}\) with large probability. Or more
+precisely, we need to derive a bound on the probability with which this
+does not hold.
+
+\subsubsection{The Favorable Event}\label{the-favorable-event}
+
+The separation condition gives a good idea of what event we need to hold
+in order to make a correct classification. The smaller the deviation of
+the empirical mean from the population mean, the more difficult it is
+for the classification to be wrong. Moreover, if the mean and empirical
+mean are identical, then the classification is correct independent of
+the threshold. And furthermore, the closer the mean and the threshold
+are, the better the estimate must be for a correct classification.
+
+Having to bound the absolute deviation of the sample mean from the
+population mean is a very thankful operation. Define the favorable event
+\(\xi\) as
+
+\[
+\xi = \Big\{\forall i \in \mathbb{A}, \forall s \in \{1,...,T\} : |\frac{1}{s} \sum_{t=1}^{s}X_{i,t} - \mu_i| \leq \sqrt{\frac{T \delta^2}{H s}} \Big\}.
+\]
+
+We want the probability that this favorable event occurs to be large,
+that is, the probability that the deviation is small, such that the
+separation condition holds with large probability. Indeed, we bound the
+deviation for \emph{all} arms \(i \leq K\) and for \emph{every} round
+\(s \leq T\). Using some Chernoff Hoeffding bounds, we are able to write
+
+\[
+\mathbb{P}(\xi) \geq 1 - 2(\log(T) +1)K \exp(-\frac{T\delta^2}{2R^2H})
+\]
+
+\subsection{\texorpdfstring{Need to Bound
+\(T_i\)}{Need to Bound T\_i}}\label{need-to-bound-t_i}
+
+We now have that with large probability, the favorable event holds. On
+the favorable event, we have for every arm \(i\):
+
+\[
+| \hat{\mu}_i(t) - \mu_i| \leq \sqrt{\frac{T\delta^2}{HT_i(t)}}
+\]
+
+The deviation of arm \(i\) at time \(t\) depends on how large \(H\),
+\(T\), and \(T_i(t)\) are. While \(t\), \(H\), \(T\) are deterministic,
+the number of times arm \(i\) has been pulled at round \(t\),
+\(T_i(t)\), is a random variable. In order to know how large the
+probability of the favorable event is (and thus the error probability),
+we need to know what realistic values for \(T_i(t)\) will be. Put
+differently: To ensure a deviation smaller than
+\(\sqrt{\frac{T\delta^2}{HT_i(t)}}\) for arm \(i\), we need to ensure
+that arm \(i\) has been pulled at least \(T_i(t)\) times. As usual in
+multi-armed bandits, and different from uniform sampling, the number of
+pulls is a random variable that also depends on how often other arms are
+pulled. In general, we do not want each arm to be pulled an equal
+amount, but each arm should be pulled some times, and not too many
+times. This especially holds for our exploration setting.
+
+Thus, in order to check that the deviation of arm \(i\) really is small
+enough for the separation condition to hold on the favorable event, we
+need to bound the number of pulls of every arm from below.
+
+\subsection{\texorpdfstring{Characteristics of a Frequently Pulled Arm
+(Lower Bound on
+\(T_k(T)\))}{Characteristics of a Frequently Pulled Arm (Lower Bound on T\_k(T))}}\label{characteristics-of-a-frequently-pulled-arm-lower-bound-on-t_kt}
+
+Given that we do not follow a uniform sampling strategy, we know that at
+time \(T\), some arms will have been pulled more frequently than others.
+In particular, some arms will have been pulled more than \(T/K\) times.
+How often an arm is pulled can be related to the individual arm's
+contribution to the overall complexity measure. Let \(h_i\) be a measure
+of arm \(i\)'s individual problem complexity and write for the overall
+problem complexity
+
+\[
+H = \sum_{i = 1}^{K} h_i.
+\]
+
+Then arm \(i\) contributes a share of \(h_i/H\) to the overall problem
+complexity. We can now show that there exists an arm that has been
+pulled at least as often as the share of his complexity contribution.
+
+Given the initialization of the APT algorithm, every arm is pulled once
+initially. Consequently, there is a budget of \(T-K\) rounds left after
+the initialization. As shown in Locatelli et al. (2016), there exists an
+arm \(k\) that has been pulled after the initialization (\(\geq 2\)
+pulls) and for which at the final round \(T\) holds:
+\(T_k(T) - 1 \geq \frac{(T-K)h_k}{H}\). This can be shown by a quick
+contradiction proof. Assume the opposite, that is
+
+\[
+\forall i \in \{1,...,K\}: T_i(T) - 1 < \frac{(T-K)h_i}{H}
+\]
+
+Consequently, at time \(T\), we would have pulled across all arms
+\(\sum_{i=1}^KT_i(T)-1\) times. If the previous assumption holds, we
+would not have used the entire budget:
+
+\[
+\sum_{i=1}^K T_i(T)-1 < \sum_{i=1}^K \frac{(T-K)h_i}{H} = (T-K)\sum_{i=1}^K \frac{h_i}{H} = T-K
+\]
+
+This is a contradiction, since as an requirement to the algorithm we
+have that \(\sum_{i=1}^K T_i(T)-1 = (T-K)\), that is, we use the entire
+budget of samples.
+
+Another such requirement has been that \(T>2K\). Plugging this in gives
+\[
+T_k(T) - 1 \geq \frac{(T-K)h_k}{H} \leq \frac{(T-1/2T)h_k}{H} = \frac{Th_i}{2H}
+\]
+
+Now we know how often the arm has been pulled at the very end. That does
+not mean that \(k\) has been pulled at time \(T\). Thus we consider the
+time \(t \leq T\) at which arm \(k\) is pulled for the last time. We get
+(!!!!!SHOOOOWWW THIIIISSSS!!!!!!!!!)
+
+\[
+T_k(t) \geq T_k(T) - 1 \geq \frac{Th_i}{2H}.
+\]
+
+This gives us a lower bound on how often arms are pulled that are pulled
+frequently relative to their contribution to the problem complexity. Now
+we need a lower bound on \(T_i(T)\) for every other arm \(i\).
+
+\subsection{\texorpdfstring{Lower Bound on
+\(T_i(T)\)}{Lower Bound on T\_i(T)}}\label{lower-bound-on-t_it}
+
+Consider again as before the round \(t\) in which arm \(k\) is pulled
+for the very last time. Since the APT algorithm minimizes at every round
+\(s\) the index \(B_j(s)\), and pulls the arm with the smallest index,
+we know that arm \(k\) must have had the smallest index at round \(t\).
+We have:
+
+\[
+B_k(t) \leq B_i(t) \Leftrightarrow \sqrt{T_k(t)}\hat{\Delta}_k(t) \leq \sqrt{T_i(t)} \hat{\Delta}_i(t)
+\]
+
+One can already expect that this can be used to derive a lower bound on
+\(T_i(t)\) on the RHS, and this is exactly what we do.
+
+On the LHS, we will plug in the lower bound for \(T_k(t)\) derived
+before. Additionally bounding \(\Delta_k(t)\) from below, and
+\(\hat{\Delta}_i(t)\) from above using the favorable event will give the
+desired lower bound.
+
+Thus assume we are on the favorable event \(\xi\) with large
+probability. we consequently have
+
+\[
+| \hat{\mu}_i(t) - \mu_i| \leq \sqrt{\frac{T\delta^2}{HT_i(t)}}.
+\]
+
+As shown in Locatelli et al. (2016), one can use the reverse triangle
+inequality to get:
+
+\[
+|\hat{\mu}_i(t) - \mu_i| = |(\hat{\mu}_i(t) - \tau) - (\mu_i - \tau)| \geq || \hat{\mu}_i(t) - \tau | - |\mu_i - \tau|| \geq |(|\hat{\mu}_i(t) - \tau| + \epsilon) - (|\mu_i - \tau| + \epsilon)| \geq |\hat{\Delta}_i(t) - \Delta_i|
+\]
+
+If we combine this with the favorable event, we get
+
+\[
+\Delta_k - \sqrt{\frac{T\delta^2}{HT_k(t)}} \leq \hat{\Delta}_k(t) \leq \Delta_k + \sqrt{\frac{T\delta^2}{HT_k(t)}}
+\]
+
+and similar for \(\hat{\Delta}_i\).
+
+We can now lower bound the LHS of the indices as
+
+\[
+\Big(\Delta_k - \sqrt{\frac{T\delta^2}{HT_k(t)}}\Big) \sqrt{T_k(t)} \leq B_k(t)
+\]
+
+\[
+\Big(\Delta_k - \sqrt{\frac{2}{h_k}}\delta \Big) \sqrt{\frac{Th_k}{2H}} \leq B_k(t)
+\]
+
+At this point, it is useful to have a well chosen complexity measure. If
+we set \(h_i = \frac{1}{\Delta_i^2}\) as in Locatelli et al. (2016), we
+get
+
+\[
+\Big(\Delta_k - \sqrt{2}\delta \Delta \Big) \sqrt{\frac{T}{2H\Delta_k^2}} \leq B_k(t)
+\]
+
+which can be now be reduced to a form that is not specific to \(k\):
+
+\[
+\Big( \frac{1}{\sqrt{2}} - \delta \Big) \sqrt{\frac{T}{H}} \leq B_k(t).
+\]
+
+Now we need to get rid of \(\hat{\Delta}_i\) in order to bound
+\(T_i(t)\). Thus, we bound the RHS again using the favorable event much
+as we did for the LHS:
+
+\[
+B_i(t) = \hat{\Delta}_i \sqrt{T_i(t)} \leq \Big(\Delta_i + \sqrt{\frac{T\delta^2}{HT_i(t)}}\Big) \sqrt{T_i(t)} \leq \Delta_i \sqrt{T_i(t)} + \delta \sqrt{\frac{T}{H}}
+\]
+
+As in Locatelli et al. (2016) we use the fact that by definition
+\(\Delta\) and \(\hat{\Delta}\) are positive in order to square both
+sides and write
+
+\[
+(1 - 2\sqrt{2}\delta)^2 \frac{T}{2H\Delta^2_i} \leq T_i(t)
+\]
+
+We thus have derived a lower bound on the amount of pulls for any arm.
+That means that we can show that no arm is pulled an insufficient amount
+of times with large probability, and that consequently the favorable
+event hold and the estimated mean is sufficienctly separated from the
+threshold.
+
+\subsection{Check Separation
+Condition}\label{check-separation-condition}
+
+
+\end{document}
