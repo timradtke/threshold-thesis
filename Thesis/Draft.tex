@@ -1787,8 +1787,8 @@ Theorem \ref{theorem:GarivierKaufmannTheorem1} using equation
 
 \newpage
 
-\section{KL and Bayesian Thresholding
-Bandits}\label{kl-and-bayesian-thresholding-bandits}
+\section{Extensions to the Thresholding Bandit
+Problem}\label{extensions-to-the-thresholding-bandit-problem}
 
 \subsection{Introduction}\label{introduction}
 
@@ -1844,6 +1844,8 @@ data sets.
 
 \subsection{Variance Based Algorithms for Thresholding
 Bandits}\label{variance-based-algorithms-for-thresholding-bandits}
+
+\subsubsection{Augmented-UCB Algorithm}\label{augmented-ucb-algorithm}
 
 Mukherjee et al. (2017) propose an algorithm based on variance estimates
 called Augmented-UCB (AugUCB). The setting in which the algorithm is
@@ -1943,7 +1945,193 @@ algorithm in the thresholding setting.
 (since the AugUCB eliminates arms, it is interesting to see how it
 behaves when the underlying CTR changes over time\ldots{})
 
-\subsection{New Approaches}\label{new-approaches}
+-\textgreater{} Happens for exponential distribution
+
+\subsubsection{Anytime Parameter-free Empirical Variance Guided
+Algorithm}\label{anytime-parameter-free-empirical-variance-guided-algorithm}
+
+Another algorithm for the thresholding bandit problem is introduced in
+Zhong et al. (2017). Indeed, they discuss several variations of their
+algorithm which extend their central idea to applications in which
+several samples need to be pulled in a parallel and asynchronous
+fashion. An easy example known from the multi-armed bandit literature
+(SOURCE????!!??!?!?!) is a website where different versions are served
+to customers and each version is an arm in the bandit setting. If the
+feedback that is observed by the algorithm is whether or not a user
+makes a purchase, then it is likely that a new user arrives before the
+feedback for the previous user has been observed. The algorithm has to
+pull the next arm before the feedback of the previous arm has been
+observed. With their variants the authors approach this problem of
+having to take asynchronous and parallel actions. But their algorithm
+can also be reduced to a simpler version that can be compared directly
+with the problem described in Locatelli et al. (2016) where we assume
+the problem of the feedback lag away.
+
+This simpler version is the anytime parameter-free version of their
+Empirical Variance Guided Algorithm (EVT\(_{pf}\)). The EVT\(_{pf}\)
+algorithm is a smart extension of the APT algorithm to an approach that
+takes the empirical variance of the arms into account and deduces an
+upper bound through Bernstein bounds.
+
+In order to describe their algorithm, we adapt a formulation used in
+Zhong et al. (2017) to describe the index used by the algorithms in a
+more general fashion. Write the index \(B_i(t)\) of arm \(i\) at round
+\(t\) as previously as
+
+\[
+B_i(t) = S_i(t) D_i(t),
+\]
+
+where \(D_i(t)\) is some measure of the distance between the mean
+\(\mu_i\) or the distribution \(\nu_i\) of the arm \(i\) from the
+threshold \(\tau\), while \(S_i(t)\) is some confidence value. Thus, for
+the APT algorithm, if we let \(\epsilon = 0\) as in Zhong et al. (2016),
+we have
+
+\[
+D_i^{APT}(t) = \hat{\Delta}_i(t) = |\hat{\mu}_i(t) - \tau| \quad \land \quad S_i^{APT}(t) = \sqrt{T_i(t)}
+\]
+
+We see that \(D_i(t)\) is the probably most straightforward distance
+between the sample mean and the threshold, while \(S_i(t)\) increases
+over time, as we become more confident in our sample mean, and thus
+ensures that we do not continue pulling the same arm forever.
+
+Based on this, we can now easily compare APT to EVT\(_{pf}\) for which
+the index can be written as:
+
+\[
+D_i^{EVT}(t) = \hat{\Delta}_i(t) = |\hat{\mu}_i(t) - \tau| \quad \land \quad S_i^{EVT}(t) = \Big(\frac{1}{T_i(t) + \sqrt{\frac{1}{T_i(t)}}\hat{\sigma}_{i}(t)}\Big)^{-1}
+\]
+
+or equivalently as
+
+\[
+D_i^{EVT}(t) = \sqrt{\hat{\sigma}^2_{i}(t) + \hat{\Delta}_i(t)} - \hat{\sigma}_i(t) \quad \land \quad S_i^{EVT} = \sqrt{T_i(t)}
+\]
+
+We see that in both formulations either the distance term \(D_i\) or the
+confidence term \(S_i\) between the two algorithms is equivalent. While
+the empirical variance is a natural confidence measure -- and thus makes
+sense in the \(S_i^{EVT}\) part in the first equation -- it also
+describes the shape of the distribution and thus is also a measure of
+how far the distribution (in contrast to just the mean) is away from the
+threshold, and thus can belong to \(D_i^{EVT}\). We will focus on the
+latter formulation for the remaining paper.
+
+In comparison with the APT algorithm, the EVT\(_{pf}\) algorithm adds
+the empirical variance into the index to measure how well we can expect
+the distribution (and the mean) to be seperated from the threshold; it
+serves as a crude measure of distance between threshold and
+distribution. We note that for a Bernoulli distributed random variable,
+\(D_i^{EVT}\) is decreasing as the mean approaches the threshold.
+Similar should hold in general for bounded variables as the variance and
+the mean are linked by the distance of the mean to the bound of the
+support (in contrast to, for example, a normal distributed random
+variable where a change in the mean does not correspond to a change in
+the variance). This is important as the bounds of the EVT\(_{pf}\)
+algorithm only hold for random variables bounded in \([0,1]\).
+
+\includegraphics{Draft_files/figure-latex/EVT_Index_Bernoulli-1.pdf}
+
+By defining a new complexity measure \(H^{\text{EVT}_{pf}}\) for the
+EVT\(_{pf}\) algorithm, Zhong et al. (2017) are able to derive an upper
+bound on the expected loss of the algorithm. Let the complexity increase
+in the variance and decrease in the distance of the mean from the
+threshold such that
+
+\[
+H^{\text{EVT}_{pf}} = \sum_{i=1}^K h_i^{\text{EVT}_{pf}} = \sum_{i=1}^K (\sigma_i^2\Delta_i^{-2} + \Delta_i^{-1}).
+\]
+
+Then one can state the following theorem.
+
+\begin{theorem}[Theorem 5, Zhong et al., 2017] 
+\label{theorem:ZhongEtAl2017Theorem5}
+Let $K > 0$, $T > 2K$, and consider a thresholding bandit problem. Assume that all arms of the problem are bounded in $[0,1]$. Then the probability of an error is bounded as
+
+\begin{equation*}
+\mathbb{E}[L] \leq TK \exp\Big(-C\frac{T}{H^{\text{EVT}_{pf}}}\Big),
+\end{equation*}
+
+where $C$ is some positive constant.
+\end{theorem}
+
+The authors approach the proof very similarly as Locatelli et al. (2016)
+in the proof of their lower bound. They define favorable events that
+hold with large probability, make sure the same separation condition
+holds for them given that each arm is pulled often enough. Additionally
+to a favorable event that bounds the deviation between sample mean and
+population mean, they define a second event on which the sample standard
+deviation is close to the population standard deviation. This is bounded
+in large probability by a Bernstein inequality. The union of the two
+events then serves as the favorable event in the remainder of their
+proof.
+
+Given a lower bound that is also adapted to the new complexity
+\(H^{\text{EVT}_{pf}}\), the authors show that the EVT\(_pf\) algorithm
+is optimal. Furthermore, they compare their algorithms in experiments
+against the APT algorithm. The experiments use data generated from
+uniform distributions. Each experiment compares 100 arms with variances
+picked at random from a range of possible variances. Over three
+experiments, the range of variances is varied from small to large, where
+the authors expect their algorithm to show the largest advantage
+compared to APT on the problem with small variances. Interestingly, they
+report the largest advantage of their variance based algorithms in
+comparison to APT when the variances are very small; given they only
+consider problems bounded on a support of \([0,1]\), \(\sigma_i \ll 1\).
+In this case the problem complexity \(H^{\text{EVT}_{pf}}\) can be much
+smaller than \(H^{APT}\) -- the EVT algorithm profits more from
+distributions that are simple to estimate in terms of their variance
+than the APT algorithm does.
+
+When comparing the two complexities for example for Bernoulli random
+variables against some fixed threshold, we see that the smaller
+complexity of the EVT\(_{pf}\) algorithm implies in particular that
+EVT\(_{pf}\) could be able to cope with distributions of parameter
+\(\mu\) close to \(\tau\) much better than APT.
+
+\includegraphics{Draft_files/figure-latex/Hevt_Hapt_Comparison-1.pdf}
+
+\subsection{Likelihood Ratio for Exponential Family
+Distributions}\label{likelihood-ratio-for-exponential-family-distributions}
+
+We now present an approach that builds on the idea of the likelihood
+ratio statistic for hypothesis tests. We first present the general idea
+of likelihood ratio based tests, and then introduce our new algorithm
+for the thresholding bandit problem.
+
+\subsubsection{Likelihood Ratio-based Hypothesis
+Tests}\label{likelihood-ratio-based-hypothesis-tests}
+
+In a standard parametric testing problem, we have drawn an iid sample
+\(x = (x_1, ..., x_T)\), where each \(x_i\) is a realization from the
+random variable \(X_i\). We assume that \(X_i\) follows some
+distribution \(Q(\theta)\) paramaterized by a vector \(\theta\). In a
+standard hypothesis test, we would then want to test whether an
+alternative parameterization is more likely than the parameterization
+given by the null hypothesis. That is, we test
+
+\[
+H_0: \quad \theta = \theta_{H_0} \qquad \text{vs.} \qquad H_1: \quad \theta = \theta_{H_1}
+\]
+
+In order to assess whether the \(H_0\) hypothesis can be rejected, one
+computes the likelihood \(L(x|\theta)\) of the observed sample under
+both parameterizations: \(L_{H_0} = L(x|\theta = \theta_{H_0})\) and
+\(L_{H_1} = L(x|\theta = \theta_{H_1})\). The likelihood ratio test
+statistic is then given as
+
+\[
+LR(\theta_{H_0}|| \theta_{H_1}) = \frac{L_{H_0}}{L_{H_1}}.
+\] The intuition behind the test of course being that, if the true
+parameterization is \(H_1\) and not \(H_0\), then the likelihood
+\(L_{H_1}\) should be larger than \(L_{H_0}\). A small enough likelihood
+ratio would thus lead us to a rejection of the null hypothesis, while a
+large likelihood ratio is evidence in favor of the null hypothesis.
+
+\subsubsection{Likelihood Ratio-based Thresholding
+Bandit}\label{likelihood-ratio-based-thresholding-bandit}
 
 
 \end{document}

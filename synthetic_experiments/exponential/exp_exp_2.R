@@ -34,6 +34,7 @@ gc()
 load(paste0(current_path, "exp2_comp_LR.Rda"))
 load(paste0(current_path, "exp2_comp_APT.Rda"))
 load(paste0(current_path, "exp2_comp_EVT.Rda"))
+load(paste0(current_path, "exp2_comp_UNIFORM.Rda"))
 
 plot(c(0,4000), c(0, -8), type = "n")
 abline(h=log(0.01), lty = 2)
@@ -90,19 +91,26 @@ gc()
 system.time(exp2_UNIFORM <- para_bandit_sim_uniform(data = data_list_exp2, 
                                                     rounds = 4000))
 save(exp2_UNIFORM, file = paste0(current_path, "exp2_UNIFORM.Rda"))
-exp2_comp_UNIFORM <- compare_to_ground_truth(mean_exp2, 
+exp2_comp_UNIFORM <- compare_to_ground_truth(mu_exp2, 
                                                exp2_UNIFORM, 
                                                tau_exp2, 
                                                epsilon_exp2)$mean
 save(exp2_comp_UNIFORM, file = paste0(current_path, "exp2_comp_UNIFORM.Rda"))
+rm(exp2_UNIFORM)
+gc()
 
 ########################################################################
 # Augmented-UCB (Mukherjee et al., 2017)
+
+#augtest <- AugUCB_from_tsdata(data = data_list_exp2[[1]], rounds = 2000, tau = tau_exp2,
+#                   verbose = TRUE)
 
 exp2_AugUCB <- para_bandit_sim_AugUCB(data = data_list_exp2, 
                                       rounds = 4000, 
                                       tau = tau_exp2)
 save(exp2_AugUCB, file = paste0(current_path, "exp2_AugUCB.Rda"))
-exp2_comp_AugUCB <- compare_to_ground_truth(mean_exp2, exp2_AugUCB, 
+exp2_comp_AugUCB <- compare_to_ground_truth(mu_exp2, exp2_AugUCB, 
                                             tau_exp2, epsilon_exp2)$mean
 save(exp2_comp_AugUCB, file = paste0(current_path, "exp2_comp_AugUCB.Rda"))
+rm(exp2_AugUCB)
+gc()

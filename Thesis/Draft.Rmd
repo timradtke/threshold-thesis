@@ -887,7 +887,7 @@ Using the information from the lower bound of how well any $\delta$-PAC algorith
 
 \newpage
 
-# KL and Bayesian Thresholding Bandits
+# Extensions to the Thresholding Bandit Problem
 
 ## Introduction
 
@@ -902,6 +902,8 @@ Large motiviation for the idea of adjusting the complexity measure (and thus the
 To this end, in the following, we first present an extension of mean based algorithms to an algorithm that incorporates empirical variances as described in Mukherjee et al. (2017). Afterwards, we propose and discuss potential further improvements based on Kullback-Leibler divergence and Bayesian posterior distributions. Finally, we compare the performance of different algorithms based on simulations and real world data sets.
 
 ## Variance Based Algorithms for Thresholding Bandits
+
+### Augmented-UCB Algorithm
 
 Mukherjee et al. (2017) propose an algorithm based on variance estimates called Augmented-UCB (AugUCB). The setting in which the algorithm is proposed is very similar to the setting in Locatelli et al. (2016). The algorithm itself, however, differs heavily from the APT algorithm. So is AugUCB for example not an anytime algorithm. Furthermore, arms can be deleted in every round if there are "far enough" away from the mean. Both the decision of which arm is played in a given round, and whether an arm is removed from the active set of arm, is based not only on the empirical mean estimate $\mu_i(t)$, but also on a term $s_i$ that is increasing linearly in the estimated standard deviation. While the APT algorithm plays the arm minimizing the quantity $B_i(t+1) = \sqrt{T_i(t)} \hat{\Delta}_i(t) = \sqrt{T_i(t)} (|\hat{\mu}_i(t) - \tau| + \epsilon)$, AugUCB plays the arm minimizing the quantity $(\hat{\Delta}_i(t) - 2s_i)$, where $s_i$ is based on the variance estimate $\hat{v}_i$, and an exploration $\psi_m$ term linear in $T$, and an elimination parameter $\rho$ (compare Algorithm 1 in Mukherjee et al., 2017):
 
@@ -931,5 +933,131 @@ Compare Mukherjee et al. (2017) for the notation. Then it becomes clear that the
 
 (since the AugUCB eliminates arms, it is interesting to see how it behaves when the underlying CTR changes over time...)
 
+-> Happens for exponential distribution
 
-## New Approaches
+### Anytime Parameter-free Empirical Variance Guided Algorithm
+
+Another algorithm for the thresholding bandit problem is introduced in Zhong et al. (2017). Indeed, they discuss several variations of their algorithm which extend their central idea to applications in which several samples need to be pulled in a parallel and asynchronous fashion. An easy example known from the multi-armed bandit literature (SOURCE????!!??!?!?!) is a website where different versions are served to customers and each version is an arm in the bandit setting. If the feedback that is observed by the algorithm is whether or not a user makes a purchase, then it is likely that a new user arrives before the feedback for the previous user has been observed. The algorithm has to pull the next arm before the feedback of the previous arm has been observed. With their variants the authors approach this problem of having to take asynchronous and parallel actions. But their algorithm can also be reduced to a simpler version that can be compared directly with the problem described in Locatelli et al. (2016) where we assume the problem of the feedback lag away.
+
+This simpler version is the anytime parameter-free version of their Empirical Variance Guided Algorithm (EVT$_{pf}$). The EVT$_{pf}$ algorithm is a smart extension of the APT algorithm to an approach that takes the empirical variance of the arms into account and deduces an upper bound through Bernstein bounds.
+
+In order to describe their algorithm, we adapt a formulation used in Zhong et al. (2017) to describe the index used by the algorithms in a more general fashion. Write the index $B_i(t)$ of arm $i$ at round $t$ as previously as
+
+$$
+B_i(t) = S_i(t) D_i(t),
+$$
+
+where $D_i(t)$ is some measure of the distance between the mean $\mu_i$ or the distribution $\nu_i$ of the arm $i$ from the threshold $\tau$, while $S_i(t)$ is some confidence value. Thus, for the APT algorithm, if we let $\epsilon = 0$ as in Zhong et al. (2016), we have
+
+$$
+D_i^{APT}(t) = \hat{\Delta}_i(t) = |\hat{\mu}_i(t) - \tau| \quad \land \quad S_i^{APT}(t) = \sqrt{T_i(t)}
+$$
+
+We see that $D_i(t)$ is the probably most straightforward distance between the sample mean and the threshold, while $S_i(t)$ increases over time, as we become more confident in our sample mean, and thus ensures that we do not continue pulling the same arm forever.
+
+Based on this, we can now easily compare APT to EVT$_{pf}$ for which the index can be written as:
+
+$$
+D_i^{EVT}(t) = \hat{\Delta}_i(t) = |\hat{\mu}_i(t) - \tau| \quad \land \quad S_i^{EVT}(t) = \Big(\frac{1}{T_i(t) + \sqrt{\frac{1}{T_i(t)}}\hat{\sigma}_{i}(t)}\Big)^{-1}
+$$
+
+or equivalently as 
+
+$$
+D_i^{EVT}(t) = \sqrt{\hat{\sigma}^2_{i}(t) + \hat{\Delta}_i(t)} - \hat{\sigma}_i(t) \quad \land \quad S_i^{EVT} = \sqrt{T_i(t)}
+$$
+
+We see that in both formulations either the distance term $D_i$ or the confidence term $S_i$ between the two algorithms is equivalent. While the empirical variance is a natural confidence measure -- and thus makes sense in the $S_i^{EVT}$ part in the first equation -- it also describes the shape of the distribution and thus is also a measure of how far the distribution (in contrast to just the mean) is away from the threshold, and thus can belong to $D_i^{EVT}$. We will focus on the latter formulation for the remaining paper. 
+
+In comparison with the APT algorithm, the EVT$_{pf}$ algorithm adds the empirical variance into the index to measure how well we can expect the distribution (and the mean) to be seperated from the threshold; it serves as a crude measure of distance between threshold and distribution. We note that for a Bernoulli distributed random variable, $D_i^{EVT}$ is decreasing as the mean approaches the threshold. Similar should hold in general for bounded variables as the variance and the mean are linked by the distance of the mean to the bound of the support (in contrast to, for example, a normal distributed random variable where a change in the mean does not correspond to a change in the variance). This is important as the bounds of the EVT$_{pf}$ algorithm only hold for random variables bounded in $[0,1]$.
+
+```{r EVT_Index_Bernoulli, echo = FALSE}
+bfun <- function(mu, tau) sqrt((mu*(1-mu))^2 + abs(tau-mu)) - mu*(1-mu)
+plot(seq(0,1,0.0001), bfun(0,seq(0,1,0.0001)), type = "l",
+     xlab = "Sample Mean", ylab = "Distance $D_i(t)$", main = "Variation over tau")
+for(i in 1:length(seq(0,1,by=0.1))) {
+  lines(seq(0,1,0.0001), bfun(seq(0,1,by=0.1)[i], seq(0,1,0.0001)), 
+        col = rainbow(length(seq(0,1,by=0.1)))[i])
+}
+```
+
+By defining a new complexity measure $H^{\text{EVT}_{pf}}$ for the EVT$_{pf}$ algorithm, Zhong et al. (2017) are able to derive an upper bound on the expected loss of the algorithm. Let the complexity increase in the variance and decrease in the distance of the mean from the threshold such that
+
+$$
+H^{\text{EVT}_{pf}} = \sum_{i=1}^K h_i^{\text{EVT}_{pf}} = \sum_{i=1}^K (\sigma_i^2\Delta_i^{-2} + \Delta_i^{-1}).
+$$
+
+Then one can state the following theorem.
+
+\begin{theorem}[Theorem 5, Zhong et al., 2017] 
+\label{theorem:ZhongEtAl2017Theorem5}
+Let $K > 0$, $T > 2K$, and consider a thresholding bandit problem. Assume that all arms of the problem are bounded in $[0,1]$. Then the probability of an error is bounded as
+
+\begin{equation*}
+\mathbb{E}[L] \leq TK \exp\Big(-C\frac{T}{H^{\text{EVT}_{pf}}}\Big),
+\end{equation*}
+
+where $C$ is some positive constant.
+\end{theorem}
+
+The authors approach the proof very similarly as Locatelli et al. (2016) in the proof of their lower bound. They define favorable events that hold with large probability, make sure the same separation condition holds for them given that each arm is pulled often enough. Additionally to a favorable event that bounds the deviation between sample mean and population mean, they define a second event on which the sample standard deviation is close to the population standard deviation. This is bounded in large probability by a Bernstein inequality. The union of the two events then serves as the favorable event in the remainder of their proof.
+
+Given a lower bound that is also adapted to the new complexity $H^{\text{EVT}_{pf}}$, the authors show that the EVT$_pf$ algorithm is optimal. Furthermore, they compare their algorithms in experiments against the APT algorithm. The experiments use data generated from uniform distributions. Each experiment compares 100 arms with variances picked at random from a range of possible variances. Over three experiments, the range of variances is varied from small to large, where the authors expect their algorithm to show the largest advantage compared to APT on the problem with small variances. Interestingly, they report the largest advantage of their variance based algorithms in comparison to APT when the variances are very small; given they only consider problems bounded on a support of $[0,1]$, $\sigma_i \ll 1$. In this case the problem complexity $H^{\text{EVT}_{pf}}$ can be much smaller than $H^{APT}$ -- the EVT algorithm profits more from distributions that are simple to estimate in terms of their variance than the APT algorithm does.
+
+When comparing the two complexities for example for Bernoulli random variables against some fixed threshold, we see that the smaller complexity of the EVT$_{pf}$ algorithm implies in particular that EVT$_{pf}$ could be able to cope with distributions of parameter $\mu$ close to $\tau$ much better than APT.
+
+```{r Hevt_Hapt_Comparison, echo = FALSE, message = FALSE}
+hevt <- function(mu, tau) {
+  (mu*(1-mu))^2 * (abs(mu-tau))^{-2} + abs(mu-tau)^{-1}
+}
+
+hapt <- function(mu, tau) {
+  abs(mu-tau)^{-2}
+}
+
+plot(seq(0.1,0.9,0.0001), 
+     hapt(seq(0.1,0.9,0.0001), 0.5), type = "l",
+     ylim = c(0,400), ylab = "Complexity", xlab = "Bernoulli Mean",
+     main = "APT vs EVT Complexity for tau = 0.5")
+lines(c(seq(0.1,0.9,0.0001)), 
+      hevt(c(seq(0.1,0.9,0.0001)), 0.5),
+      col = "blue")
+abline(v = 0.5, lty = 2)
+```
+
+## Likelihood Ratio for Exponential Family Distributions
+
+We now present an approach that builds on the idea of the likelihood ratio statistic for hypothesis tests. We first present the general idea of likelihood ratio based tests, and then introduce our new algorithm for the thresholding bandit problem.
+
+### Likelihood Ratio-based Hypothesis Tests
+
+In a standard parametric testing problem, we have drawn an iid sample $x = (x_1, ..., x_T)$, where each $x_i$ is a realization from the random variable $X_i$. We assume that $X_i$ follows some probability distribution $Q(\theta)$ paramaterized by a vector $\theta$. Let $q(x;\theta)$ be the density function corresponding to the distribution. In a standard hypothesis test, we test whether an alternative parameterization is more likely than the parameterization given by the null hypothesis. That is, we test
+
+$$
+H_0: \quad \theta = \theta_{H_0} \qquad \text{vs.} \qquad H_1: \quad \theta = \theta_{H_1}
+$$
+
+In order to assess whether the $H_0$ hypothesis can be rejected, one computes the likelihood $L(x|\theta)$ of the observed sample under both parameterizations: $L_{H_0} = L(x|\theta = \theta_{H_0}) = \prod_{i=1}^T q(x_i|\theta_{H_0})$ and $L_{H_1} = L(x|\theta = \theta_{H_1}) = \prod_{i=1}^T q(x_i|\theta_{H_1})$. The likelihood ratio test statistic is then given as
+
+$$
+LR(\theta_{H_0}|| \theta_{H_1}) = \frac{L_{H_0}}{L_{H_1}} = \prod_{i=1}^T\frac{q(x_i|\theta_{H_0})}{ q(x_i|\theta_{H_1})}.
+$$
+The intuition behind the test of course being that, if the true parameterization is $H_1$ and not $H_0$, then the likelihood $L_{H_1}$ should be larger than $L_{H_0}$. A small enough likelihood ratio would thus lead us to a rejection of the null hypothesis, while a large likelihood ratio is evidence in favor of the null hypothesis.
+
+Consider an example in which we assume that the sample stems from a normal distribution with unknown mean but known variance $\sigma^2 = 1$ such that $X_i \sim N(\mu, 1)$. We test $H_0: \mu = \mu_0$ against $H_1: \mu = \mu_1$. 
+
+### Likelihood Ratio-based Thresholding Bandit
+
+# Experiments
+
+## Real Data
+
+We show two experiments that were performed on real data. While most papers in the multi-armed bandit literature resort to synthetic data to assess the performance of algorithms -- just as we have done in the previous chapter -- we have tried to acquire real world data. This data is what bandit algorithms are used for in practice, and does not fulfill the standard independence and identical distribution assumptions as nicely. The real data thus can be considered a first robustness test for the algorithms.
+
+### The Data Set
+
+The data have been collected by the German ecommerce company [Amorelie](https://amorelie.de) as part of standard website performance tracking. For 197 selected products, we have the number of users visiting each product's detail page at a given minute. The data set we use here has been collected during the entire month of November 2016. It can be considered time series data collected at minutely frequency. Thus the data contain 43200 observations per product, and overall 8510400 observations.
+
+Given that we want to run an offline comparison of bandit algorithms, it is important to have at each time point an observation for each arm. Given that, it is easy to evaluate the perfomance of algorithms that make different decisions at different point in times and thus do not observe the same samples. By having an observation for each arm at any given time point, each algorithm had at least the opportunity to observe a certain sample. Other papers (CITE YAHOO!) have solved this problem by using a sample drawn uniformly during for example an A/B test. Then, if the next observation in the sample is not from the same arm that the algorithm would like to draw from, observations are discarded until the next observation from the selected arm.
+
+The choice of having basically multiple time series data as the sample leads to a simple way of running the algorithms just as often on the data as for simulated data. In particular, the goal is to perform 5000 runs over the sample to confidently assess the performance. Since we wanted to preserve the potential time dependency of the data, a simple resampling of the data was not an option to create the needed 5000 variations of the sample. Thus what we did instead was a form of time series cross validation. To preserve the autocorrelation, one can create different samples of $X$ observations by sliding a window of size $X$ over the time series. Moving the window one period (in our case minute) at a time, one ensures that no sample shares start and end observation with another sample. In particular, this means for a given bandit strategy and two samples that the observations that the algorithm collects as feedback during the two initialization phases differ from sample to sample and are never the same. This is because during initialization every strategy pulls arms $1, ..., K$ once in this order.

@@ -63,14 +63,18 @@ AugUCB_from_tsdata <- function(data, rounds = 5000, rho = 1/3, tau = NA,
   
   for(i in (K+1):rounds) {
     if(verbose) message(paste("this is round", i))
-    next_arm <- get_min(unlist(get_next_arm_augucb(arm_list, tau = tau, rho = rho,
-                                                   psi = psi, rounds = rounds, 
-                                                   epsilon = epsilon,
-                                                   active_set = B)))
-    arm_sequence <- c(arm_sequence, next_arm)
-    if(verbose) message("arm selecting done")
+    if(length(B) > 0) {
+      next_arm <- get_min(unlist(get_next_arm_augucb(arm_list, tau = tau, rho = rho,
+                                                     psi = psi, rounds = rounds, 
+                                                     epsilon = epsilon,
+                                                     active_set = B)))
+      arm_sequence <- c(arm_sequence, next_arm)
+      if(verbose) message("arm selecting done")
+      
+      arm_list[[next_arm]] <- c(arm_list[[next_arm]], data[i, next_arm])
+    }
     
-    arm_list[[next_arm]] <- c(arm_list[[next_arm]], data[i, next_arm])
+    # Continue adding the same mean if the active set is empty
     mean_storage <- rbind(mean_storage, unlist(lapply(arm_list, mean)))
     if(verbose) message("arm pulling done")
     
@@ -78,14 +82,16 @@ AugUCB_from_tsdata <- function(data, rounds = 5000, rho = 1/3, tau = NA,
     if(verbose) message("Counter: ", counter)
     
     # delete arms should return a logical index for each arm in active set
-    B <- B[!unlist(delete_arms(arm_list, tau = tau, rho = rho,
-                               psi = psi, rounds = rounds, epsilon = epsilon,
-                               active_set = B))]
+    if(length(B) > 0) { # stop updating the active set if already empty
+      B <- B[!unlist(delete_arms(arm_list, tau = tau, rho = rho,
+                                 psi = psi, rounds = rounds, epsilon = epsilon,
+                                 active_set = B))]
+    }
     
     if(verbose) message("B done")
     if(verbose) message(B)
     
-    if((i >= N) && (m <= M)) {
+    if((i >= N) & (m <= M) & (length(B)>0)) {
       # reset parameters
       epsilon <- epsilon/2
       psi <- rounds * epsilon / (128*(log(3/16*K*log(K)))^2)
@@ -96,7 +102,7 @@ AugUCB_from_tsdata <- function(data, rounds = 5000, rho = 1/3, tau = NA,
   }
   return(list(means = unlist(lapply(arm_list, mean)),
               arm_list = arm_list,
-              active_set = B,
+              #active_set = B,
               mean_storage = mean_storage,
               arm_sequence = arm_sequence))
 }
@@ -860,7 +866,8 @@ lr_poisson <- function(x, mu, tau) {
 }
 
 kl_poisson <- function(n, mu, tau) {
-  n * (tau - mu + log(mu/tau)*mu)
+  mu_noise <- ifelse(mu == 0, 0.0001/n, mu)
+  n * (tau - mu + log(mu_noise/tau)*mu)
 }
 
 get_next_arm_kl_poisson <- function(armls, tau, epsilon) {

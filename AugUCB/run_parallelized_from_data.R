@@ -209,8 +209,7 @@ para_bandit_sim_LR <- function(data, seed = NA, do_verbose = FALSE, ...) {
   registerDoParallel(cl)
   res <- foreach(j = 1:reps, #.errorhandling = 'remove',
                  .export = c("LR_bandit_from_tsdata", "get_next_arm_lr",
-                             "get_min", "lr_ber", "lr_gaussian", "lr_exponential",
-                             "get_next_arm_lr_gaussian", "get_next_arm_lr_exponential"), 
+                             "get_min", "lr_ber"), 
                  .verbose = do_verbose, .inorder = TRUE) %dopar% {
                    alg_res <- LR_bandit_from_tsdata(data = data[[j]], 
                                               seed = 512+j, ...)
@@ -306,7 +305,7 @@ para_bandit_sim_AugUCB <- function(data, seed = NA, do_verbose = FALSE, ...) {
   gc()
   cl <- makeCluster(max(1,detectCores()-1))
   registerDoParallel(cl)
-  res <- foreach(j = 1:reps, .errorhandling = 'remove',
+  res <- foreach(j = 1:reps, #.errorhandling = 'remove',
                  .export = c("AugUCB_from_tsdata", "get_next_arm_augucb",
                              "get_min", "delete_arms"), 
                  .verbose = do_verbose, .inorder = TRUE) %dopar% {

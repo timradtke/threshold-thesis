@@ -30,7 +30,7 @@ knitr::opts_chunk$set(echo = FALSE)
 knitr::opts_chunk$set(message = FALSE)
 ```
 
-## Upper Bound on Loss of APT
+## Upper Bound on Expected Loss of APT
 
 \begin{theorem}[Locatelli et al., 2016] \label{theorem:LocatelliTheorem4}
 Let $K \geq 0$, $T \geq 2K$, and consider a problem $\mathbb{B}$. Assume that
@@ -201,9 +201,33 @@ $$
 As in Locatelli et al. (2016) we use the fact that by definition $\Delta$ and $\hat{\Delta}$ are positive in order to square both sides and write
 
 $$
-(1 - 2\sqrt{2}\delta)^2 \frac{T}{2H\Delta^2_i} \leq T_i(t)
+(1 - 2\sqrt{2}\delta)^2 \frac{T}{2H\Delta^2_i} \leq T_i(t) \leq T_i(T)
 $$
 
 We thus have derived a lower bound on the amount of pulls for any arm. That means that we can show that no arm is pulled an insufficient amount of times with large probability, and that consequently the favorable event hold and the estimated mean is sufficienctly separated from the threshold.
 
 ## Check Separation Condition
+
+As last step, we need to check whether the lower bound on the pulls of any arm suffices to ensure that the separation condition holds on the favorable event. That means, given $T_i(T) \geq (1-2\sqrt{2}\delta)^2 \frac{T}{2H\Delta_i^2}$, do we have $|\hat{\mu}_i(T) - \mu | \leq \frac{\Delta}{2}$ on the favorable event $\xi = \Big\{|\hat{\mu}_i - \mu | \leq \sqrt{\frac{T\delta^2}{H T_i(T)}}\Big\}$?
+
+To check, we plug the lower bound into the favorable event and get
+
+$$
+|\hat{\mu}_i - \mu | \leq \sqrt{\frac{T\delta^2}{H T_i(T)}} \leq \Delta_i \frac{\sqrt{2}\delta}{1-2\sqrt{2}\delta}
+$$
+Using $\delta = (4\sqrt{2})^-1$ as in Locatelli et al. (2016), we get
+
+$$
+|\hat{\mu}_i - \mu | \leq \Delta_i \frac{\sqrt{2}\delta}{1-2\sqrt{2}\delta} \leq \frac{1}{2}\Delta_i.
+$$
+
+Thus the separation condition still holds for this value of $\delta$.
+
+## Upper Bound on Error Probability
+
+We have seen that on the favorable event $\xi$, which holds with large probability $\mathbb{P}(\xi)$, the separation condition holds as all arms have been pulled a sufficient number of times, such that their estimated mean is close to the true mean. All arms are classified correctly, and the algorithm does not suffer a loss. On the other hand, we make an error whenever the favorable event does not hold after all; that is, the deviation bound for the mean does not hold. At least one arm is misclassified and the arm suffers a loss. This occurs with probability $1-\mathbb{P}(\xi)$. Consequently, the expected loss is upper bounded by
+
+$$
+\mathbb{E}[L] = 1 - \mathbb{P}(\xi) \leq 2(\log(T)+1)K \exp(-\frac{1}{64R^2}\frac{T}{H})
+$$
+
