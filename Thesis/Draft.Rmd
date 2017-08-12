@@ -1044,9 +1044,83 @@ LR(\theta_{H_0}|| \theta_{H_1}) = \frac{L_{H_0}}{L_{H_1}} = \prod_{i=1}^T\frac{q
 $$
 The intuition behind the test of course being that, if the true parameterization is $H_1$ and not $H_0$, then the likelihood $L_{H_1}$ should be larger than $L_{H_0}$. A small enough likelihood ratio would thus lead us to a rejection of the null hypothesis, while a large likelihood ratio is evidence in favor of the null hypothesis.
 
-Consider an example in which we assume that the sample stems from a normal distribution with unknown mean but known variance $\sigma^2 = 1$ such that $X_i \sim N(\mu, 1)$. We test $H_0: \mu = \mu_0$ against $H_1: \mu = \mu_1$. 
+By considering $lr = -2\log(LR(\theta_{H_0}|| \theta_{H_1}))$, one has a statistic that is $\chi^2$ distributed with degrees of freedom that depend on the null and alternative hypothesis. Assessing whether the null hypothesis can be rejected with large confidence thus becomes straightforward.
 
 ### Likelihood Ratio-based Thresholding Bandit
+
+The simple concept of the likelihood-ratio test serves as foundation for a new sampling strategy that can be applied to the thresholding bandit problem. In contrast to the cumulative regret problem, or even the best arm identification problem, we have some sort of null hypothesis for the distributions in the thresholding bandit problem. In case of no information and no observed samples, the null hypothesis might simply be that all distributions have a mean that equals the threshold. By observing samples, we then want to test whether the mean of the distributions is different from the threshold $\tau$ in either direction. Once we are sure that there is a difference, we do not want to continue to test. Instead, we would like to focus our sampling effort on a different arm where we are not as sure. The likelihood ratio quantifies how "significant"" of a difference there is between the threshold $\tau$ and the current sample mean $\hat{\mu}_i(t)$ of an arm. Given that we plug in the sample mean, that is, the maximum likelihood estimator for the true mean for many distributions, the likelihood ratio will be smaller than 1 and decrease in sample size even if the threshold and sample mean are constant.
+
+Due to these characteristics, the likelihood ratio can serve as a natural index for sampling strategies. Thus write as index
+
+$$
+B_i(t) = LR(\tau|| \hat{\mu}_i(t)) = \prod_{i=1}^T\frac{q(x_i|\tau)}{ q(x_i|\hat{\mu}_i(t))}
+$$
+
+and pull at round $t$ the arm $i^* = \arg \max_i B_i(t)$. As we described in the previous paragraph, we have $B_i(t) \leq 1$, $t \uparrow \rightarrow B_i(t) \downarrow$, and $|\hat{\mu}_i(t) - \tau| \uparrow \rightarrow B_i(t) \downarrow$. Consequently, by choosing the arm that maximizes $B_i(t)$, we choose an arm for which we either have not collected many samples, or where the sample mean is close to the threshold $\tau$. In this sense, a strategy based on the likelihood ratio is of course very reminiscient of the index employed by the APT algorithm. Indeed, assuming the samples are normally distributed with the same variance for the distribution $\nu_i$ under both $H_0$ and $H_1$, then $-\log(LR(\tau||\hat{\mu}_i(t)))$ equals the index in APT. Why then would one use the likelihood based strategy?
+
+Given that the APT index and the likelihood-ratio based index are only equivalent for normally distributed random variables with fixed standard deviation, the new strategy promises efficiency improvements whenever the true distribution is known and different from the normal distribution. The most important example are Bernoulli arms with small means as discussed before. Here, it is also easy to assume that the true distribution is known upfront. Similarly, the likelihood ratio statistic can be used for other univariate distributions of the exponential family. But we also propose a version for the Normal distribution with unknown mean.
+
+We now focus on the case where the distributions $\nu_{\theta_1}, ..., \nu_{\theta_K}$ are all the same canonical exponential family of distributions with scalar parameter $\theta_i \in \Theta$. The probability density function of the absolutely continuous distribution $\nu_{\theta_i}$ with regard to a dominating measure $\rho$ on $\mathbb{R}$ is given by $q(x|\theta) = h(x) \exp(T(x)\theta - b(\theta))$. As described in Cappé et al. (2013), citing Lehmann and Casella (1998), the derivative $b'(\theta)$ of $b(\theta)$ is an increasing continuous function such that the expected value $\mathbb{E}(\nu_{\theta}) = b'(\theta)$ for all $\theta \in \Theta$. Given that $b'(x)$ is strictly convex, we have a one-to-one relation between $b'(\theta)$ and $\mathbb{E}(\nu_{\theta})$ through the continuous inverse $b'^{-1}(\theta)$. Consequently, one can just as well parameterize the distribution its mean $\mu = \mathbb{\nu_{\theta}}$ and write $\nu_{b'^{-1}(\mu)}$ with the probability density function
+
+$$
+q(x|b'^{-1}(\mu)) = h(x) \exp(T(x) b'^{-1}(\mu) - b(b'^{-1}(\mu))).
+$$
+
+This lets us write the likelihood ratio for the exponential family distributions as
+
+$$
+LR(b'^{-1}(\mu_0)||b'^{-1}(\mu_1)) = \prod_{i=1}^n \frac{\exp(T(x_i) b'^{-1}(\mu_0) - b(b'^{-1}(\mu_0)))}{\exp(T(x_i) b'^{-1}(\mu_1) - b(b'^{-1}(\mu_1)))}
+$$
+
+or if we write it as negative log-likelihood ratio:
+
+$$
+-\log(LR) = n\Big(b\big(b'^{-1}(\mu_0)) - b(b'^{-1}(\mu_1)\big)\Big) - \Big(b'^{-1}(\mu_0)-b'^{-1}(\mu_1)\Big)\sum_{i=1}^nT(x_i)
+$$
+
+As we will see now, this statistic is easily derived for many specific distributions.
+
+#### Example 1: Bernoulli Distribution
+
+We have $T(x_i) = x_i$, $\theta = \log(\mu/(1-\mu))$, $\Theta = (0,1)$, $b(\theta) = \log(1+\exp(\theta))$, and $\mu \in (0,1)$. Then $b'(\theta) = \mu$, and we can write
+
+$$
+-\log(LR(\mu_0||\mu_1)) = n(\log\Big(\frac{1-\mu_0}{1-\mu_1}\Big)) - \Big(\log(\frac{\mu_0}{1-\mu_0}) - \log(\frac{\mu_1}{1-\mu_1})\Big)\sum_{i=1}^{n}x_i = (1-\hat{\mu})\log\Big(\frac{1-\mu_1}{1-\mu_0}\Big) + \hat{\mu}\log\Big(\frac{\mu_1}{\mu_0})
+$$
+
+We observe that, if we let $\mu_0 = \tau$ and $\mu_1 = \hat{\mu}$, then 
+
+$$
+-\log(LR(\tau||\hat{\mu})) = KL(\nu_{b'^{-1}(\hat{\mu})}||\nu_{b'^{-1}(\tau)}) = d(\hat{\mu},\tau)
+$$
+
+#### Example 2: Poisson Distribution
+
+We have $T(x_i) = x_i$, $\theta = \log(\mu)$, $\Theta = \mathbb{R}$, $b(\theta) = \exp(\theta)$, and $\mu \in (0, +\infty)$. Then $b'(\theta) = \mu$, and we can write:
+
+$$
+-\log(LR(\mu_0||\mu_1)) = n(\mu_0 - \mu_1) - (\log(\mu_0) - \log(\mu_1))\sum_{i=1}^n x_i = (\mu_0 - \mu_1) + \hat{\mu}\log\Big(\frac{\mu_1}{\mu_0}\Big)
+$$
+
+We observe that, if we let $\mu_0 = \tau$ and $\mu_1 = \hat{\mu}$, then 
+
+$$
+-\log(LR(\tau||\hat{\mu})) = KL(\nu_{b'^{-1}(\hat{\mu})}||\nu_{b'^{-1}(\tau)}) = d(\hat{\mu},\tau) = (\tau - \hat{\mu}) + \hat{\mu}\log\Big(\frac{\hat{\mu}}{\tau}\Big)
+$$
+
+#### Example 3: Normal distributions with known variance $\sigma^2$
+
+We have $T(x_i) = x_i$, $\theta = \mu/\sigma^2$, $\Theta = \mathbb{R}$, $b(\theta) = \sigma^2\theta^2/2$, $\mu \in \mathbb{R}$. Then $b'(\theta) = \mu$, and we can write
+
+$$
+-\log(LR(\mu_0||\mu_1)) = n (\frac{\mu_0^2}{2\sigma^2} - \frac{\mu_1^2}{2\sigma^2}) - (\frac{\mu_0}{\sigma^2} - \frac{\mu_1}{\sigma^2})\sum_{i=1}^nx_i = \frac{1}{2\sigma^2}\Big(\mu_0^2-\mu_1^2 - 2\mu_0\hat{\mu} + 2\mu_1\hat{\mu}\Big)
+$$
+
+And again, if we let $\mu_1 = \hat{\mu}$ and $\mu_0 = \tau$, then
+
+$$
+-\log(LR(\tau||\hat{\mu})) = KL(\nu_{b'^{-1}(\hat{\mu})}||\nu_{b'^{-1}(\tau)}) = d(\hat{\mu},\tau) = \frac{(\hat{\mu} - \tau)^2}{2\sigma^2}.
+$$
 
 # Experiments
 
@@ -1056,8 +1130,85 @@ We show two experiments that were performed on real data. While most papers in t
 
 ### The Data Set
 
-The data have been collected by the German ecommerce company [Amorelie](https://amorelie.de) as part of standard website performance tracking. For 197 selected products, we have the number of users visiting each product's detail page at a given minute. The data set we use here has been collected during the entire month of November 2016. It can be considered time series data collected at minutely frequency. Thus the data contain 43200 observations per product, and overall 8510400 observations.
+The data have been collected by the German ecommerce company [Amorelie](https://amorelie.de) as part of standard website performance tracking. For 197 selected products, we have the number of users visiting each product's detail page (PDP) at a given minute. The data set we use here has been collected during the entire month of November 2016. It can be considered time series data collected at minutely frequency. Thus the data contain 43200 observations per product, and overall 8510400 observations.
 
 Given that we want to run an offline comparison of bandit algorithms, it is important to have at each time point an observation for each arm. Given that, it is easy to evaluate the perfomance of algorithms that make different decisions at different point in times and thus do not observe the same samples. By having an observation for each arm at any given time point, each algorithm had at least the opportunity to observe a certain sample. Other papers (CITE YAHOO!) have solved this problem by using a sample drawn uniformly during for example an A/B test. Then, if the next observation in the sample is not from the same arm that the algorithm would like to draw from, observations are discarded until the next observation from the selected arm.
 
 The choice of having basically multiple time series data as the sample leads to a simple way of running the algorithms just as often on the data as for simulated data. In particular, the goal is to perform 5000 runs over the sample to confidently assess the performance. Since we wanted to preserve the potential time dependency of the data, a simple resampling of the data was not an option to create the needed 5000 variations of the sample. Thus what we did instead was a form of time series cross validation. To preserve the autocorrelation, one can create different samples of $X$ observations by sliding a window of size $X$ over the time series. Moving the window one period (in our case minute) at a time, one ensures that no sample shares start and end observation with another sample. In particular, this means for a given bandit strategy and two samples that the observations that the algorithm collects as feedback during the two initialization phases differ from sample to sample and are never the same. This is because during initialization every strategy pulls arms $1, ..., K$ once in this order.
+
+While the data is count data (the number of visits to a PDP during a given minute), we binarize the data by applying a certain threshold. If the counts is above this threshold, the observation becomes a $1$, else $0$. Thus we have a binary time series of length 43200 for each of the 197 products. Given that the number of visitors that come to a given PDP is likely to vary by time of day and by day, and in general over time, we expect that the mean of the time series to not be stable over time. For example, less visitors will come during night than during evening, thus leading to a decreasein the average. On the other hand, more users may visit the site during a weekend, thus leading to a spike on Saturdays and Sundays. Because of the latter time dependency, it is best practice to run online A/B tests for at least a week, or an integer multiple of weeks, so as to take into account the weekly seasonality in the time series. For this reason, the experiments we present below were run on $60 \cdot 24 \cdot 7 = 10080$ observations for each arm, so as to have a sample for one full week.
+
+We can look at summary statistics for the sample means of the 197 products over the month of November to get a first idea of the data we are dealing with. We see that most products have a low mean, which is very common also for actual conversion rate data that would be tested with A/B tests or multi-armed bandits. Yet the sample of products contains a few outliers with very large view rates, with a maximum rate of 78%. If we used a threshold $\gamma$ to binarize the count data, then this means that on average every fourth minute the count of visitors was below $\gamma$ for this product. On the other hand, we conclude that using thresholding bandit strategies to test the products against a threshold of for example $\tau = \frac{2}{60} = 0.333$ or $\tau = \frac{5}{60} = 0.083$ is likely to create more complex problems than a threshold of, say, $\tau = \frac{15}{60} = 0.25$ would.
+
+```{r amo_data_summary, echo = FALSE, message = FALSE}
+load(file = "/Users/timradtke/Desktop/thesis_data/pv_summary.Rda")
+
+knitr::kable(pv_summary, digits = 3, col.names = c("Mean", "Minimum", "25% Quantile", "Median", "75% Quantile", "Maximum"), caption = "Summary Statistics for View Rates of 197 Products")
+```
+
+### Experiment 1: $\tau = \frac{2}{60}$
+
+In this first experiment, we pick ten arms randomly from the set of 197 arms. The experiment is run on these 10 arms with a budget of $T=10080$ samples during each of the $5000$ iterations for which we repeat the experiment. Given the time series cross-validation idea described above, this means that in total, $15080$ observations of the available $43200$ available observations per arm are used in training. In the thresholding bandit problem, we classify arms as below or above a threshold. Thus we can evaluate the strategies also based on whether their classifications are correct in a holdout sample. As this holdout sample, we can use the 10080 observations in our data set that follow the first 15080 observations used in training. In the table below, we present the count rates of the ten products for both training and test samples.
+
+```{r experiment1_arm_means, echo = FALSE, message = FALSE}
+
+load("/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/data_amo3_mean_firsthalf.Rda")
+load("/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/data_amo3_mean_secondhalf.Rda")
+
+Training <- data_amo3_mean_firsthalf
+Test <- data_amo3_mean_secondhalf
+tau <- 2/60
+TrainingMinusTau <- Training - tau
+
+knitr::kable(rbind(Training, Test, TrainingMinusTau), digits = 3, col.names = names(data_amo3_mean_firsthalf),
+             caption = "Count rates for ten products for both training and test sample.")
+
+```
+
+We see that while the rates do vary across samples, they are relatively stable which is likely due to the fact that the samples come from an entire week's worth of observations. In particular, since we test against a threshold of $\tau = \frac{2}{60} = 0.333$ in this experiment, the classifications of arms do not differ across training and test data. A correct classification after training will be correct in the test set. For the rest of the analysis, we thus evaluate the performance using the training rates.
+
+When comparing the rates against the threshold, we see that three products are below the already small threshold. Product $V64$ seems to be especially difficult to classify correctly, even without time dependency. On the other hand, arms $V119$ and $V118$ should be much easier than the rest.
+
+In order to visualize the time dependency that we expect for our samples, we plot a moving average of the mean of the time series for the first week of data. To remove the daily seasonality, we select a moving average window of $60\cdot24 = 1440$ observations. To make the time dependency even more obvious, we contrast the actual data against synthetic data generated using the sample means of the actual data.
+
+The graph again underlines that arm $V64$ is likely to be very difficult to classify given that it's moving average even crosses the threshold twice. The same is true for arm $V139$, which is not visible when considering the overall mean alone. Furthermore, arms $V159$ and $V189$ come very close to the threshold at times.
+
+```{r, echo = FALSE, message = FALSE}
+library(zoo)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+load("/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/data_amo3_wide.Rda")
+
+real_daily <- data.frame(index = 1:8641,
+                                lapply(data_amo3_wide[1:10080,], FUN = rollapply, 
+                                       width = 24*60, mean)) %>%
+  gather(arm, mean, -index) %>%
+  mutate(source = rep("Real", 86410))
+
+real_means <- colMeans(data_amo3_wide[1:10080,])
+tau_amo3 <- 2/60
+
+syn_data <- data.frame(rep(NA, times = 10080))
+set.seed(124632728)
+for(i in 1:length(real_means)) {
+  syn_data[[i]] <- as.numeric(purrr::rbernoulli(10080, p  = real_means[i]))
+}
+names(syn_data) <- names(data_amo3_wide)
+
+syn_daily <- data.frame(source = rep("Synthetic", 8641),
+                        index = 1:8641,
+                        lapply(syn_data, FUN = zoo::rollapply, width = 24*60, mean)) %>%
+  gather(arm, mean, -index, -source)
+
+rbind(real_daily, syn_daily) %>%
+  ggplot(aes(x = index, y = mean, group = arm, color = arm)) +
+  geom_line(size = 0.4) +
+  geom_hline(aes(yintercept = tau_amo3), linetype = 2) +
+  facet_grid(.~source) + 
+  labs(title = "Moving average over 24*60 observations (1 day)", 
+       subtitle = "Horizontal bar indicates the threshold.", 
+       x = "Index", y = "One day moving average")
+```
+
+### Experiment 2: $\tau = \frac{5}{60}$

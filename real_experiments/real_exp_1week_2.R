@@ -56,31 +56,6 @@ tau_amo4 <- 5/60
 epsilon_amo4 <- 0
 
 ########################################################################
-# Bayes-UCB
-
-amo4_BUCB <- para_bandit_sim_bucb(data = data_amo4, rounds = 7580, 
-                                  rate = "inverse_horizon",
-                                  tau = tau_amo4, epsilon = epsilon_amo4, 
-                                  alpha = tau_amo4, beta = 1-tau_amo4)
-save(amo4_BUCB, 
-     file = paste0(current_path, "amo4_BUCB.Rda"))
-amo4_compnext_BUCB <- compare_to_cv_data(data_amo4_next_means, amo4_BUCB, 
-                                         tau_amo4, epsilon_amo4)$mean
-amo4_compown_BUCB <- compare_to_cv_data(data_amo4_own_means, amo4_BUCB, 
-                                        tau_amo4, epsilon_amo4)$mean
-amo4_comp_BUCB <- compare_to_ground_truth(data_amo4_mean_firsthalf, amo4_BUCB, 
-                                          tau_amo4, epsilon_amo4)$mean
-amo4_compholdout_BUCB <- compare_to_ground_truth(data_amo4_mean_secondhalf, 
-                                                 amo4_BUCB, 
-                                                 tau_amo4, epsilon_amo4)$mean
-save(amo4_compnext_BUCB, file = paste0(current_path, "amo4_compnext_BUCB.Rda"))
-save(amo4_compown_BUCB, file = paste0(current_path, "amo4_compown_BUCB.Rda"))
-save(amo4_comp_BUCB, file = paste0(current_path, "amo4_comp_BUCB.Rda"))
-save(amo4_compholdout_BUCB, file = paste0(current_path, "amo4_compholdout_BUCB.Rda"))
-rm(amo4_BUCB)
-gc()
-
-########################################################################
 # Standard Likelihood Ratio
 system.time(amo4_LR <- para_bandit_sim_LR(data = data_amo4, 
                                           rounds = 10080, 
@@ -139,6 +114,25 @@ save(amo4_comp_AugUCB, file = paste0(current_path, "amo4_comp_AugUCB.Rda"))
 save(amo4_compholdout_AugUCB, file = paste0(current_path, 
                                             "amo4_compholdout_AugUCB.Rda"))
 rm(amo4_AugUCB, amo4_comp_AugUCB, amo4_compholdout_AugUCB)
+gc()
+
+########################################################################
+# Bayes-UCB
+
+amo4_BUCB <- para_bandit_sim_bucb(data = data_amo4, rounds = 10080, 
+                                  rate = "inverse_horizon",
+                                  tau = tau_amo4, epsilon = epsilon_amo4, 
+                                  alpha = tau_amo4, beta = 1-tau_amo4)
+save(amo4_BUCB, 
+     file = paste0(current_path, "amo4_BUCB.Rda"))
+amo4_comp_BUCB <- compare_to_ground_truth(data_amo4_mean_firsthalf, amo4_BUCB, 
+                                          tau_amo4, epsilon_amo4)$mean
+amo4_compholdout_BUCB <- compare_to_ground_truth(data_amo4_mean_secondhalf, 
+                                                 amo4_BUCB, 
+                                                 tau_amo4, epsilon_amo4)$mean
+save(amo4_comp_BUCB, file = paste0(current_path, "amo4_comp_BUCB.Rda"))
+save(amo4_compholdout_BUCB, file = paste0(current_path, "amo4_compholdout_BUCB.Rda"))
+rm(amo4_BUCB)
 gc()
 
 ########################################################################
@@ -232,23 +226,11 @@ load(paste0(current_path, "amo4_comp_AugUCB.Rda"))
 load(paste0(current_path, "amo4_comp_EVT.Rda"))
 load(paste0(current_path, "amo4_comp_BUCB.Rda"))
 
-plot(c(0,10080), c(0, -3), type = "n")
+plot(c(0,10080), c(0, -5), type = "n")
 lines(log(amo4_comp_UNIFORM), col = "black")
 lines(log(amo4_comp_APT), col = "blue")
 lines(log(amo4_comp_AugUCB), col = "green")
 lines(log(amo4_comp_EVT), col = "darkgreen")
 lines(log(amo4_comp_LR), col = "red")
-abline(h = log(0.1), lty = 2)
-
-round(data_amo4_mean_secondhalf - tau_amo4,2)
-load(paste0(current_path, "amo4_compholdout_BUCB.Rda"))
-load(paste0(current_path, "amo4_compholdout_APT.Rda"))
-load(paste0(current_path, "amo4_compholdout_UNIFORM.Rda"))
-plot(c(0,10080), c(0, -4), type = "n")
-lines(log(amo4_compholdout_UNIFORM), col = "black")
-lines(log(amo4_compholdout_APT), col = "blue")
-lines(log(amo4_compholdout_AugUCB), col = "red")
-lines(log(amo4_compholdout_BUCB), col = "green")
-lines(log(amo4_compholdout_KLUCB), col = "darkgreen")
-lines(log(amo4_compholdout_TTS), col = "violet")
+lines(log(amo4_comp_BUCB), col = "violet")
 abline(h = log(0.1), lty = 2)
