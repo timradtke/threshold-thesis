@@ -58,23 +58,17 @@ epsilon_amo3 <- 0
 ########################################################################
 # Bayes-UCB
 
-amo3_BUCB <- para_bandit_sim_bucb(data = data_amo3, rounds = 7580, 
+amo3_BUCB <- para_bandit_sim_bucb(data = data_amo3, rounds = 10080, 
                                   rate = "inverse_horizon",
                                   tau = tau_amo3, epsilon = epsilon_amo3, 
                                   alpha = tau_amo3, beta = 1-tau_amo3)
 save(amo3_BUCB, 
      file = paste0(current_path, "amo3_BUCB.Rda"))
-amo3_compnext_BUCB <- compare_to_cv_data(data_amo3_next_means, amo3_BUCB, 
-                                         tau_amo3, epsilon_amo3)$mean
-amo3_compown_BUCB <- compare_to_cv_data(data_amo3_own_means, amo3_BUCB, 
-                                        tau_amo3, epsilon_amo3)$mean
 amo3_comp_BUCB <- compare_to_ground_truth(data_amo3_mean_firsthalf, amo3_BUCB, 
                                           tau_amo3, epsilon_amo3)$mean
 amo3_compholdout_BUCB <- compare_to_ground_truth(data_amo3_mean_secondhalf, 
                                                  amo3_BUCB, 
                                                  tau_amo3, epsilon_amo3)$mean
-save(amo3_compnext_BUCB, file = paste0(current_path, "amo3_compnext_BUCB.Rda"))
-save(amo3_compown_BUCB, file = paste0(current_path, "amo3_compown_BUCB.Rda"))
 save(amo3_comp_BUCB, file = paste0(current_path, "amo3_comp_BUCB.Rda"))
 save(amo3_compholdout_BUCB, file = paste0(current_path, "amo3_compholdout_BUCB.Rda"))
 rm(amo3_BUCB)

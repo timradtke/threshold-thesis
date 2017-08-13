@@ -2239,14 +2239,14 @@ We have \(T(x_i) = x_i\), \(\theta = \log(\mu/(1-\mu))\),
 \(\mu \in (0,1)\). Then \(b'(\theta) = \mu\), and we can write
 
 \[
--\log(LR(\mu_0||\mu_1)) = n(\log\Big(\frac{1-\mu_0}{1-\mu_1}\Big)) - \Big(\log(\frac{\mu_0}{1-\mu_0}) - \log(\frac{\mu_1}{1-\mu_1})\Big)\sum_{i=1}^{n}x_i = (1-\hat{\mu})\log\Big(\frac{1-\mu_1}{1-\mu_0}\Big) + \hat{\mu}\log\Big(\frac{\mu_1}{\mu_0})
+-\log(LR(\mu_0||\mu_1)) = n(\log\Big(\frac{1-\mu_0}{1-\mu_1}\Big)) - \Big(\log(\frac{\mu_0}{1-\mu_0}) - \log(\frac{\mu_1}{1-\mu_1})\Big)\sum_{i=1}^{n}x_i = n \Big( (1-\hat{\mu})\log\Big(\frac{1-\mu_1}{1-\mu_0}\Big) + \hat{\mu}\log\Big(\frac{\mu_1}{\mu_0}) \Big)
 \]
 
 We observe that, if we let \(\mu_0 = \tau\) and \(\mu_1 = \hat{\mu}\),
 then
 
 \[
--\log(LR(\tau||\hat{\mu})) = KL(\nu_{b'^{-1}(\hat{\mu})}||\nu_{b'^{-1}(\tau)}) = d(\hat{\mu},\tau)
+-\log(LR(\tau||\hat{\mu})) = nKL(\nu_{b'^{-1}(\hat{\mu})}||\nu_{b'^{-1}(\tau)}) = nd(\hat{\mu},\tau) = n \Big(\hat{\mu}\log\big(\frac{\hat{\mu}}{\tau}\big) + (1-\hat{\mu})\log\big(\frac{1-\hat{\mu}}{1-\tau}\big)\Big)
 \]
 
 \paragraph{Example 2: Poisson
@@ -2257,14 +2257,14 @@ We have \(T(x_i) = x_i\), \(\theta = \log(\mu)\),
 \(\mu \in (0, +\infty)\). Then \(b'(\theta) = \mu\), and we can write:
 
 \[
--\log(LR(\mu_0||\mu_1)) = n(\mu_0 - \mu_1) - (\log(\mu_0) - \log(\mu_1))\sum_{i=1}^n x_i = (\mu_0 - \mu_1) + \hat{\mu}\log\Big(\frac{\mu_1}{\mu_0}\Big)
+-\log(LR(\mu_0||\mu_1)) = n(\mu_0 - \mu_1) - (\log(\mu_0) - \log(\mu_1))\sum_{i=1}^n x_i = n\Big((\mu_0 - \mu_1) + \hat{\mu}\log\Big(\frac{\mu_1}{\mu_0}\Big)\Big)
 \]
 
 We observe that, if we let \(\mu_0 = \tau\) and \(\mu_1 = \hat{\mu}\),
 then
 
 \[
--\log(LR(\tau||\hat{\mu})) = KL(\nu_{b'^{-1}(\hat{\mu})}||\nu_{b'^{-1}(\tau)}) = d(\hat{\mu},\tau) = (\tau - \hat{\mu}) + \hat{\mu}\log\Big(\frac{\hat{\mu}}{\tau}\Big)
+-\log(LR(\tau||\hat{\mu})) = nKL(\nu_{b'^{-1}(\hat{\mu})}||\nu_{b'^{-1}(\tau)}) = nd(\hat{\mu},\tau) = n\Big((\tau - \hat{\mu}) + \hat{\mu}\log\Big(\frac{\hat{\mu}}{\tau}\Big)\Big)
 \]
 
 \paragraph{\texorpdfstring{Example 3: Normal distributions with known
@@ -2276,14 +2276,104 @@ We have \(T(x_i) = x_i\), \(\theta = \mu/\sigma^2\),
 \(\mu \in \mathbb{R}\). Then \(b'(\theta) = \mu\), and we can write
 
 \[
--\log(LR(\mu_0||\mu_1)) = n (\frac{\mu_0^2}{2\sigma^2} - \frac{\mu_1^2}{2\sigma^2}) - (\frac{\mu_0}{\sigma^2} - \frac{\mu_1}{\sigma^2})\sum_{i=1}^nx_i = \frac{1}{2\sigma^2}\Big(\mu_0^2-\mu_1^2 - 2\mu_0\hat{\mu} + 2\mu_1\hat{\mu}\Big)
+-\log(LR(\mu_0||\mu_1)) = n (\frac{\mu_0^2}{2\sigma^2} - \frac{\mu_1^2}{2\sigma^2}) - (\frac{\mu_0}{\sigma^2} - \frac{\mu_1}{\sigma^2})\sum_{i=1}^nx_i = n\frac{1}{2\sigma^2}\Big(\mu_0^2-\mu_1^2 - 2\mu_0\hat{\mu} + 2\mu_1\hat{\mu}\Big)
 \]
 
 And again, if we let \(\mu_1 = \hat{\mu}\) and \(\mu_0 = \tau\), then
 
 \[
--\log(LR(\tau||\hat{\mu})) = KL(\nu_{b'^{-1}(\hat{\mu})}||\nu_{b'^{-1}(\tau)}) = d(\hat{\mu},\tau) = \frac{(\hat{\mu} - \tau)^2}{2\sigma^2}.
+-\log(LR(\tau||\hat{\mu})) = nKL(\nu_{b'^{-1}(\hat{\mu})}||\nu_{b'^{-1}(\tau)}) = nd(\hat{\mu},\tau) = n\frac{(\hat{\mu} - \tau)^2}{2\sigma^2}.
 \]
+
+\paragraph{\texorpdfstring{Example 4: Gamma distributions with known
+shape parameter
+\(\alpha\)}{Example 4: Gamma distributions with known shape parameter \textbackslash{}alpha}}\label{example-4-gamma-distributions-with-known-shape-parameter-alpha}
+
+We have \(T(x_i) = x_i\), \(\theta = -\alpha/\mu\),
+\(\Theta = (-\infty, 0)\), \(b(\theta) = -\alpha \log(-\theta)\),
+\(\mu \in (0,+\infty)\). Then \(b'(\theta) = -\mu\), and we can write
+
+\[
+-\log(LR(\mu_0||\mu_1)) = n\alpha(-\log(\frac{\alpha}{\mu_0}) - \log(\frac{\mu_1}{\alpha})) - (-\frac{\alpha}{\mu_0} + \frac{\alpha}{\mu_1})\sum_{i=1}^{n}x_i = n\alpha \Big(\log\big(\frac{\mu_0}{\mu_1}\big) - \frac{\hat{\mu}}{\mu_1} + \frac{\hat{\mu}}{\mu_0}\Big).
+\] And again, if we let \(\mu_1 = \hat{\mu}\) and \(\mu_0 = \tau\), then
+
+\[
+-\log(LR(\tau||\hat{\mu})) = nKL(\nu_{b'^{-1}(\hat{\mu})}||\nu_{b'^{-1}(\tau)}) = nd(\hat{\mu},\tau) = n\alpha \Big(\frac{\hat{\mu}}{\tau} - 1 - \log\big(\frac{\hat{\mu}}{\tau}\big)\Big).
+\]
+
+For \(\alpha = 1\), the Gamma distribution is equal to the Exponential
+distribution.
+
+Given these results for the exponential family of distributions, we can
+now define the SLR (Simple Likelihood Ratio) algorithm.
+
+\subsubsection{1D-SLR Algorithm for One-Dimensional Exponential Family
+of
+Distributions}\label{d-slr-algorithm-for-one-dimensional-exponential-family-of-distributions}
+
+Very similar to the APT algorithm, the SLR algorithm receives as input
+the definition of the problem \((\tau, \epsilon)\) (compare Locatelli et
+al., 2016). Additionally, the algorithm receives as input the name of
+the distribution that the arms follow, as well as potential additional
+parameters (\(\sigma_1, ..., \sigma_K\) for Normal distributions,
+\(\alpha_1, ..., \alpha_K\) for Gamma distributions). We assume that
+each arm follows the same kind of distribution, with potentially
+different parameters \(\theta_1, ..., \theta_K\). The algorithm pulls
+each arm once. At time \(t>K\), the algorithm updates the number of
+pulls for arm \(i\) at time \(t\), \(T_i(t)\), for each arm, as well as
+the empirical mean \(\hat{\mu}_i(t)\) of arm \(i\) after \(T_i(t)\)
+pulls. The empirical mean is calculated for each arm
+\(k\in \{1,...,K\}\) as
+\(\hat{\mu}_i(t) = \frac{1}{T_i(t)}\sum_{s=1}^{T_i(t)} x_{i,s}\), with
+\(T_i(t) = \sum_{s=1}^{t}\mathbb{I}(I_s = i)\). As in Locatelli et al.
+(2016), the \(X_{i,s}\) is the sample received when pulling arm \(i\)
+for the \(s\)-th time. Depending on the distribution, the algorithm then
+computes the index
+
+\[
+B_i^{SLR}(t+1) = \mathbb{I}(\hat{\mu}\geq \tau)(-\log\big(LR(\tau-\epsilon||\hat{\mu}_i(t))\big) + \mathbb{I}(\hat{\mu}< \tau)(-\log\big(LR(\tau+\epsilon||\hat{\mu}_i(t))\big) = T_i(t) \Big( \mathbb{I}(\hat{\mu}\geq \tau)\cdot KL(\nu_{b'^{-1}(\hat{\mu}(t))}||\nu_{b'^{-1}(\tau-\epsilon)}) + \mathbb{I}(\hat{\mu} < \tau)\cdot KL(\nu_{b'^{-1}(\hat{\mu}(t))}||\nu_{b'^{-1}(\tau+\epsilon)}) \Big).
+\]
+
+The next arm to be pulled is the minimizer of the index
+\(B_i^{SLR}(t+1)\), \(I_{t+1} = \arg \min_{i\leq K} B_i(t+1)\). At the
+end of the horizon \(T\), the algorithm outputs the set of arms
+\(\hat{S}_\tau = \{k: \hat{\mu}_k(T) \geq \tau\}\).
+
+\subsubsection{2D-SLR Algorithm for Normal Distributions with Unknown
+Mean and Unknown
+Variance}\label{d-slr-algorithm-for-normal-distributions-with-unknown-mean-and-unknown-variance}
+
+As soon as we move away from univariate distributions parameterized by
+their mean, it becomes less clear how the likelihood ratio for
+\(H_0: \mu = \tau\) and \(H_1: \mu = \hat{\mu}\) should be calculated.
+In the case of Normal distributions with unknown mean and unknown
+variance, given that the variance and mean estimate are linked, we can
+use
+\(H_0: \mu = \tau \land \sigma^2 = \sigma^2_{\tau} = \frac{1}{n}\sum_{i=1}^{n}(x_i-\tau)^2\)
+and the alternative hypothesis based on the maximum likelihood estimates
+\(H_1: \mu = \hat{\mu} \land \sigma^2 = \hat{\sigma}^2 = \frac{1}{n}\sum_{i=1}^{n}(x_i-\hat{\mu})^2\).
+
+In the following, we assume \(\epsilon = 0\).
+
+Now, at each round \(t\), the algorithm computes \(T_i(t)\) and
+\(\hat{\mu}_i(t)\) as before, but additionally the empirical variances
+\(\sigma_{\tau,i}^2(t) = \frac{1}{T_i(t)}\sum_{s=1}^{T_i(t)}(x_{i,s}-\tau)^2\)
+and
+\(\hat{\sigma}_{i}^2(t) = \frac{1}{T_i(t)}\sum_{s=1}^{T_i(t)}(x_{i,s}-\hat{\mu})^2\).
+The index is then given by
+
+\[
+B_i^{2DSLR}(t+1) = -\log(LR(\tau, \sigma_{\tau,i}^2(t)||\hat{\mu}_i(t),\hat{\sigma}^2_{i}(t))) = T_i(t) \log\Big(\frac{\sigma_{\tau,i}^2(t)}{\hat{\sigma}_i^2(t)}\Big) = T_i(t) KL(\hat{\mu}_i(t),\hat{\sigma}^2_{i}(t)||\tau, \sigma_{\tau,i}^2(t))
+\]
+
+(SHOW THAT THE NOTATION CAN BE ABUSED AND THE KL WRITTEN THIS WAY
+BECAUSE UNIQUELY DEFINED BY MEAN AND VARIANCE)
+
+Then, as for the univariate case, the next arm to be pulled is the
+minimizer of the index \(B_i^{2DSLR}(t+1)\),
+\(I_{t+1} = \arg \min_{i\leq K} B_i(t+1)\). At the end of the horizon
+\(T\), the algorithm outputs the set of arms
+\(\hat{S}_\tau = \{k: \hat{\mu}_k(T) \geq \tau\}\).
 
 \section{Experiments}\label{experiments}
 
@@ -2418,12 +2508,12 @@ V148\tabularnewline
 V148\tabularnewline
 \midrule
 \endhead
-Training & 0.027 & 0.001 & 0.013 & 0.158 & 0.071 & 0.071 & 0.059 & 0.053
-& 0.156 & 0.102\tabularnewline
-Test & 0.022 & 0.000 & 0.011 & 0.130 & 0.064 & 0.060 & 0.058 & 0.055 &
-0.150 & 0.115\tabularnewline
-TrainingMinusTau & -0.006 & -0.033 & -0.021 & 0.125 & 0.038 & 0.038 &
-0.026 & 0.019 & 0.123 & 0.068\tabularnewline
+Training & 0.001 & 0.013 & 0.027 & 0.053 & 0.059 & 0.071 & 0.071 & 0.102
+& 0.156 & 0.158\tabularnewline
+Test & 0.000 & 0.011 & 0.022 & 0.055 & 0.058 & 0.064 & 0.060 & 0.115 &
+0.150 & 0.130\tabularnewline
+TrainingMinusTau & -0.033 & -0.021 & -0.006 & 0.019 & 0.026 & 0.038 &
+0.038 & 0.068 & 0.123 & 0.125\tabularnewline
 \bottomrule
 \end{longtable}
 
@@ -2457,8 +2547,151 @@ when considering the overall mean alone. Furthermore, arms \(V159\) and
 
 \includegraphics{Draft_files/figure-latex/unnamed-chunk-4-1.pdf}
 
+These difficulties seem to have a large impact on the performance of all
+algorithms. Given that the data are \(\{0,1\}\) observations, we can
+compare all algorithms in a setting in which one expects all assumptions
+to hold before having observed the data. The distribution is
+sub-Gaussian for the APT algorithm, bounded between \(0\) and \(1\) for
+the variance-based algorithms, and assumed to be Bernoulli for the SLR
+algorithm. Additionally, we use the B-UCB algorithm as it performed
+often best on the synthetic data.
+
+We set \(\epsilon = 0\), and \(\tau = 2/60\). For the AugUCB algorithm
+we use the parameters as in Mukherjee et al. (2017), that is,
+\(\rho = 1/3\). For B-UCB we set the prior to \(\alpha = \tau\) and
+\(\beta = 1-\tau\). All other algorithms are parameter free.
+
+The corresponding results are shown in the next figure.
+
+\includegraphics{Draft_files/figure-latex/unnamed-chunk-5-1.pdf}
+
+Compared to the previous simulations with synthetic data, the results
+are dramatic. First of all, we see that all strategies perform not well.
+All of them end above the 10\% error mark after 1 week of data. Second,
+the uniform sampling strategy fares best when evaluated against the
+sample mean of all observations used during training. This of course is
+the opposite of what we would like to see, and the opposite of what we
+saw on the synthetic data, where we were able to improve upon the naive
+strategy. Third, again in contrast to the results on synthetic data, we
+observe non-monotonicity in the error curves. Given that the highs and
+lows run very much parallel for the different models, it stands to
+reason that this effect is caused by the variation in means of the arms
+over time. Indeed, roughly comparing the error curves to the moving
+averages in the previous figure, the increase in errors after round
+\(5000\) and the decreasing error after round \(7500\) seems to line up
+more or less with the fluctuations observed in the data. Given that we
+evaluate the models against a sample mean of all observations, it is not
+surprising that the uniform sampling strategy has a certain advantage
+when it comes to ``factoring out'' the seasonalities. In contrast, the
+adaptive sampling schemes try to adapt more or less quickly to the
+changes in the means; a feature that would be valuable in a cumulative
+regret multi-armed bandit setting. Here, however, it leads to wrong
+estimates of the sample mean.
+
+If we focus on a comparison of adaptive sampling strategies and less on
+their globally bad performance, we see that the variance based
+strategies perform worse than APT and SLR. Very dramatic is the behavior
+of the Augmented-UCB algorithm, which first seems to perform well; that,
+however, is a result of it mostly pulling arms uniformly, until it
+starts to adapt its sampling and discarding arms after nearly 5000
+rounds. The result is a dramatic increase in error which leads to the
+worst performs at the end of the budget. The difference between APT,
+SLR, and EVT is not very large, and their performance fluctuates in
+sync. None of them is really able to converge due to the changes in the
+underlying means. Advantageous only seems to be the fact that their
+behavior is less erratic than that of the Augmented-UCB strategy given
+that they do not discard arms.
+
 \subsubsection{\texorpdfstring{Experiment 2:
 \(\tau = \frac{5}{60}\)}{Experiment 2: \textbackslash{}tau = \textbackslash{}frac\{5\}\{60\}}}\label{experiment-2-tau-frac560}
+
+In order to underline the results of the previous experiment, we perform
+a second experiment using the data collected by Amorelie. We increase
+the threshold to \(\tau = \frac{5}{60} = 0.833\) to make the problem in
+general slightly easier, and again pick 10 arms at random from the data
+set of 197 arms. We again use a rolling window of \(10080\) observations
+to create \(5000\) iterations and look at the training and test sample
+means as in Experiment 1.
+
+Some arms, in particular \(V110\) and \(V150\), but also \(V103\),
+\(V149\), \(V104\), and \(V112\) are quite close to the threshold. Two
+arms, \(V129\) and \(V32\) appear to have basically no positive
+observation in the training set. On the other hand, arm \(V154\) is
+larger than the threshold by a fair amount and should be easier to
+classify.
+
+\begin{longtable}[]{@{}lrrrrrrrrrr@{}}
+\caption{Count rates for ten products for both training and test
+sample.}\tabularnewline
+\toprule
+& V129 & V32 & V76 & V103 & V149 & V104 & V110 & V150 & V112 &
+V154\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+& V129 & V32 & V76 & V103 & V149 & V104 & V110 & V150 & V112 &
+V154\tabularnewline
+\midrule
+\endhead
+Training & 0.000 & 0.000 & 0.012 & 0.044 & 0.049 & 0.053 & 0.055 & 0.095
+& 0.123 & 0.199\tabularnewline
+Test & 0.013 & 0.000 & 0.011 & 0.040 & 0.049 & 0.063 & 0.060 & 0.114 &
+0.137 & 0.202\tabularnewline
+TrainingMinusTau & -0.083 & -0.083 & -0.071 & -0.039 & -0.035 & -0.030 &
+-0.028 & 0.011 & 0.039 & 0.116\tabularnewline
+\bottomrule
+\end{longtable}
+
+As in the previous experiment, we can also take a look at the one day
+moving averages of the arms to quickly assess the time dependency of the
+means. Given that the data here are collected at the same time points as
+the data used in the previous experiment, it is not surprising to see a
+similar spike in means during the second half of the observations with
+the maximum moving average around index 7500. We also observe that these
+fluctuations are heavier for products with in general larger means (that
+is, more visitors on the website). But these fluctuations are clearly
+much larger and systematic than those observed for synthetic data with
+the same sample means. While the moving average of product \(V159\) in
+the synthetic data has a valley after index 5000, this can be explained
+by the natural variance (which increases as the mean is closer to
+\(0.5\)).
+
+Given the moving averages and the previous experiment, the performance
+results of Experiment 2 shown in the next figure are not surprising. We
+recognize the same structure as previously. The uniform sampling
+strategy performs the best. The adaptive sampling strategies perform
+bad, do not converge, and end above the 10\% error mark. This time,
+Augmented-UCB is not (yet) the worst performing strategy, but equally
+erratic after it actually adapts its sampling. This time around, it even
+has two spikes in its adaptive phase. Again, APT, SLR, and EVT perform
+in sync and more or less equally bad, with EVT slightly better than APT
+and SLR this time around. Interestingly, Bayes-UCB performs clearly
+worst of all strategies. Its performance changes at the same time as
+Augmented-UCB starts to adapt its sampling strategy, near round 7000.
+
+This last fact is of particular interest, as Bayes-UCB is dramatically
+better than the other strategies in experiments on synthetic data. On
+the right hand side of the same figure, the performance of the
+algorithms on synthetic data from Bernoulli distributions with the same
+sample mean is depicted. On this data, Bayes-UCB performs very well,
+ending at an average error of about 0.1\% of the simulations. This
+mirrors its performance observed in the previous simulations with
+synthetic data. Also all other strategies perform clearly better now,
+and their error rates are strictly decreasing. Interestingly, the
+uniform sampling scheme is now much worse than in the experiment on real
+data; it does no longer have the advantage of sampling the different
+mean phases at a representative rate. Instead, it is no in its original
+position of serving as upper bound on the error rate. Excluding
+Bayes-UCB, we see that the SLR algorithm performs better the best,
+followed by the variance-based algorithms. APT comes in at the same
+error rate as uniform sampling. While the difference between SLR and EVT
+are less than 2\% (1.2\% vs 3\%), the difference to uniform sampling
+(10\%) is relevant. The performance of 10\% error rate is achieved by
+SLR about 1000 observations earlier than by EVT.
+
+\includegraphics{Draft_files/figure-latex/unnamed-chunk-6-1.pdf}
+
+\includegraphics{Draft_files/figure-latex/unnamed-chunk-7-1.pdf}
 
 
 \end{document}
