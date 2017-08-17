@@ -35,6 +35,20 @@ for(j in 1:5000) {
 }
 
 ########################################################################
+# Empirical Variance Guided Algorithm (Zhong et al., 2017)
+
+loc6nt_EVT <- para_bandit_sim_EVT(data = data_list6, 
+                                  rounds = 7000, 
+                                  tau = tau_loc6nt, 
+                                  epsilon = epsilon_loc6nt)
+save(loc6nt_EVT, file = paste0(current_path, "loc6nt_EVT.Rda"))
+loc6nt_comp_EVT <- compare_to_ground_truth(mean_loc6nt, loc6nt_EVT, 
+                                           tau_loc6nt, epsilon_loc6nt)$mean
+save(loc6nt_comp_EVT, file = paste0(current_path, "loc6nt_comp_EVT.Rda"))
+rm(loc6nt_EVT)
+gc()
+
+########################################################################
 # Plot the results
 
 load(paste0(current_path, "/loc6nt_comp_BUCB_horizon_7000.Rda"))
@@ -44,7 +58,7 @@ load(paste0(current_path, "/loc6nt_comp_UNIFORM_7000.Rda"))
 load(paste0(current_path, "/loc6nt_comp_APT_7000.Rda"))
 load(paste0(current_path, "/loc6nt_comp_LR_7000.Rda"))
 
-plot(c(0,7000), c(0, -4), type = "n")
+plot(c(0,7000), c(0, -5), type = "n")
 lines(log(loc6nt_comp_BUCB_horizon_7000), col = "blue")
 #lines(log(loc6nt_comp_BUCB_horizon), col = "lightblue")
 #lines(log(loc6nt_comp_APT), col = "pink")
@@ -57,7 +71,21 @@ lines(log(loc6nt_comp_AugUCB_7000), col = "grey")
 #lines(log(loc6nt_comp_KLUCB7), col = "green")
 #lines(log(loc6nt_comp_KLUCB30), col = "green")
 #lines(log(loc6nt_comp_KLUCB370), col = "darkgreen")
-lines(log(loc6nt_comp_KLUCB370_5000), col = "darkgreen")
+#lines(log(loc6nt_comp_KLUCB370_5000), col = "darkgreen")
+
+########################################################################
+# Empirical Variance Guided Algorithm (Zhong et al., 2017)
+
+loc6nt_EVT <- para_bandit_sim_EVT(data = data_list6, 
+                                rounds = 7000, 
+                                tau = tau_loc6nt, 
+                                epsilon = epsilon_loc6nt)
+save(loc6nt_EVT, file = paste0(current_path, "loc6nt_EVT.Rda"))
+loc6nt_comp_EVT <- compare_to_ground_truth(mean_loc6nt, loc6nt_EVT, 
+                                           tau_loc6nt, epsilon_loc6nt)$mean
+save(loc6nt_comp_EVT, file = paste0(current_path, "loc6nt_comp_EVT.Rda"))
+rm(loc6nt_EVT)
+gc()
 
 ########################################################################
 

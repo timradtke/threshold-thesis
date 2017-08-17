@@ -32,6 +32,10 @@ gc()
 
 ########################################################################
 
+load(paste0(current_path, "pois2_comp_LR.Rda"))
+load(paste0(current_path, "pois2_comp_APT.Rda"))
+load(paste0(current_path, "pois2_comp_EVT.Rda"))
+
 plot(c(0,10000), c(0, -8), type = "n")
 abline(h=log(0.01), lty = 2)
 lines(log(pois2_comp_APT), col = "black")

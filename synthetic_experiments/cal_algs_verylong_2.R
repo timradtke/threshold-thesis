@@ -40,6 +40,7 @@ for(j in 1:5000) {
 load(paste0(current_path, "/loc2_comp_BUCB_horizon_4000.Rda"))
 load(paste0(current_path, "/loc2_comp_APT_2000.Rda"))
 load(paste0(current_path, "/loc2_comp_LR_2000.Rda"))
+load(paste0(current_path, "/loc2_comp_EVT.Rda"))
 load(paste0(current_path, "/loc2_comp_AugUCB_2000.Rda"))
 load(paste0(current_path, "/loc2_comp_KLUCB80_long.Rda"))
 load(paste0(current_path, "/loc2_comp_KLUCB15_long.Rda"))
@@ -49,14 +50,26 @@ lines(log(loc2_comp_BUCB_horizon_4000), col = "blue")
 lines(log(loc2_comp_APT_2000), col = "red")
 lines(log(loc2_comp_LR_2000), col = "black")
 lines(log(loc2_comp_AugUCB_2000), col = "grey")
-#lines(log(loc2_comp_KLUCB100), col = "green")
+lines(log(loc2_comp_EVT), col = "green")
 #lines(log(loc2_comp_KLUCB80), col = "green")
 lines(log(loc2_comp_KLUCB80_long), col = "green")
 lines(log(loc2_comp_KLUCB15_long), col = "darkgreen")
 #lines(log(loc2_comp_KLUCB60), col = "darkgreen")
 #lines(log(loc2_comp_KLUCB20), col = "darkgreen")
 
-8000/H_loc2
+########################################################################
+# Empirical Variance Guided Algorithm (Zhong et al., 2017)
+
+loc2_EVT <- para_bandit_sim_EVT(data = data_list2, 
+                                rounds = 2000, 
+                                tau = tau_loc2, 
+                                epsilon = epsilon_loc2)
+save(loc2_EVT, file = paste0(current_path, "loc2_EVT.Rda"))
+loc2_comp_EVT <- compare_to_ground_truth(mean_loc2, loc2_EVT, 
+                                         tau_loc2, epsilon_loc2)$mean
+save(loc2_comp_EVT, file = paste0(current_path, "loc2_comp_EVT.Rda"))
+rm(loc2_EVT)
+gc()
 
 ########################################################################
 

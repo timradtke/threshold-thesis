@@ -51,6 +51,7 @@ gc()
 
 load(paste0(current_path, "data_amo4_mean_firsthalf.Rda"))
 load(paste0(current_path, "data_amo4_mean_secondhalf.Rda"))
+load(paste0(current_path, "data_amo4_own_means.Rda"))
 load(paste0(current_path, "data_amo4.Rda"))
 tau_amo4 <- 5/60
 epsilon_amo4 <- 0
@@ -70,9 +71,13 @@ amo4_comp_LR <- compare_to_ground_truth(data_amo4_mean_firsthalf,
 amo4_compholdout_LR <- compare_to_ground_truth(data_amo4_mean_secondhalf, 
                                                amo4_LR, 
                                                tau_amo4, epsilon_amo4)$mean
+amo4_compown_LR <- compare_to_cv_data(data_amo4_own_means, amo4_LR, 
+                                        tau_amo4, epsilon_amo4)$mean
 save(amo4_comp_LR, file = paste0(current_path, "amo4_comp_LR.Rda"))
 save(amo4_compholdout_LR, file = paste0(current_path, 
                                         "amo4_compholdout_LR.Rda"))
+save(amo4_compown_LR, file = paste0(current_path, 
+                                        "amo4_compown_LR.Rda"))
 rm(amo4_LR, amo4_comp_LR)
 gc()
 
@@ -226,11 +231,12 @@ load(paste0(current_path, "amo4_comp_AugUCB.Rda"))
 load(paste0(current_path, "amo4_comp_EVT.Rda"))
 load(paste0(current_path, "amo4_comp_BUCB.Rda"))
 
-plot(c(0,10080), c(0, -5), type = "n")
+plot(c(0,10080), c(0, -1.5), type = "n")
 lines(log(amo4_comp_UNIFORM), col = "black")
 lines(log(amo4_comp_APT), col = "blue")
 lines(log(amo4_comp_AugUCB), col = "green")
 lines(log(amo4_comp_EVT), col = "darkgreen")
 lines(log(amo4_comp_LR), col = "red")
+lines(log(amo4_compown_LR), col = "blue")
 lines(log(amo4_comp_BUCB), col = "violet")
 abline(h = log(0.1), lty = 2)

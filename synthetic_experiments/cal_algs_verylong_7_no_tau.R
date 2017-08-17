@@ -36,6 +36,21 @@ for(j in 1:5000) {
   data_list7_10000[[j]] <- curr_data
 }
 gc()
+
+########################################################################
+# Empirical Variance Guided Algorithm (Zhong et al., 2017)
+
+loc7nt_EVT <- para_bandit_sim_EVT(data = data_list7_10000, 
+                                  rounds = 10000, 
+                                  tau = tau_loc7nt, 
+                                  epsilon = epsilon_loc7nt)
+save(loc7nt_EVT, file = paste0(current_path, "loc7nt_EVT.Rda"))
+loc7nt_comp_EVT <- compare_to_ground_truth(mean_loc7nt, loc7nt_EVT, 
+                                           tau_loc7nt, epsilon_loc7nt)$mean
+save(loc7nt_comp_EVT, file = paste0(current_path, "loc7nt_comp_EVT.Rda"))
+rm(loc7nt_EVT)
+gc()
+
 ########################################################################
 
 system.time(loc7nt_KLUCB90_long <- para_bandit_sim_KLUCB(data = data_list7_10000, 
@@ -133,6 +148,7 @@ load(file = paste0(current_path, "loc7nt_comp_APT_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_LR_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_BUCB_horizon_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_AugUCB_10000.Rda"))
+load(file = paste0(current_path, "loc7nt_comp_EVT.Rda"))
 
 plot(c(0,10000), c(0, -5), type = "n")
 lines(log(loc7nt_comp_BUCB_horizon_10000), col = "green")
@@ -140,3 +156,4 @@ lines(log(loc7nt_comp_UNIFORM_10000), col = "darkblue")
 lines(log(loc7nt_comp_APT_10000), col = "red")
 lines(log(loc7nt_comp_LR_10000), col = "darkred")
 lines(log(loc7nt_comp_AugUCB_10000), col = "darkgreen")
+lines(log(loc7nt_comp_EVT), col = "blue")

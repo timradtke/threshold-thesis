@@ -2375,7 +2375,286 @@ minimizer of the index \(B_i^{2DSLR}(t+1)\),
 \(T\), the algorithm outputs the set of arms
 \(\hat{S}_\tau = \{k: \hat{\mu}_k(T) \geq \tau\}\).
 
+\subsubsection{Discussion}\label{discussion-1}
+
+At the beginning of this thesis, we set out to find an algorithm that
+improves upon the Anytime Parameter Free algorithm introduced in
+Locatelli et al. (2016) for the thresholding bandit problem in two
+directions. First, we wanted to make the algorithm perform better in
+problems that are not well approximated as sub-Gaussian; that is, in
+particular a problem with Bernoulli arms with small means and low
+threshold. Unsurprisingly, this meant that we need to find a solution
+that takes more into account than just the sample mean. With the Simple
+Likelihood Ratio strategy, we propose an algorithm that fulfills that
+goal at the cost of being distribution specific.
+
+The Simple Likelihood Ratio strategy requires the knowledge of the class
+of distribution upfront, just as other algorithms require parameters.
+While this is likely to be a negligiable problem in the case of
+\(\{0,1\}\) observations which can be modeled reasonably by Bernoulli
+distributions if we are only interested in estimating the mean, it can
+be more difficult to know the true class of distribution upfront when
+the random variables can take values in \(\mathbb{R}\). We have shown
+however, that the SLR strategy can be adapted to all univariate
+distributions in the exponential family of distributions. The algorithm
+even offers a natural adaptation to the problem of normal distributions
+with unknown mean and unknown variance.
+
+Furthermore, the Simple Likelihood Ratio strategy reduces to the Anytime
+Parameter Free strategy in the case where arms are normally distributed
+with equal variance that is known upfront. In that case we have as index
+(compare example 3 above):
+
+\[
+B_i^{SLR}(t) = T_i(t)\frac{(\hat{\mu}_i(t) - \tau)^2}{2\sigma^2}.
+\] In order to decide at time \(t\) which arm to draw next, we
+necessarily compare the indices of arm \(i\) and arm \(j\). Assume
+w.l.o.g. that \(B_i^{SLR}(t) < B_j^{SLR}(t)\). Then:
+
+\[
+B_i^{SLR}(t) < B_j^{SLR}(t) \Leftrightarrow 
+T_i(t)\frac{(\hat{\mu}_i(t) - \tau)^2}{2\sigma^2} < T_j(t)\frac{(\hat{\mu}_j(t) - \tau)^2}{2\sigma^2} 
+\Leftrightarrow 
+\sqrt{T_i(t)}\sqrt{(\hat{\mu}_i(t) - \tau)^2} < \sqrt{T_j(t)}\sqrt{(\hat{\mu}_j(t) - \tau)^2}
+\Leftrightarrow 
+B_i^{APT}(t) < B_j^{APT}(t)
+\]
+
 \section{Experiments}\label{experiments}
+
+\subsection{Synthetic Data}\label{synthetic-data}
+
+In order to evaluate the empirical performance of the proposed
+algorithms, we run the algorithm on synthetic data as is usual. We
+compare its performance on this data not only against the APT algorithm,
+but also against the variance-based algorithms. Thus we also compare the
+variance-based algorithms for the first time directly against each other
+instead of just relative to the APT algorithm.
+
+Each of the experiments is repeated for 5000 iterations. Depending on
+the experiment, the observations are generated randomly by some
+distribution of the exponential family of distributions. As we were
+originally concerned with improving upon APT with respect to
+non-sub-Gaussian distributions, the first experiments focus on Bernoulli
+distributions, and especially those with small means. We then go on to
+show with experiments on Gaussian, Exponential, and Poisson data that
+the SLR algorithm is able to improve upon APT given that we know the
+true kind of distribution.
+
+\subsubsection{\texorpdfstring{Experiment 1: Bernoulli with
+\(\tau = 0.5\)}{Experiment 1: Bernoulli with \textbackslash{}tau = 0.5}}\label{experiment-1-bernoulli-with-tau-0.5}
+
+The first experiment is equal to experiment 3 in Locatelli et al.
+(2016). We compare ten Bernoulli arms that move away from the threshold
+at \(\tau = 0.5\) geometrically with \(\mu_{1:4} = 0.4-0.2^{1:4}\),
+\(\mu_5 = 0.45\), \(\mu_6 = 0.55\), and
+\(\mu_{7:10} = 0.6 + 0.2^{5-1:4}\). We run the standard APT algorithm
+with \(\epsilon = 0.1\), as well as SLR with \(\epsilon = 0.1\). We
+compare those additionally to Augmented-UCB with the standard parameter
+choice of \(\rho = 1/3\) as used by its authors in Mukherjee et al.
+(2017). We run the parameter-free version of the Empirical Variance
+Guided algorithm without any feedback delay, thus making it directly
+comparable to the other algorithms. The Bayes-UCB algorithm takes as
+prior a Beta distribution with parameters \(\alpha_0 = \tau\) and
+\(\beta_0 = 1 - \tau\), thus leading to a mean of the prior distribution
+at \(\tau\) while keeping the prior as weak as possible. Lastly, we run
+the uniform sampling strategy as the naive benchmark.
+
+\begin{longtable}[]{@{}rrrrrrrrrr@{}}
+\caption{Mean of arms in simulation 1.}\tabularnewline
+\toprule
+V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10\tabularnewline
+\midrule
+\endhead
+0.2 & 0.36 & 0.392 & 0.398 & 0.45 & 0.55 & 0.602 & 0.608 & 0.64 &
+0.8\tabularnewline
+\bottomrule
+\end{longtable}
+
+This first experiment gives an experiment where all algorithms should
+perform well. The problem is not very difficult, and due to the
+threshold at \(\tau = 0.5\), the Bernoulli distribution can be perfectly
+approximated by a Gaussian. This thus is the perfect environment for the
+APT algorithm.
+
+As the next figure shows, essentially all methods converge rapidly to an
+error rate of zero. Except for the uniform method that clearly lacks
+behind. We also observe that the variance based algorithms (Augmented
+UCB and EVT) lag behind at first. Augmented UCB is able to adjust its
+sampling scheme after 1000 iterations and rapdily improves to the level
+of APT. EVT takes about 250 samples more to start a quick descend to the
+performance of the other algorithms. All of this, however, happens below
+an error rate of 0.01. While the SLR algorithm improves upon APT, the
+improvement is a slight one, and not very large in terms of budget
+difference. This underlines that the scenario at hand is the ideal one
+for the APT algorithm.
+
+\includegraphics{Draft_files/figure-latex/simulation1_results-1.pdf}
+
+\subsubsection{\texorpdfstring{Experiment 2: Bernoulli with
+\(\tau = 0.05\)}{Experiment 2: Bernoulli with \textbackslash{}tau = 0.05}}\label{experiment-2-bernoulli-with-tau-0.05}
+
+In the second experiment, we compare the same algorithms as in the first
+experiment. Again, we classify 10 arms, but this time against a
+threshold of \(\tau = 0.05\) and without an epsilon interval,
+\(\epsilon = 0\). Consequently, we choose the distributions for the arms
+to be much smaller too, and arrange them symmetrically around the
+threshold. While the distributions are bounded and thus still
+sub-Gaussian, the Normal approximation should be poor in comparison to
+the previous case. We expect an improvement for the SLR algorithm
+compared to APT as it takes the Bernoulli characteristics into account.
+For example, even though the arms are symmetrically distributed around
+the threshold in terms of absolute distance, they are not symmetrically
+around the threshold in terms of their Kullback-Leibler divergence given
+the threshold is unequal 0.5. Thus we expect the SLR algorithm to not
+pull them equally. Furthermore, we expect an improvement for the
+variance-based algorithms, as the variances are now smaller than in
+experiment 1, which should at least benefit the EVT algorithm given its
+theoretical analysis.
+
+The figure below shows the performance of all algorithms. We see that
+the problem appears to be significantly more difficult in general. The
+variance based algorithms perform maybe surprisingly bad; EVT even worse
+than uniform sampling nearly until the horizon, while Augmented UCB
+takes a long time to adjust away from uniform sampling. Both algorithms
+perform worse than APT after 7000 rounds. One potential reason for this
+might be the fact that the index used by the EVT algorithm reduces to
+\(B_i^{EVT}(t) = \sqrt{T_i(t)} \cdot \sqrt{|\hat{\mu}_i(t) - \tau|}\) if
+\(\hat{\sigma}_i^2(t) = 0\), which, given Bernoulli arms with small
+means, could be the case for long runs of the algorithm. In contrast,
+the index of the APT algorithm is
+\(B_i^{APT}(t) = \sqrt{T_i(t)} \cdot |\hat{\mu}_i(t) - \tau|\).
+
+One interesting observation, that we will observe in all experiments
+with synthetic Bernoulli arms, is the superior performance of the
+Bayes-UCB algorithm adapted from Kaufmann and Kalyanakrishnan (2013)
+which was originally designed for cumulative regret problems.
+Nonetheless, the algorithm will again and again proof to be the best
+performing.
+
+While the Bayes-UCB performance is impressive, we observe that also the
+Simple Likelihood Ratio strategy improves considerably upon the
+alternative strategies. SLR reaches the average empirical error of 0.1
+within the budget, and the improvement is exponential within the entire
+budget; in contrast to APT which appears to improve linearly in the
+observations. At the end of the budget, the difference in the empirical
+error is nearly 10\% between the two strategies.
+
+In order to assess how the SLR strategy improves upon the APT algorithm,
+we can use the fact that we have run the experiment for 5000 iterations.
+We thus can look at how often each arm was pulled by a strategy at any
+given round. Across the 5000 iterations, the algorithm should pull at
+any given iteration the arm most often that it thinks is the most
+difficult to classify. In the figure below, we plot the resulting curves
+where the value at an iteration is the 10-round moving average to remove
+some unimportant variation.
+
+We see that both APT and SLR correctly single out the two arms that are
+much closer to the threshold than the remaining arms and allocate most
+of the budget to them. However, while SLR keeps the two arms constant at
+two different levels (about 1900 for arm 5 and about 2500 for arm 6),
+APT at first pulls arm 5 much more than arm 6. Then, the budget
+allocated to the two arms appears to converge to about 2000. Given that
+the two arms are symmetric around the threshold, it makes sense that APT
+would allocate the same exploration effort to both of them. And given
+that the variation of arm 5 away from the threshold is limited from
+below by zero, it is much easier for arm 6 to have an empirical mean
+larger than it's true mean, and thus to have a larger index than arm 5.
+Consequently, APT would prefer to sample arm 5. This, however, is wrong
+in terms of Kullback-Leibler divergence. Measured by the divergence, arm
+6 is closer to the threshold than arm 5, thus harder to classify, and
+consequently preferred by the SLR algorithm. Furthermore, the SLR
+algorithm appears to quickly find the correct share that it has to
+allocate to the two arms. In contrast to APT which continues to adjust
+the shares across the entire budget.
+
+Additionally, we can observe that the SLR strategy starts to drop arms
+much quicker than APT, and it drops arm 1 to 3 first, which again
+underlines the effect of the asymmetric Kullback-Leibler divergence. If
+we consider arm 3 and arm 8, we have \(d(0.01||0.05) \approx 0.025\)
+while \(d(0.09||0.05) = 0.014\). The divergence is much smaller for arm
+8. The asymmetry is even more dramatic for arm 1 and arm 10 with
+\(d(0.001||0.05) \approx 0.046\) and \(d(0.099||0.05) \approx 0.020\);
+in terms of the divergence, the distance between arm 1 and the threshold
+is twice as far as between arm 10 and the threshold. APT considers them
+to be equally distant from the threshold.
+
+\begin{longtable}[]{@{}rrrrrrrrrr@{}}
+\caption{Mean of arms in simulation 2 classified against threshold of
+0.05.}\tabularnewline
+\toprule
+V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10\tabularnewline
+\midrule
+\endhead
+0.001 & 0.005 & 0.01 & 0.015 & 0.04 & 0.06 & 0.085 & 0.09 & 0.095 &
+0.099\tabularnewline
+\bottomrule
+\end{longtable}
+
+\includegraphics{Draft_files/figure-latex/simulation2_results-1.pdf}
+
+\includegraphics{Draft_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+\subsubsection{\texorpdfstring{Experiment 3: Bernoulli with
+\(\tau = 0.01\)}{Experiment 3: Bernoulli with \textbackslash{}tau = 0.01}}\label{experiment-3-bernoulli-with-tau-0.01}
+
+In the third experiment, we lower the threshold further to
+\(\tau = 0.1\) and arrange the arms on a \(\log_{10}\) scale around it.
+Again, there is no epsilon interval. We add one additional arm, thus now
+classifying eleven arms. We run the same arms as previously. Notice that
+the experiment horizon is now \(10000\) rounds instead of \(7000\)
+rounds as in the previous experiment. We test the same algorithms used
+in the previous two experiments.
+
+If we look at the performance after 7000 rounds, we see that the problem
+appears to be slightly more difficult compared to the previous one. We
+see that up until this point the variance-based strategies cannot
+improve upon APT. Also, SLR has not yet crossed the 10\% empirical
+error. However, we observe that in the following rounds EVT decreases at
+an exponential rate and thus crosses the error of APT and continues to
+improve upon it. At the end of the budget, the improvement of SLR
+compared to the other algorithms is again very large, and likely to
+increase. However, Bayes-UCB is again the best performing algorithm and
+is improving at a faster rate than SLR. As in the previous experiment,
+Bayes-UCB and SLR show significant improvements on this Bernoulli
+problem with very small means and threshold compared to APT in
+particular.
+
+\begin{longtable}[]{@{}rrrrrrrrrrr@{}}
+\caption{Mean of arms in simulation 2 compared to a threshold of
+0.01.}\tabularnewline
+\toprule
+V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10 & V11\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10 & V11\tabularnewline
+\midrule
+\endhead
+1e-04 & 3e-04 & 6e-04 & 0.001 & 0.0018 & 0.0032 & 0.0056 & 0.0141 &
+0.0178 & 0.0316 & 0.1\tabularnewline
+\bottomrule
+\end{longtable}
+
+\includegraphics{Draft_files/figure-latex/simulation3_results-1.pdf}
+
+\subsection{\texorpdfstring{Experiment 4: Exponential Distribution with
+\(\tau = 1\)}{Experiment 4: Exponential Distribution with \textbackslash{}tau = 1}}\label{experiment-4-exponential-distribution-with-tau-1}
+
+\includegraphics{Draft_files/figure-latex/simulation4_results-1.pdf}
+
+\subsection{\texorpdfstring{Experiment 5: Poisson Distribution with
+\(\tau = 1\)}{Experiment 5: Poisson Distribution with \textbackslash{}tau = 1}}\label{experiment-5-poisson-distribution-with-tau-1}
+
+\includegraphics{Draft_files/figure-latex/simulation5_results-1.pdf}
 
 \subsection{Real Data}\label{real-data}
 
@@ -2499,13 +2778,13 @@ samples.
 \caption{Count rates for ten products for both training and test
 sample.}\tabularnewline
 \toprule
-& V64 & V1 & V159 & V119 & V70 & V114 & V189 & V139 & V118 &
-V148\tabularnewline
+& V1 & V159 & V64 & V139 & V189 & V70 & V114 & V148 & V118 &
+V119\tabularnewline
 \midrule
 \endfirsthead
 \toprule
-& V64 & V1 & V159 & V119 & V70 & V114 & V189 & V139 & V118 &
-V148\tabularnewline
+& V1 & V159 & V64 & V139 & V189 & V70 & V114 & V148 & V118 &
+V119\tabularnewline
 \midrule
 \endhead
 Training & 0.001 & 0.013 & 0.027 & 0.053 & 0.059 & 0.071 & 0.071 & 0.102
@@ -2545,7 +2824,7 @@ threshold twice. The same is true for arm \(V139\), which is not visible
 when considering the overall mean alone. Furthermore, arms \(V159\) and
 \(V189\) come very close to the threshold at times.
 
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-4-1.pdf}
+\includegraphics{Draft_files/figure-latex/unnamed-chunk-5-1.pdf}
 
 These difficulties seem to have a large impact on the performance of all
 algorithms. Given that the data are \(\{0,1\}\) observations, we can
@@ -2563,7 +2842,7 @@ we use the parameters as in Mukherjee et al. (2017), that is,
 
 The corresponding results are shown in the next figure.
 
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-5-1.pdf}
+\includegraphics{Draft_files/figure-latex/unnamed-chunk-6-1.pdf}
 
 Compared to the previous simulations with synthetic data, the results
 are dramatic. First of all, we see that all strategies perform not well.
@@ -2624,12 +2903,12 @@ classify.
 \caption{Count rates for ten products for both training and test
 sample.}\tabularnewline
 \toprule
-& V129 & V32 & V76 & V103 & V149 & V104 & V110 & V150 & V112 &
+& V112 & V129 & V104 & V76 & V103 & V110 & V150 & V149 & V32 &
 V154\tabularnewline
 \midrule
 \endfirsthead
 \toprule
-& V129 & V32 & V76 & V103 & V149 & V104 & V110 & V150 & V112 &
+& V112 & V129 & V104 & V76 & V103 & V110 & V150 & V149 & V32 &
 V154\tabularnewline
 \midrule
 \endhead
@@ -2689,9 +2968,65 @@ are less than 2\% (1.2\% vs 3\%), the difference to uniform sampling
 (10\%) is relevant. The performance of 10\% error rate is achieved by
 SLR about 1000 observations earlier than by EVT.
 
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-6-1.pdf}
-
 \includegraphics{Draft_files/figure-latex/unnamed-chunk-7-1.pdf}
+
+\includegraphics{Draft_files/figure-latex/unnamed-chunk-8-1.pdf}
+
+We can try to understand why some strategies fail, while showing
+significant improvements on synthetic data. Given that we run 5000
+iterations of the experiment, we can assess in how many of these
+iterations a given arm was pulled at a given round. Comparing these
+sampling shares across algorithms may give us hints to as to why
+algorithms perform a certain way. Given the setup with 5000 iterations
+and 10 arms in the current experiment, we would expect for the uniform
+strategy on average 500 pulls for each arm in every round. Given this
+benchmark, we can now look at how the other strategies split their
+budget. In the figures below, we have plotted not the absolute pulls per
+round, but have applied a 10-round moving average to remove some of the
+fluctuation in the plotted lines.
+
+We observe that the patterns across algorithms are quite similar, while
+the patterns are very different across data sets. Given that arm
+\(V149\) is clearly the most difficult arm to classify due to its
+closeness to the threshold \(\tau\), all algorithms focus a major share
+of their budget on this arm. The speed at which they start to do so,
+however, differs. Perhaps surprisingly, the best performing Bayes-UCB
+algorithm increases its focus on arm \(V149\) the slowest, while in many
+iterations spending budget on exploring other arms. Surprisingly because
+Bayes-UCB is designed for the cumulative regret problem. Thus one would
+expect it to explore \emph{less} than other algorithms. But its
+performance does not seem to be easily explained by the lessened focus
+on the most difficult arm; else we would expect the APT algorithm to
+perform second best. However, both SLR and EVT perform better than APT
+while converging more quickly to a higher share of samples allocated to
+the most difficult arm.
+
+One striking feature of the EVT algorithm seems to be the overall
+iterations and budget allocated to arm \(V32\), which, as we have seen,
+has a sample mean of zero. Something that might be hidden by this
+aggregated view of all 5000 iterations are a share of iterations in
+which the EVT completely fails by exploring wrong arms for long periods.
+This effect might even be more drastic for the APT algorithm. Even
+though it seems as if its behavior is very similar to SLR and EVT, the
+overall performance is not better than the performance of uniform
+sampling. Taking this reasoning into account, one can hypothesize that
+the Bayes-UCB algorithm finds the most difficult arm uniformly across
+most iterations as the rounds increase, while other algorithms either
+find the most difficult arm right away or never and thus have many
+iterations that end with a misclassification.
+
+For the real data, the difference between Bayes-UCB and the other
+algorithms is just as apparent. As is the effect of the time varying
+means of the arms on the rate at which they are sampled. APT, SLR, and
+EVT all focus quickly in many iterations on the still most difficult arm
+\(V149\). However, in the case of the real data this behavior is not
+rewarded in the end, as this leads to biased samples and thus wrong
+estimation of the overall sample mean against which the algorithms are
+evaluated. We see in the curves of arms \(V32\) and arm \(V154\) that
+the EVT algorithm is less impacted by daily seasonalities, while APT
+clearly is.
+
+\includegraphics{Draft_files/figure-latex/unnamed-chunk-9-1.pdf}
 
 
 \end{document}
