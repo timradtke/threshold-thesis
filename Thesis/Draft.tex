@@ -92,6 +92,7 @@
 \usepackage{bm}
 \usepackage{amsmath}
 \usepackage{bbm}
+\usepackage[lined,boxed]{algorithm2e}
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
 \newcommand{\KL}{\,\text{KL}}
@@ -102,14 +103,168 @@
 
 {
 \hypersetup{linkcolor=black}
-\setcounter{tocdepth}{3}
+\setcounter{tocdepth}{2}
 \tableofcontents
 }
+\newpage
+
+``In general, we look for a new law by the following process: First we
+guess it. Then we -- now don't laugh, that's really true. Then we
+compute the consequences of the guess to see what, if this is right, if
+this law that we guessed is right, to see what it would imply. And then
+we compare the computation results to nature, or we say compare to
+experiment or experience, compare it directly with observations to see
+if it works. If it disagrees with experiment, it's wrong. In that simple
+statement is the key to science. It doesn't make any difference how
+beautiful your guess is, it doesn't make any difference how smart you
+are, who made the guess, or what his name is. If it disagrees with
+experiment, it's wrong. That's all there is to it.''
+
+\begin{itemize}
+\tightlist
+\item
+  Richard Feynman in \emph{Richard Feynman Messenger Lectures at Cornell
+  University: The Character of Physical Law. Chapter 7, Seeking New
+  Laws}.
+\end{itemize}
+
+\newpage
+
+\section{Abbreviations}\label{abbreviations}
+
+Kullback-Leibler divergence between distributions \(\nu_i\) and
+\(\nu_j\): \(\KL(\nu_i||\nu_j)\).
+
+Binary relative entropy:
+\(d(x,y) := x \log(x/y) + (1-x) \log((1-x)/(1-y))\), where
+\(d(0,0) = d(1,1) = 0\).
+
+Kullback-Leibler divergence for two Bernoulli distributions
+parameterized by their means \(\mu_i\) and \(\mu_j\):
+\(KL_{Ber}(\nu_i||\nu_j) = d(\mu_i, \mu_j)\).
+
+\newpage
+
+\section{Introduction to Sequential Sampling and Multi-Armed
+Bandits}\label{introduction-to-sequential-sampling-and-multi-armed-bandits}
+
+The thesis at hand joins the ranks of a large literature concerned with
+the general problem of sequential sampling. One is familiar with the
+idea of ``batch sampling'', where the entire sample is gathered first
+and analyzed only after the last sample has become available. However,
+as noted in Chernoff (1958), many situations arise in which one would
+like to gather feedback from samples as they are drawn so as to
+influence the choice of the next sample. The two fundamental
+characteristics of the latter sampling process are that it is sequential
+and adaptive. Since observations are drawn in sequence, one has a chance
+to observe the observations drawn so far in order to adapt the decision
+of what sample one would like to observe next.
+
+This makes sequential sampling especially relevant in situations where
+there is a inherent cost to drawing an observation. The classical
+example that of clinical trials in which a researcher tests two drugs on
+patients to observe which one performs better. Not only is it difficult
+to gather patients, but also one would like to adapt the sampling such
+that as soon as possible more patients receive the better drug so that
+more patients are cured. As noted in Cappé et al. (2013), this example
+dates back to Thompson (1933, 1935). Such problems are known as
+multi-armed bandit problems in which the sampling is adapted so as to
+minimize the cumulative regret: In the case of the drug tests, one would
+like to sample the two drugs in a way to find the best drug as soon as
+possible and then to test this drug more and more often and more often
+than the worse drug. This would lead to cumulatively more healthy
+patients then when both drugs are tested uniformly and thus minimize the
+regret from treating a patient with an ineffective drug.
+
+Instead of drugs, can consider two or more unknown distributions (which
+we call arms in the multi-armed bandit problem). These distributions
+have different means, and one can draw samples sequentially from the
+distributions in order to estimate their means. One would like to play
+the distribution with the highest mean to minimize the cumulative regret
+measure. How can we organize the sampling in order to achieve this goal?
+
+While Gittins (1979) presents an Bayesian-optimal solution, the
+Upper-Confidence Bound algorithms pioneered by Agrawal (1995) and Auer,
+Cesa-Bianchi and Fischer (2002) lead to a blooming literature on
+multi-armed bandit problems that has been picked up to solve modern
+problems in website and advertising optimization, where advertisers try
+to allocate their advertising optimally so as to reduce regret from
+showing poorly converting advertisements. Several algorithms as the
+KL-UCB algorithm based on Kullback-Leibler divergence upper confidence
+intervals (Cappé et al., 2013) or the Bayes-UCB algorithm (Kaufmann et
+al., 2012) have followed and been shown to be optimal as they reach the
+lower bound introduced in Lai and Robbins (1985) and Burnetas and
+Katehakis (1996).
+
+These algorithms have in common that they compute after any sample an
+index for each of the unknown distributions. This index is based solely
+on the past (observed) data, and then used to pick the distribution from
+which the next observation should be drawn. Using these indexes, the
+algorithms can sequentially sample and adapt the future strategies to
+observations as they are gathered.
+
+Other algorithms based on indices can be used on related problems.
+Instead of minimizing cumulative regret, it might be more interesting to
+find the best arm, that is, the distribution with the largest mean, with
+as few samples as possible and with confidence as large as possible.
+This is particularly useful when there is not necessarily a cost from
+initially picking a lower mean, but when drawing any sample is costly,
+and one needs to explore the distributions as efficiently as possible.
+The need for strategies other than uniform sampling arises: Do not
+continue to sample distributions that we are confident about. As such,
+the best arm identification problem is very similar to the problem faced
+in Bayesian Optimization: Training large neural networks is costly in
+terms of time and computation, and so the parameter space needs to be
+explored with as few samples as possible. (Zhang et al., 2017; Brochu et
+al., 2010).
+
+The problem of best arm identification is very related to statistical
+hypothesis testing as noted by Chernoff (1958) since in the end, one has
+to make a decision about how the means of distributions relate to each
+other. The main difference of course being that the sampling procedure
+becomes integrated into the evaluation of the distributions. Given the
+focus on exploration, the problem is usually described with a loss
+function different from cumulative regret. Audibert et al. (2010)
+introduce a soft measure called \emph{simple regret} based on which they
+describe UCB policies. Other authors investigate hard, binary measures
+that are equal to 1 when the best arm has not been identified (Russo,
+2016; Garivier and Kaufmann, 2016).
+
+The problem of best arm identification can readily be extended to the so
+called Top-\(m\) problem of identifying the best \(m\) of \(K\) arms.
+
+\begin{itemize}
+\item
+  Chernoff -\textgreater{} Sequential Sampling; as mentioned by Russo;
+  Garivier and Kaufmann
+\item
+  Thompson
+\item
+  Optimality for Stochastic Cumulative Regret
+\item
+  UCB, KL-UCB, Thompson Sampling
+\end{itemize}
+
+-\textgreater{} Many variations: Infinite-armed, adversarial, dueling
+
+\begin{itemize}
+\item
+  Best Arm Identification
+\item
+  Top-\(m\) Identification
+\item
+  Thresholding Bandit Problem
+\item
+  Maybe an example?
+\end{itemize}
+
+\newpage
+
 \section{Thresholding Bandit Problem}\label{thresholding-bandit-problem}
 
 The \emph{Thresholding Bandit Problem} described in Locatelli et al.
-(2016) can be considered a variant of a variant. It can be framed into
-the wider literature of \emph{Pure Exploration} multi-armed bandit
+(2016) can be considered a variant of a variant. It can be framed inside
+of the wider literature of \emph{Pure Exploration} multi-armed bandit
 problems. In particular, it shares characteristics with the
 \emph{Top-\(m\)} problem. This problem is concerned with finding the
 \(m\) best arms as described by the means of their corresponding
@@ -144,7 +299,7 @@ order value should not drop below a threshold.
 
 \subsection{Setup}\label{setup}
 
-In any case, the problem boils down to the following. As standard in
+In any case, the problem boils down to the following. As usual in
 multi-armed bandit problems, we have \(K\) arms
 \(\mathcal{A} = \{1, \dots K\}\). We can pull arm \(k\) at time \(t\) to
 collect feedback in form of the random variable \(X_{k,t}\) which is
@@ -171,22 +326,26 @@ problem. Since bandit problems can differ in the number of the arms
 problems than others. Indeed, in the thresholding problem, the
 difficulty of the problem naturally depends on how close (the means of
 the) distributions are to the fixed threshold. Intuitively, the closer a
-mean \(\mu_i\) is to the threshold \(\tau\), the more difficult it will
-be to distinguish the two successfully based on samples from the
-distribution \(\nu_i\). For the case of the sub-Gaussian distributions,
-a natural measure of this distance is given by simply
+mean \(\mu_i\) is to the threshold \(\tau\), the more difficult it is to
+distinguish the two successfully based on samples from the distribution
+\(\nu_i\). A straightforward measure of this distance is given by
 \(\Delta_i = |\tau - \mu_i| + \epsilon\), where \(\epsilon\) defines a
 \(2\epsilon\) interval around the threshold \(\tau\) in which we allow
-ourselves to make a mistake at no cost.
+ourselves to make a mistake at no cost. In the case of sub-Gaussian
+distributions, this distance is not only simple but can be interpreted
+very naturally as we will come to understand later.
 
-If we extend this idea to the set of arms \(i \in \{1,...,K\}\) of a
-given bandit problem, a natural measure of the overall diffulty of the
-problem, or the problem's complexity, might be given by
+If we extend this idea to the set of arms \(i \in \{1,...,K\}\) in a
+given bandit problem, a measure of the overall diffulty of the problem,
+or the problem's complexity, might be given by
 \(H = \sum_{i=1}^{K} \Delta_i^{-2}\). In particular, it shows that just
 adding additional arms leads to an increase in complexity (since we need
-to sample more of them), just as smaller \(\Delta_i\) will increase the
-complexity as arms become harder to classify. (WHERE DOES THIS
-COMPLEXITY ORIGINALLY COME FROM?)
+a larger budget to sample each arm the same number of times as before).
+Likewise, a smaller \(\Delta_i\) increases the complexity as arms become
+harder to classify. Choosing the complexity measure in this way fits the
+distance measure \(\Delta_i\) and turn out to be useful in the proof of
+an upper bound for the APT algorithm presented in Locatelli et al.
+(2016).
 
 We also see that this definition may lose relevancy as we move away from
 \(R\)-sub-Gaussian distributions. (ADD QUICK EXAMPLE OF WHAT CHANGES;
@@ -199,9 +358,8 @@ regret. The notion of regret considered in the thresholding bandit,
 however, is more akin to the simple regret in pure exploration bandits
 or the error probability in sequential hypothesis testing. Indeed, one
 can most easily describe the regret in the thresholding case as the
-probability of making a misclassification of any arm. Or, more
-rigorously, let us define the set of all arms with mean larger than the
-threshold,
+probability of misclassifying any arm. Or, more rigorously, define the
+set of all arms with mean larger than the threshold,
 \(\mathcal{S}_\tau = \{i \in \mathcal{A}: \mu_i \geq \tau\}\).
 Consequently,
 \(\mathcal{S}_\tau^C = \{i \in \mathcal{A}: \mu_i < \tau\}\). At the end
@@ -225,11 +383,9 @@ the threshold that we do not care whether they lie above or below.
 
 ADD A GRAPHIC THAT VISUALIZES THE ESTIMATED AND THE REQUIRED RETURN SETS
 
-From there, it is natural to define the expected regret/loss as
+Now, the expected regret/loss is defined as
 \(\mathbb{E}[\mathcal{L}(T)] = \mathbb{P}((\hat{\mathcal{S}}_{\tau} \cap \mathcal{S}_{\tau-\epsilon}^C \neq \emptyset) \land (\hat{\mathcal{S}}_{\tau}^C \cap \mathcal{S}_{\tau+\epsilon} \neq \emptyset))\).
 This, of course, is the mentioned probability of making a mistake.
-
-ADD REMARK ON WHAT THIS IMPLIES WITH REGARD TO THE MEANS
 
 Lastly, it is to mention that we are considering the fixed-budget
 version of the thresholding bandit problem. We thus fix the number of
@@ -246,10 +402,29 @@ samples as necessary to reach the required confidence.
 
 At this point, we have defined the fixed budget thresholding bandit
 setup for any algorithm in the case of sub-Gaussian distributions. We
-thus proceed to describe the algorithm proposed in Locatelli et al.
+thus proceed to describe the APT algorithm proposed in Locatelli et al.
 (2016).
 
 \subsection{The APT Algorithm}\label{the-apt-algorithm}
+
+\IncMargin{1em}
+
+\begin{algorithm}
+\SetKwData{Left}{left}\SetKwData{This}{this}\SetKwData{Up}{up}
+\SetKwFunction{Union}{Union}\SetKwFunction{FindCompress}{FindCompress}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+\Input{$\tau$, $\epsilon$}
+\Output{$\hat{S}_{\tau} = \{k: \hat{\mu}_k(T) \geq \tau\}$}
+\BlankLine
+\emph{Pull each arm once}\;
+\For{$t = K+1$ \KwTo $T$}{
+  \emph{Pull arm $I_t = \arg \min_{k\leq K} B_k^{APT}(t) = \sqrt{T_k(t)} \sqrt{|\hat{\mu}_i(t) - \tau|+\epsilon}$}\;
+  \emph{Observe reward $X \sim \nu_{I_t}$}\;
+}
+\caption{Anytime Parameter-free Thresholding Algorithm (Locatelli et al., 2016)}\label{algo_apt}
+\end{algorithm}
+
+\DecMargin{1em}
 
 In the following we describe the \emph{Anytime Parameter-free
 Thresholding} (APT) algorithm proposed in Locatelli et al. (2016), which
@@ -257,16 +432,16 @@ is a simple yet effective algorithm and displays some very favorable
 characteristics when compared with alternative algorithms.
 
 From the general setup, we already know how the algorithm will end.
-After it has drawn \(T\) samples, the algorithm makes its decision of
-which arms to include in the return sets solely on basis of the
-empirical means \(\hat{\mu}_i(T)\) estimated based on the samples drawn
-until time \(T\). Furthermore, the threshold and interval around the
-threshold were fixed upfront and serve as argument to the algorithm:
+After it has drawn \(T\) samples, the algorithm makes a decision of
+which arms to include in the return sets on basis of the empirical means
+\(\hat{\mu}_i(T)\) estimated based on the samples drawn until time
+\(T\). Furthermore, the threshold and interval around the threshold are
+fixed upfront and serve as argument to the algorithm:
 \((\tau, \epsilon)\). For a given arm \(i\) and a given time \(t\), we
 let \(T_i(t)\) represent the number of samples drawn from arm \(i\)
 until time \(t\) (including). Consequently, the empirical mean of arm
 \(i\) at time \(t\) is given by
-\(\mu_i = \frac{1}{T_i(t)} \sum_{s=1}^{T_i(t)} X_{i,s}\) where
+\(\hat{\mu}_i(t) = \frac{1}{T_i(t)} \sum_{s=1}^{T_i(t)} X_{i,s}\) where
 \(X_{i,s}\) is the feedback sampled from distribution \(\nu_i\) when the
 arm is pulled for the \(s\)-th time.
 
@@ -293,8 +468,7 @@ threshold. In that case, \(\sqrt{T_i(t)}\) will raise \(B_i(t+1)\).
 Consequently, other arms farther away from the threshold will be sampled
 again. In this way, the algorithm tries to distribute the budget \(T\)
 over all arms so as to define a sampling rule optimizing the confidence
-of the final decision. This is Glivenko-Cantelli and the CLT making sure
-\(B_i(t+1)\) is not degenerate. (?)
+of the final decision.
 
 \subsection{Discussion}\label{discussion}
 
@@ -353,25 +527,62 @@ leads to the simple APT algorithm, it might not stay appropriate for
 distributions whose Kullback-Leibler divergence tends to differ from the
 Gaussian. This, for example, is the case for Bernoulli distributions at
 very small parameters \(\mu\). By looking at the graphical examples
-below it becomes obvious that the Kullback-Leibler divergence of
-Bernoullis starts to lose any similarity to the plain quadratic
+below it becomes obvious that the Kullback-Leibler divergence between
+Bernoulli distributions starts to lose any similarity to the quadratic
 approximation. The second graph then shows that the actual
-Kullback-Leibler divergence of Bernoullis also has lost any symmetry
-over this range of parameter values. Given that Bernoulli distributions
-with very small parameter values arise naturally in many applications in
-website optimization and advertising click-through modeling, there is a
-need to tackle this problem.
+Kullback-Leibler divergence of Bernoulli distributions loses any
+symmetry over this range of parameter values. Given that Bernoulli
+distributions with very small parameter values arise naturally in many
+applications in website optimization, advertising click-through
+modeling, or anomaly detection in time series, there is a need to tackle
+this problem.
 
 Refer also to page 6 in Kaufmann et al. (2016): ``This
 information-theoretic lower bound permits to interpret the quantity
-\(H(\nu)\) defined in (2) as a subgaussian approximation''.
+\(H(\nu)\) defined in (2) as a subgaussian approximation''. In the case
+of Normal distributions with known and equal mean, it holds that the
+Kullback-Leibler divergence between \(\nu_i\) and \(\nu_j\),
+parameterized by \(\mu_i\) and \(\mu_j\), can be written as
+
+\[
+\KL_{Normal}(\nu_i || \nu_j) = 2(\mu_i - \mu_j)^2.
+\]
+
+Writing \(\mu_j = \tau\) and \(\epsilon = 0\), we see that the APT
+algorithm essentially measures the KL-divergence between two Normal
+distributions. For two Bernoulli distributions \(\nu_i\) and \(\nu_j\),
+parameterized by \(\mu_i\) and \(\mu_j=\tau\), we write
+
+\[
+\KL_{Ber}(\nu_i||\nu_j) = \mu_i \log(\frac{\mu_i}{\tau}) + (1-\mu_i) \log(\frac{1-\mu_i}{1-\tau})
+\]
+
+In the case of \(\tau = 0.5\), the latter KL-divergence is symmetric in
+its first argument, and thus can be well approximated by Pinsker's
+inequality:
+
+\[
+\KL_{Ber}(\nu_i||\nu_j) \geq 2(\mu_i - \tau)^2.
+\]
+
+This shows how the distance measure used in the APT algorithm, and
+consequently the complexity \(H\), is a useful approximation of the
+KL-divergence for sub-Gaussian distributions. However, this
+approximation suffers as the distributions less and less similar to
+Gaussian distributions. Thus similarly to how UCB algorithms in the
+cumulative regret setting have been extended to KL-UCB algorithms
+(compare Cappé et al., 2013), also the APT algorithm offers room for
+improvement.
 
 And so a potential approach can be to use the Kullback-Leibler
 divergence as measure similar to the methods proposed in Kaufmann et al.
 (2015). They proposed Kullback-Leibler based approaches for the pure
 exploration bandit setting, which we will describe in chapter 2. Then,
 in chapter 3, we will come back to the problem of using the
-Kullback-Leibler divergence in the thresholding bandit setting.
+Kullback-Leibler divergence in the thresholding bandit setting. To
+conclude chapter 1, we proof the lower bound and upper bound for the APT
+algorithm as presented Theorem 1 and Theorem 2 in Locatelli et al.
+(2016).
 
 \includegraphics{Draft_files/figure-latex/unnamed-chunk-1-1.pdf}
 
@@ -718,8 +929,8 @@ et al. (2016), given simply by
 & \geq \frac{1}{2}
 \end{align*}
 
-\subsection{Upper Bound: Theorem and
-Proof}\label{upper-bound-theorem-and-proof}
+\subsection{Upper Bound on Expected Loss of
+APT}\label{upper-bound-on-expected-loss-of-apt}
 
 \begin{theorem}[Locatelli et al., 2016] \label{theorem:LocatelliTheorem4}
 Let $K \geq 0$, $T \geq 2K$, and consider a problem $\mathbb{B}$. Assume that
@@ -734,317 +945,329 @@ where we remind that $H = \sum_i (|\mu_i - \tau | + \epsilon)^{-2}$ and where
 $\mathbb{E}$ is the expectation according to the samples of the problem.
 \end{theorem}
 
-\emph{Proof of Theorem \ref{theorem:LocatelliTheorem4}:} To prove above
-theorem, we first define a favorable event \(\xi\) on which we hope to
-make a loss with only a small probability. Indeed, it is the event for
-which we want to upper bound the expected loss. As we want to find an
-upper bound for the expected loss of the APT algorithm, the event
-corresponds to the decision made by it. Given that the APT algorithm's
-sampling rule and final decision is based on the empirical mean of each
-arm, it will have low expected regret, if it finds empirical mean
-estimates \(\hat{\mu}_i(t) = \frac{1}{s} \sum_{t=1}^s X_{i,t}\) that are
-close to the true means \(\mu_i\) of the arms. Then, we would expect
-arms with \(\hat{\mu}_i(T) > \tau + \epsilon\) to be classified
-correctly, and arms with \(\hat{\mu}_i(T) < \tau - \epsilon\) to be
-rejected.
+\emph{Proof of Theorem \ref{theorem:LocatelliTheorem4}:}
 
-Indeed, we have
-\(\mathbb{E}(\mathcal{L}(T)) = P(S_{\tau + \epsilon} \cap \hat{S}_\tau^C \neq \emptyset \lor S_{\tau-\epsilon}^C \cap \hat{S}_{\tau} \neq \emptyset)\).
-But this just corresponds to
-\(P(\{\exists i: ((\mu_i < \tau-\epsilon) \land(\hat{\mu}_i \geq \tau)) \lor ((\mu_i > \tau + \epsilon) \land (\hat{\mu}_i < \tau)))\).
-Each of the two \((...)\lor(...)\) conditions corresponds to
-\(| \hat{\mu}_i - \mu_i | \geq \epsilon\). It follows that the expected
-loss can be rewritten as:
-\(\mathbb{E}(\mathcal{L}(T)) = P(\exists i, \exists s: |\hat{\mu}_{i,s} - \mu_i | \geq \epsilon) = P(\xi^C)\).
-This is exactly the probability of classifying at least one arm
-incorrectly which results in a loss of size 1.
+In order to upper bound the expected loss of the APT algorithm, we want
+to find an event on which the algorithm would correctly seperate arms
+from the threshold, that is, on the event a seperation condition holds.
+We then want to show that with large probability, this \emph{favorable}
+event does indeed hold. Consequently, the expected loss (probability of
+an error) will correspond to the probability that the favorable event
+does not hold after all as this leads the seperation condition to fail,
+and the algorithm to classify at least one arm incorrectly.
 
-Thus we define as the favorable event as:
+While this is the general idea, we have to jump between seperation
+condition, favorable event, and large probability.
 
-\begin{equation} 
-\xi = \{\forall i, \forall s: | \hat{\mu}_{i,s} - \mu_i | \leq
-\epsilon\} 
-\end{equation}
+\subsubsection{Separation Condition}\label{separation-condition}
 
-Furthermore, if we write
-\(\xi_{i,s} = \{ |\hat{\mu}_{i,s}-\mu_i | \leq \epsilon \}\), then the
-following holds by a union bound.
+As noted in Zhong et al. (2017), a simple requirement to correctly
+classify arms at the final round is the following. For every arm
+\(i \in \{1, ..., K\}\) at round \(T\),
 
-\begin{equation} 
-P(\xi) = P(\cap_i \cap_s \xi_{i,s}) = 1 - P(\cup_i \cup_s
-\xi_{i,s}^C) \geq 1 - \sum_i \sum_s P(| \hat{\mu}_{i,s} - \mu_i| \geq \epsilon)
-\label{theorem2_prob_fav_event} 
-\end{equation}
+\[
+\hat{\mu}_{i,T_i(n)} \geq \mu_i - \frac{\mu_i - \tau + \epsilon}{2} \quad \text{if} \quad \mu_i \geq \tau
+\] or
 
-Furthermore, for any \(i \in \{1, \dots, K\}\), for any
-\(s \in \{1, \dots, T(i)\}\), with \(X_{it}\) being the random sample
-from the R-sub-Gaussian distribution \(v_i\) at time \(t\):
+\[
+\hat{\mu}_{i,T_i(n)} \leq \mu_i + \frac{\tau - \mu_i + \epsilon}{2} \quad \text{if} \quad \mu_i < \tau
+\] Or simply in terms of the gap between the arm and the threshold as
+used as index by the algorithm,
 
-\begin{equation} 
-P(| \hat{\mu}_{i,s} - \mu_i| \geq \epsilon) = P(| (\frac{1}{s}
-\sum_{t=1}^{s} X_{it} - \mu_i) | \geq \epsilon) = P(| \sum_{t=1}^{s} (X_{it} -
-\mu_i) | \geq s \epsilon) 
-\end{equation}
+\[
+| \hat{\mu}_{i, T_i(n)} - \mu_i | \leq \frac{|\mu_i - \tau| + \epsilon}{2} = \frac{\Delta_i}{2}.
+\]
 
-where the latter can be bounded by a Hoeffding inequality:
+Intuitively, the conditions make sense as they ensure that the current
+mean estimate is closer to the true mean than to the threshold.
+Consequently, there is no possible arrangement left in which the
+condition would hold, but the arm be classified incorrectly. Assuming
+\(\mu_i < \tau\) and \(\epsilon = 0\), an incorrect classification would
+require \(\mu_i < \tau \leq \hat{\mu_i}\). But then
+\(| \hat{\mu}_{i, T_i(n)} - \mu_i | \geq |\mu_i - \tau|\), violating the
+separation condition.
 
-\begin{equation} 
-P(| \sum_{t=1}^{s} (X_{it} - \mu_i) | \geq s \epsilon) \leq
-2\exp (-\frac{\epsilon^2 s}{2 R^2}) \label{theorem2_hoeffding} 
-\end{equation}
+Thus, we need to show that in the very final round, this condition holds
+for every arm \(i \in \{1,...,K\}\) with large probability. Or more
+precisely, we need to derive a bound on the probability with which this
+does not hold.
 
-The Hoeffding inequality as used here is as follows (compare chapter 2.4
-in \href{http://www.stat.yale.edu/~pollard/Books/Mini/Basic.pdf}{David
-Pollard (2015)}):
+\subsubsection{The Favorable Event}\label{the-favorable-event}
 
-\begin{lemma}[Hoeffding's Inequality] \label{lemma:HoeffdingInequality}
-Consider $X_1, \dots, X_T$ independent random variables from R-sub-Gaussian distributions $\nu_i$ with mean $\mu_i$. Then, for any $\epsilon > 0$,
+The separation condition gives a good idea of what event we need to hold
+in order to make a correct classification. The smaller the deviation of
+the empirical mean from the population mean, the more difficult it is
+for the classification to be wrong. Moreover, if the mean and empirical
+mean are identical, then the classification is correct independent of
+the threshold. And furthermore, the closer the mean and the threshold
+are, the better the estimate must be for a correct classification.
 
-\begin{equation*}
-\mathbb{P} \Big( | \sum_{i = 1}^T (X_i - \mu_i) | \geq \epsilon \Big) \leq 2\exp \Big(\frac{-\epsilon^2}{2T R^2}\Big).
-\end{equation*}
-\end{lemma}
+Having to bound the absolute deviation of the sample mean from the
+population mean is a very thankful operation. Define the favorable event
+\(\xi\) as
 
-Plugging equation \eqref{theorem2_hoeffding} back into equation
-\eqref{theorem2_prob_fav_event}, we get:
+\[
+\xi = \Big\{\forall i \in \mathbb{A}, \forall s \in \{1,...,T\} : |\frac{1}{s} \sum_{t=1}^{s}X_{i,t} - \mu_i| \leq \sqrt{\frac{T \delta^2}{H s}} \Big\}.
+\]
 
-\begin{equation}
-P(\xi) \geq 1 - \sum_i \sum_s P(| \hat{\mu}_{i,s} - \mu_i| \geq \epsilon) \geq 1 - 2 \sum_i \sum_s \exp (-\frac{\epsilon^2 s}{2 R^2})
-\end{equation}
+We want the probability that this favorable event occurs to be large,
+that is, the probability that the deviation is small, such that the
+separation condition holds with large probability. Indeed, we bound the
+deviation for \emph{all} arms \(i \leq K\) and for \emph{every} round
+\(s \leq T\). Using some Chernoff Hoeffding bounds, we are able to write
 
-Now, in order to match the performance of the lower bound on the
-expected loss derived in Theorem \ref{theorem:Locatelli2016Theorem1}, we
-will choose \(\epsilon = \sqrt{\frac{T \delta^2}{Hs}}\). Thus:
+\[
+\mathbb{P}(\xi) \geq 1 - 2(\log(T) +1)K \exp(-\frac{T\delta^2}{2R^2H})
+\]
 
-\begin{equation}
-P(\xi) \geq 1 - 2 \sum_i \sum_s \exp (-\frac{\epsilon^2 s}{2 R^2}) = 1 - 2 \sum_i \sum_s \exp (-\frac{T \delta^2}{2 R^2 H}) \geq 1 - TK \exp(-\frac{T\delta^2}{2R^2H})
-\end{equation}
+\subsubsection{\texorpdfstring{Need to Bound
+\(T_i\)}{Need to Bound T\_i}}\label{need-to-bound-t_i}
 
-Thus, we do not exactly get the bound from Locatelli et al. (2016)
-because we used the Hoeffding inequality instead of the martingale
-bound; but the the method should be clear.
+We now have that with large probability, the favorable event holds. On
+the favorable event, we have for every arm \(i\):
 
-What is left now is to show that the favorable event still holds under
-the proposed \(\epsilon\), that is, we need to show that under
-\(P(\xi) \geq 1 - TK \exp(-\frac{T\delta^2}{2R^2H})\) we still reject
-arms that are under \(\tau - \epsilon\) and accept those above
-\(\tau + \epsilon\).
+\[
+| \hat{\mu}_i(t) - \mu_i| \leq \sqrt{\frac{T\delta^2}{HT_i(t)}}
+\]
 
-\subsubsection{Step 2: Lower Bound on Number of Pulls of Difficult
-Arm}\label{step-2-lower-bound-on-number-of-pulls-of-difficult-arm}
+The deviation of arm \(i\) at time \(t\) depends on how large \(H\),
+\(T\), and \(T_i(t)\) are. While \(t\), \(H\), \(T\) are deterministic,
+the number of times arm \(i\) has been pulled at round \(t\),
+\(T_i(t)\), is a random variable. In order to know how large the
+probability of the favorable event is (and thus the error probability),
+we need to know what realistic values for \(T_i(t)\) will be. Put
+differently: To ensure a deviation smaller than
+\(\sqrt{\frac{T\delta^2}{HT_i(t)}}\) for arm \(i\), we need to ensure
+that arm \(i\) has been pulled at least \(T_i(t)\) times. As usual in
+multi-armed bandits, and different from uniform sampling, the number of
+pulls is a random variable that also depends on how often other arms are
+pulled. In general, we do not want each arm to be pulled an equal
+amount, but each arm should be pulled some times, and not too many
+times. This especially holds for our exploration setting.
 
-In order to see that arms are correctly classified with large
-probability, we need to show that they are are pulled sufficiently
-often, that is, we have a degree of exploration for each arm \(i\) that
-allows us to identify its characteristics. To see this, rewrite the
-favorable event of a single arm as follows with \(s = T(i)\):
+Thus, in order to check that the deviation of arm \(i\) really is small
+enough for the separation condition to hold on the favorable event, we
+need to bound the number of pulls of every arm from below.
 
-\begin{equation}
-\xi_{i,s} = \{ |\hat{\mu}_{i,s}-\mu_i | \leq \epsilon \} = \{ |\hat{\mu}_{i,s} - \mu_i | \leq \sqrt{\frac{T \delta^2}{H T(i)}}\}
-\end{equation}
+\subsubsection{\texorpdfstring{Characteristics of a Frequently Pulled
+Arm (Lower Bound on
+\(T_k(T)\))}{Characteristics of a Frequently Pulled Arm (Lower Bound on T\_k(T))}}\label{characteristics-of-a-frequently-pulled-arm-lower-bound-on-t_kt}
 
-To make sure that this deviation is small enough, we need to show that
-at time \(T\), all \(T(i)\) have a sufficient lower bound and thus all
-arms \(i\) have been explored sufficiently to classify correctly with
-probability larger \(TK \exp(-\frac{T\delta^2}{2R^2H})\).
+Given that we do not follow a uniform sampling strategy, we know that at
+time \(T\), some arms will have been pulled more frequently than others.
+In particular, some arms will have been pulled more than \(T/K\) times.
+How often an arm is pulled can be related to the individual arm's
+contribution to the overall complexity measure. Let \(h_i\) be a measure
+of arm \(i\)'s individual problem complexity and write for the overall
+problem complexity
 
-To start off, notice that due to the initialization of the APT
-algorithm, every \(T_i(T) \geq 1\). Furthermore, we have assumed that
-\(T>2K\). Now, at time \(T\), consider an arm \(k\) that has been pulled
-\(T_k(T) -1 \geq \frac{(T-K)}{H \Delta^2_k}\) times. That is, it has
-been pulled at least proportionally to it's contribution to the overall
-hardness of the problem \(H\). Recall
-\(H = \sum_{i=1}^K(|\mu_i - \tau|+\epsilon)^-2\) and
-\(\delta^2_i = (|\mu_i - \tau | + \epsilon)^2\). To see that such arm
-\(k\) exists, assume it does not. Then
+\[
+H = \sum_{i = 1}^{K} h_i.
+\]
 
-\begin{equation*}
-T_i(T) - 1 < \frac{T-K}{H \Delta_i^2} \forall i
-\end{equation*}\begin{equation*}
-T- K = \sum_{i=1}^{K} T_i(T) - 1 < \sum_{i=1}^{K} \frac{T-K}{H \Delta_i^2} = \frac{T-K}{H \Delta_i^2} \sum_{i=1}^{K} \frac{1}{\Delta_i^2} = T-K
-\end{equation*}
+Then arm \(i\) contributes a share of \(h_i/H\) to the overall problem
+complexity. We can now show that there exists an arm that has been
+pulled at least as often as the share of his complexity contribution.
 
-which is a contradiction.
+Given the initialization of the APT algorithm, every arm is pulled once
+initially. Consequently, there is a budget of \(T-K\) rounds left after
+the initialization. As shown in Locatelli et al. (2016), there exists an
+arm \(k\) that has been pulled after the initialization (\(\geq 2\)
+pulls) and for which at the final round \(T\) holds:
+\(T_k(T) - 1 \geq \frac{(T-K)h_k}{H}\). This can be shown by a quick
+contradiction proof. Assume the opposite, that is
 
-Consequently, using the assumption \(T>2K\) from above, we have
+\[
+\forall i \in \{1,...,K\}: T_i(T) - 1 < \frac{(T-K)h_i}{H}
+\]
 
-\begin{equation*}
-T_k(T) \geq T_k(T) - 1 \geq \frac{T-K}{H \Delta^2_k} = \frac{T}{2H\Delta_k^2}
-\end{equation*}
+Consequently, at time \(T\), we would have pulled across all arms
+\(\sum_{i=1}^KT_i(T)-1\) times. If the previous assumption holds, we
+would not have used the entire budget:
 
-This states a lower bound on the amount of pulls \(T_k(t)\) for an arm
-\(k\) that contributes more than average to the overall hardness of the
-problem.
+\[
+\sum_{i=1}^K T_i(T)-1 < \sum_{i=1}^K \frac{(T-K)h_i}{H} = (T-K)\sum_{i=1}^K \frac{h_i}{H} = T-K
+\]
 
-\subsubsection{Step 3: Lower Bound on Number of Pulls of Simple
-Arm}\label{step-3-lower-bound-on-number-of-pulls-of-simple-arm}
+This is a contradiction, since as an requirement to the algorithm we
+have that \(\sum_{i=1}^K T_i(T)-1 = (T-K)\), that is, we use the entire
+budget of samples.
 
-Next, we would like to derive bounds on the number of pulls of the
-remaining arms \(i\) at the time \(t\), the last pull of arm \(k\). To
-do so, consider that we are on the favorable event \(\xi\). For every
-arm \(i\), it holds:
+Another such requirement has been that \(T>2K\). Plugging this in gives
+\[
+T_k(T) - 1 \geq \frac{(T-K)h_k}{H} \leq \frac{(T-1/2T)h_k}{H} = \frac{Th_i}{2H}
+\]
 
-\begin{equation}
-|\hat{\mu}_i(t) - \mu_i | \leq \sqrt{\frac{T \delta^2}{HT_i(t)}} \label{step3_favorable_event} 
-\end{equation}
+Now we know how often the arm has been pulled at the very end. That does
+not mean that \(k\) has been pulled at time \(T\). Thus we consider the
+time \(t \leq T\) at which arm \(k\) is pulled for the last time. We get
+(!!!!!SHOOOOWWW THIIIISSSS!!!!!!!!!)
 
-As described in Locatelli et al., using the reverse triangle inequality,
-we can write
+\[
+T_k(t) \geq T_k(T) - 1 \geq \frac{Th_i}{2H}.
+\]
 
-\begin{IEEEeqnarray*}{rCl}
-|\hat{\mu}_i(t) - \mu_i | & = & | (\hat{\mu}_i(t) - \tau) - (\mu_i-\tau) |
-\\
-& \geq & | |\hat{\mu}_i(t) - \tau| - |\mu_i-\tau| |
-\\
-& = & | (|\hat{\mu}_i(t) - \tau| + \epsilon) - (|\mu_i-\tau| - \epsilon) |
-\\
-& = & | \hat{\Delta}_i(t) - \Delta_i |
-\end{IEEEeqnarray*}
+This gives us a lower bound on how often arms are pulled that are pulled
+frequently relative to their contribution to the problem complexity. Now
+we need a lower bound on \(T_i(T)\) for every other arm \(i\).
 
-Consequently, we can again employ the hardness of the task to start
-deriving bounds on the number of pulls of the arms:
+\subsubsection{\texorpdfstring{Lower Bound on
+\(T_i(T)\)}{Lower Bound on T\_i(T)}}\label{lower-bound-on-t_it}
 
-\begin{equation*}
-| \hat{\Delta}_i(t) - \Delta_i | \leq |\hat{\mu}_i(t) - \mu_i | \sqrt{\frac{T \delta^2}{HT_i(t)}}
-\end{equation*}
+Consider again as before the round \(t\) in which arm \(k\) is pulled
+for the very last time. Since the APT algorithm minimizes at every round
+\(s\) the index \(B_j(s)\), and pulls the arm with the smallest index,
+we know that arm \(k\) must have had the smallest index at round \(t\).
+We have:
 
-From this, we get
+\[
+B_k(t) \leq B_i(t) \Leftrightarrow \sqrt{T_k(t)}\hat{\Delta}_k(t) \leq \sqrt{T_i(t)} \hat{\Delta}_i(t)
+\]
 
-\begin{IEEEeqnarray*}{rlCrl}
-\Delta_i - \sqrt{\frac{T \delta^2}{HT_i(t)}} & \leq & \hat{\Delta}_i(t) & \leq & \Delta_i + \sqrt{\frac{T \delta^2}{HT_i(t)}}
-\end{IEEEeqnarray*}
+One can already expect that this can be used to derive a lower bound on
+\(T_i(t)\) on the RHS, and this is exactly what we do.
 
-and in particular for the arm \(k\) discussed above
+On the LHS, we will plug in the lower bound for \(T_k(t)\) derived
+before. Additionally bounding \(\Delta_k(t)\) from below, and
+\(\hat{\Delta}_i(t)\) from above using the favorable event will give the
+desired lower bound.
 
-\begin{IEEEeqnarray}{rlCrl}
-\Delta_k - \sqrt{\frac{T \delta^2}{HT_k(t)}} & \leq & \hat{\Delta}_k(t) & \leq & \Delta_k + \sqrt{\frac{T \delta^2}{HT_k(t)}} \label{delta_hat_k_bounds}
-\end{IEEEeqnarray}
+Thus assume we are on the favorable event \(\xi\) with large
+probability. we consequently have
 
-To bound \(T_i(t)\), it is helpful to compare \(\Delta_i\) and
-\(\Delta_k\) at time \(t\). From the definition of the APT algorithm, we
-know that since arm \(k\) has been pulled at time \(t\) (``Pull arm
-\(I_{t+1} = \arg \min_i \mathcal{B}_i (t+1)\)''):
+\[
+| \hat{\mu}_i(t) - \mu_i| \leq \sqrt{\frac{T\delta^2}{HT_i(t)}}.
+\]
 
-\begin{IEEEeqnarray*}{rCl}
-\mathcal{B}_k(t) & \leq & \mathcal{B}_i(t)
-\\
-\sqrt{T_k(t)} \hat{\Delta}_k(t) & \leq & \sqrt{T_i(t)} \hat{\Delta}_i(t)
-\end{IEEEeqnarray*}
+As shown in Locatelli et al. (2016), one can use the reverse triangle
+inequality to get:
 
-Thus, every arm \(i\) has a lower bound on it's number of pulls given by
-the lower bound for arm \(k\) proportional with it's inverse relative
-estimated hardness \(\hat{\Delta}_k(t) / \hat{\Delta}_i(t)\). We can
-easily derive a lower bound for the left hand side by plugging in
-\eqref{delta_hat_k_bounds}:
+\[
+|\hat{\mu}_i(t) - \mu_i| = |(\hat{\mu}_i(t) - \tau) - (\mu_i - \tau)| \geq || \hat{\mu}_i(t) - \tau | - |\mu_i - \tau|| \geq |(|\hat{\mu}_i(t) - \tau| + \epsilon) - (|\mu_i - \tau| + \epsilon)| \geq |\hat{\Delta}_i(t) - \Delta_i|
+\]
 
-\begin{IEEEeqnarray}{rCl}
-\sqrt{T_k(t)} (\Delta_k - \sqrt{\frac{T \delta^2}{HT_k(t)}}) & \leq & \mathcal{B}_k(t) 
-\\
-\sqrt{\frac{T}{2H\Delta_k^2}} (\Delta_k - \sqrt{2}\Delta_k \delta) & = & \sqrt{\frac{T}{H}} (\frac{1}{\sqrt{2}} - \delta)
-\\
-& \leq & \mathcal{B}_k(t)
-\end{IEEEeqnarray}
+If we combine this with the favorable event, we get
 
-since \(T_k(t) \geq T/(2H\Delta^2_k)\) and
-\(\sqrt{T \delta^2 / (HT_k(t))} \geq \sqrt{T \delta^2 / (H\frac{T}{2H \Delta^2_k})} = \sqrt{2}\Delta_k \delta\).
+\[
+\Delta_k - \sqrt{\frac{T\delta^2}{HT_k(t)}} \leq \hat{\Delta}_k(t) \leq \Delta_k + \sqrt{\frac{T\delta^2}{HT_k(t)}}
+\]
 
-Next, upper bound \(\mathcal{B}_i(t)\). In contrast to \(T_k(t)\), there
-is no lower bound for \(T_i(t)\) available yet that we could plug in.
-Thus we derive:
+and similar for \(\hat{\Delta}_i\).
 
-\begin{IEEEeqnarray*}{rCl}
-\mathcal{B}_i(t) & = & \sqrt{T_i(t)} \hat{\Delta}_i(t) 
-\\
-& \leq & \sqrt{T_i(t)} (\Delta_i + \sqrt{\frac{T \delta^2}{H T_i(t)}})
-\\
-& = & \sqrt{T_i(t)} \Delta_i + \delta \sqrt{\frac{T}{H}}
-\end{IEEEeqnarray*}
+We can now lower bound the LHS of the indices as
 
-Combining the two bounds, we get a lower bound on the pulls for every
-other arm \(i\):
+\[
+\Big(\Delta_k - \sqrt{\frac{T\delta^2}{HT_k(t)}}\Big) \sqrt{T_k(t)} \leq B_k(t)
+\]
 
-\begin{IEEEeqnarray*}{rCl}
-\Delta_i \sqrt{T_i(t)} + \delta \sqrt{\frac{T}{H}} & \geq & (\frac{1}{\sqrt{2}} - \delta) \sqrt{\frac{T}{H}}
-\\
-\sqrt{T_i(t)} & \geq & (\frac{1}{\sqrt{2}} - 2\delta) \sqrt{\frac{T}{H}} \frac{1}{\Delta_i}
-\\ 
-& & \text{(choose $2\delta > 1 / \sqrt{2}$ such that RHS is greater 0)}
-% \\
-% T_i(t) & \geq & (\frac{1}{2} - 2\sqrt{2} \delta + 4\delta^2) \underbrace{\frac{T}{H} \frac{1}{\Delta_i^2}}_\text{$i$'s share of the budget}
-% \\
-% T_i(t) & \geq & (1 - 4 \sqrt{2} \delta + 8\delta^2) \frac{T}{2H} \frac{1}{\Delta_i^2}
-\end{IEEEeqnarray*}
+\[
+\Big(\Delta_k - \sqrt{\frac{2}{h_k}}\delta \Big) \sqrt{\frac{Th_k}{2H}} \leq B_k(t)
+\]
 
-\subsubsection{Conclusion}\label{conclusion}
+At this point, it is useful to have a well chosen complexity measure. If
+we set \(h_i = \frac{1}{\Delta_i^2}\) as in Locatelli et al. (2016), we
+get
 
-As stated before, we require the lower bound on \(T_i(t)\) in order to
-show that
-\(|\hat{\mu}_i(t) - \mu_i | \leq \sqrt{frac{T \delta^2}{H T_i(t)}}\)
-holds for all \(i\). So if we now simply plug in the derived lower
-bound, we get:
+\[
+\Big(\Delta_k - \sqrt{2}\delta \Delta \Big) \sqrt{\frac{T}{2H\Delta_k^2}} \leq B_k(t)
+\]
 
-\begin{equation*}
-\mu_i - \Delta_i (\frac{\sqrt{2}\delta}{1-2\sqrt{2}\delta}) \leq \hat{\mu}_i(t) \leq \mu_i + \Delta_i (\frac{\sqrt{2}\delta}{1-2\sqrt{2}\delta})
-\end{equation*}
+which can be now be reduced to a form that is not specific to \(k\):
 
-and with \(\lambda := (\frac{\sqrt{2}\delta}{1-2\sqrt{2}\delta}) > 0\):
+\[
+\Big( \frac{1}{\sqrt{2}} - \delta \Big) \sqrt{\frac{T}{H}} \leq B_k(t).
+\]
 
-\begin{equation*}
-\mu_i - \Delta_i \lambda \leq \hat{\mu}_i(t) \leq \mu_i + \Delta_i \lambda
-\end{equation*}
+Now we need to get rid of \(\hat{\Delta}_i\) in order to bound
+\(T_i(t)\). Thus, we bound the RHS again using the favorable event much
+as we did for the LHS:
 
-Under this formulation on \(\xi\), do we accept arms with
-\(\mu_i \geq \tau + \epsilon\)? For these arms holds that
-\(\Delta_i = \mu_i - \tau + \epsilon\). Consequently:
+\[
+B_i(t) = \hat{\Delta}_i \sqrt{T_i(t)} \leq \Big(\Delta_i + \sqrt{\frac{T\delta^2}{HT_i(t)}}\Big) \sqrt{T_i(t)} \leq \Delta_i \sqrt{T_i(t)} + \delta \sqrt{\frac{T}{H}}
+\]
 
-\begin{IEEEeqnarray*}{rCl}
-\mu_i - (\mu_i - \tau + \epsilon) \lambda & \leq & \hat{\mu}_i(t) 
-\\ 
-\hat{\mu}_i(t) & \geq & \tau \lambda + \mu (1-\lambda) - \epsilon \lambda
-\end{IEEEeqnarray*}
+As in Locatelli et al. (2016) we use the fact that by definition
+\(\Delta\) and \(\hat{\Delta}\) are positive in order to square both
+sides and write
 
-The arms are accepted if
+\[
+(1 - 2\sqrt{2}\delta)^2 \frac{T}{2H\Delta^2_i} \leq T_i(t) \leq T_i(T)
+\]
 
-\begin{IEEEeqnarray*}{rCl}
-\hat{\mu}_i(t) - \epsilon & \geq & 0
-\end{IEEEeqnarray*}
+We thus have derived a lower bound on the amount of pulls for any arm.
+That means that we can show that no arm is pulled an insufficient amount
+of times with large probability, and that consequently the favorable
+event hold and the estimated mean is sufficienctly separated from the
+threshold.
 
-Or equivalently as long as
+\subsubsection{Check Separation
+Condition}\label{check-separation-condition}
 
-\begin{IEEEeqnarray*}{rCl}
-\tau \lambda + \mu(1-\lambda) - \epsilon \lambda - \tau & \geq & 0
-\\
-\lambda & \leq & \frac{1}{2}
-\end{IEEEeqnarray*}
+As the last step, we need to check whether the lower bound on the pulls
+of any arm suffices to ensure that the separation condition holds on the
+favorable event. That means, given
+\(T_i(T) \geq (1-2\sqrt{2}\delta)^2 \frac{T}{2H\Delta_i^2}\), do we have
+\(|\hat{\mu}_i(T) - \mu | \leq \frac{\Delta}{2}\) on the favorable event
+\(\xi = \Big\{|\hat{\mu}_i - \mu | \leq \sqrt{\frac{T\delta^2}{H T_i(T)}}\Big\}\)?
+
+To check, we plug the lower bound into the favorable event and get
+
+\[
+|\hat{\mu}_i - \mu | \leq \sqrt{\frac{T\delta^2}{H T_i(T)}} \leq \Delta_i \frac{\sqrt{2}\delta}{1-2\sqrt{2}\delta}
+\] Using \(\delta = (4\sqrt{2})^-1\) as in Locatelli et al. (2016), we
+get
+
+\[
+|\hat{\mu}_i - \mu | \leq \Delta_i \frac{\sqrt{2}\delta}{1-2\sqrt{2}\delta} \leq \frac{1}{2}\Delta_i.
+\]
+
+Thus the separation condition still holds for this value of \(\delta\).
+
+\subsubsection{Upper Bound on Error
+Probability}\label{upper-bound-on-error-probability}
+
+We have seen that on the favorable event \(\xi\), which holds with large
+probability \(\mathbb{P}(\xi)\), the separation condition holds as all
+arms have been pulled a sufficient number of times, such that their
+estimated mean is close to the true mean. All arms are classified
+correctly, and the algorithm does not suffer a loss. On the other hand,
+we make an error whenever the favorable event does not hold after all;
+that is, the deviation bound for the mean does not hold. At least one
+arm is misclassified and the arm suffers a loss. This occurs with
+probability \(1-\mathbb{P}(\xi)\). Consequently, the expected loss is
+upper bounded by
+
+\[
+\mathbb{E}[L] = 1 - \mathbb{P}(\xi) \leq 2(\log(T)+1)K \exp(-\frac{1}{64R^2}\frac{T}{H}).
+\]
 
 \newpage
 
 \section{Kullback-Leibler Complexity of Pure
 Exploration}\label{kullback-leibler-complexity-of-pure-exploration}
 
-In the previous chapter, we have discussed the thresholding bandit
-problem as presented in Locatelli et al. (2016). Doing so, we came
-across the complexity term \(H = \sum_{i=1}^{K} \Delta_i^{-2}\).
-Furthermore, we have noted the fact that an algorithm and bounds based
-on \emph{only} the gap between the respective mean and the threshold are
-useful in the case of sub-Gaussian problems. Furthermore, even for the
-case of Bernoulli arms, which are sub-Gaussian since their feedback is
-bounded on \([0,1]\), the gap \(\Delta\) becomes less and less
-appropriate for situations in which both \(\mu\) of the Bernoulli, and
-\(\tau\) are very close to 0 or 1.
+In the previous chapter, we discussed the thresholding bandit problem as
+presented in Locatelli et al. (2016). Doing so, we came across the
+complexity term \(H = \sum_{i=1}^{K} \Delta_i^{-2}\). Furthermore, we
+noted the fact that an algorithm and bounds based on \emph{only} the gap
+between the respective mean and the threshold are useful in the case of
+sub-Gaussian problems. Furthermore, even for the case of Bernoulli arms,
+which are sub-Gaussian since their feedback is bounded on \([0,1]\), the
+gap \(\Delta\) becomes less and less appropriate in situations in which
+both \(\mu\) of the Bernoulli, and \(\tau\) are very close to 0 or 1.
 
 Even though the complexity \(H\) enjoys popularity in the literature of
 the best \(m\) arm identification problem, \(m \geq 1\), Kaufmann et al.
 (2016) show explicitly that \(H\) is mainly useful for problems of
 Gaussian distributions. Indeed, they go so far as to define new measures
-of complexity that are based on information theoretic measures Using
-those they then display \(H\) as an approximation to their measures in
-the case of Gaussian distributions. In turn, this makes apparent that
-especially Bernoulli distributions with small means have to be treated
-differently.
+of complexity that are based on information theoretic measures. Using
+these, they then frame \(H\) as an approximation to their measures in
+the case of Gaussian distributions. This underlines the fact that
+Bernoulli distributions with small means have to be treated differently
+than Gaussian distributions.
 
-For the current chapter, we will adopt the notation of Kaufmann et al.
-(2016) so that it will be easier to compare the arguments.
+For the current chapter, we adopt the notation of Kaufmann et al. (2016)
+to ease a comparison with their arguments.
 
 \subsection{\texorpdfstring{Complexity of Best-Arm and Top-\emph{m}
 Identification}{Complexity of Best-Arm and Top-m Identification}}\label{complexity-of-best-arm-and-top-m-identification}
@@ -1052,27 +1275,27 @@ Identification}{Complexity of Best-Arm and Top-m Identification}}\label{complexi
 Instead of the thresholding bandit problem, we now consider the problem
 of identifying the best \(m\) out of \(K\) arms, that is, the Top-\(m\)
 problem. While we previously looked at a fixed budget formulation, we
-now mainly focus on a fixed confidence problem. That is, we hold the
-confidence \(1-\delta\) fixed at which a strategy returns the correct
-\(m\) arms while trying to find them in a way that minimizes the sample
+now mainly focus on a fixed confidence problem: We hold the confidence
+\(1-\delta\) fixed at which a strategy returns the correct \(m\) arms
+while trying to reach this confidence in a way that minimizes the sample
 complexity \(\mathbb{E}_{\nu}[\tau]\), that is, the expected number of
 overall draws of the arms. \(\tau\) is also called the stopping time of
-the algorithm. Algorithms are supposed to find \(\mathcal{S}_m^*\), the
-set of the \(m\) arms with the largest means. If we let
-\((\mu_1, \dots, \mu_K)\) be the vector of the means of the arms, then
-let \((\mu_{[1]}, \dots, \mu_{[K]})\) be the tuple in which the means
-are arranged in decreasing order. For the rest of this chapter, we
-consider only settings with arms for which \(\mu_{[m]} > \mu_{[m+1]}\);
-that is, the set of the top \(m\) arms, \(\mathcal{S}_m^*\), is unique.
-After the sampling phase, we require any algorithm to return the set
-\(\hat{S}_m \subset \{1,\dots,K\}\) of \(m\) arms that the algorithm
-believes to have the largest means. In the case of fixed confidence, we
-fix \(\delta\) at the beginning, such that the algorithm only stops
-sampling when
+the algorithm. The goal of algorithms is to identify
+\(\mathcal{S}_m^*\), the set of the \(m\) arms with the largest means.
+If we let \((\mu_1, \dots, \mu_K)\) be the vector of the means of the
+arms, then let \((\mu_{[1]}, \dots, \mu_{[K]})\) be the tuple in which
+the means are arranged in decreasing order. For the rest of this
+chapter, we consider only settings with arms for which
+\(\mu_{[m]} > \mu_{[m+1]}\); we demand the set of the top \(m\) arms,
+\(\mathcal{S}_m^*\), to be unique. After the sampling phase, we require
+any algorithm to return the set \(\hat{S}_m \subset \{1,\dots,K\}\) of
+\(m\) arms that the algorithm believes to have the largest means. In the
+case of fixed confidence, we fix \(\delta\) at the beginning, such that
+the algorithm only stops sampling when
 \(\mathbb{P}_{\nu}(\hat{S}_m = \mathcal{S}_m^*) \geq 1-\delta\). We try
-to find algorithms who fulfill this as quickly as possible; that is,
-they minimize the expected stopping time (or number of draws),
-\(\mathbb{E}_{\nu}[\tau]\).
+to find algorithms who fulfill this condition as quickly as possible.
+Algorithms which minimize the expected stopping time (or number of
+draws), \(\mathbb{E}_{\nu}[\tau]\).
 
 To arrive at the new measure of complexity proposed by Kaufmann et al.
 (2016), it will actually make sense to first follow their arguments to a
@@ -1090,32 +1313,31 @@ Let $\nu \in \mathcal{M}_m$, where $\mathcal{M}_m$ is the set of uniquely identi
 where $\der(x,y) := x \log(x/y) + (1-x) \log((1-x)/(1-y))$ is the binary relative entropy, with the convention that $\der(0,0) = \der(1,1) = 0$.
 \end{theorem}
 
-To proof this statement, we assume as before that the arms are ordered
+To prove this statement, we assume as before that the arms are ordered
 by their means decreasing in size. For a given \(\delta\)-PAC algorithm
 \(\mathcal{A} = ((A_t), \tau, \hat{S}_m)\), and under the continuity
 conditions (compare Kaufmann et al. (2016)), there exists for every arm
 \(a \in \{1, \dots, K\}\) an alternative model
 \(\nu' = (\nu_1, \dots, \nu_{a-1}, \nu_a', \nu_{a+1}, \dots, \nu_K)\).
 In this alternative model, only arm \(a\) is modified in accordance with
-the continuity conditions. Modified in such a way that measured by the
-Kullback-Leibler divergence, the arm \(\nu_{m+1}\) is now closer to
-\(\nu_a\) than \(\nu_a'\) is to \(\nu_a\), if \(\mu_a > \mu_{m+1}\)
+the continuity conditions. Modified in such a way, the arm \(\nu_{m+1}\)
+is now closer to \(\nu_a\) as measured by the Kullback-Leibler
+divergence than \(\nu_a'\) is to \(\nu_a\), if \(\mu_a > \mu_{m+1}\)
 (consequently, \(\mu_a' < \mu_{m+1}\)). On the other hand, if
 \(\mu_a < \mu_{m}\), then \(\nu_a'\) will be moved away from \(\nu_a\)
 just enough so that \(\nu_a\) is closer to \(\nu_m\) than to \(\nu_a'\)
 (consequently, \(\mu_a' > \mu_m\)). These changes in distribution make
-the original set of optimal arms, \(\{1,\dots,m\}\) no longer optimal
+the original set of optimal arms, \(\{1,\dots,m\}\), no longer optimal
 under the alternative model \(\nu'\). Given that the algorithm returns
 \(\hat{S}_m\), we know that for the event
 \(\mathcal{E} = (\hat{S}_m = \{1, \dots, m\})\) (which is element of the
-by the stopping time \(\tau\) induced \(\sigma\)-Algebra
-\(\mathcal{F}_{\tau}\)), that
-\(\mathbb{P}_{\nu}(\mathcal{E}) \geq 1-\delta\) and
+\(\sigma\)-Algebra \(\mathcal{F}_{\tau}\) induced by the stopping time
+\(\tau\)), that \(\mathbb{P}_{\nu}(\mathcal{E}) \geq 1-\delta\) and
 \(\mathbb{P}_{\nu'}(\mathcal{E}) \leq \delta\) (because fixed confidence
 \(\delta\)!).
 
 To now give the lower bound on the expected number of samples,
-\(\mathbb{E}_{\nu}[\tau]\), we employ the general lemma given by the
+\(\mathbb{E}_{\nu}[\tau]\), we employ the general Lemma given by the
 authors for such changes in distribution in bandit models.
 
 \begin{lemma}[Kaufmann et al., 2016] \label{theorem:KaufmannEtAlLemma1}
@@ -1125,12 +1347,12 @@ Let $\nu$ and $\nu'$ be two bandit models with $K$ arms such that for all $a$, t
 \sum_{a=1}^{K} \mathbb{E}_{\nu} [N_a(\sigma)] \KL(\nu_a, \nu_a') \geq \sup_{\mathcal{E} \in \mathcal{F}_{\sigma}} \der (\mathbb{P}_{\nu}(\mathcal{E}), \mathbb{P}_{\nu'}(\mathcal{E})),
 \end{equation*}
 
-where $\der(x,y)$ is the binary relative entropy as defined above.
+where $d(x,y)$ is the binary relative entropy as defined above.
 \end{lemma}
 
-We can apply this lemma directly on the expected number of draws for
+We can apply this Lemma directly on the expected number of draws for
 each arm, \(\mathbb{E}_{\nu}[N_a]\). For each arm \(a\), we thus have
-\(\KL(\nu_a, \nu_a') \mathbb{E}_{\nu}[N_a] \geq \der (1-\delta, \delta)\).
+\(\KL(\nu_a, \nu_a') \mathbb{E}_{\nu}[N_a] \geq d(1-\delta, \delta)\).
 Using the definition of the alternative model above, we get for every
 small but fixed \(\alpha > 0\), for every arm \(a \in \{1, \dots, K\}\)
 and each arm \(b \in \{m+1, \dots, K\}\):
@@ -1174,10 +1396,7 @@ number of draws, it makes sense to define the complexity of a Top-\(m\)
 bandit problem using the Kullback-Leibler divergence. After all, besides
 the number of arms and the experimenter-chosen confidence, it is just
 how close arms are with respect to each other in terms of
-Kullback-Leibler divergence that influences the sampling complexity. And
-in general, a problem requiring more samples is of course considered to
-be more complex (at least with respect to the samples, which is what
-needs to be optimized).
+Kullback-Leibler divergence that influences the sampling complexity.
 
 Thus, following Kaufmann et al. (2016), define the complexity
 \(\kappa_C(\nu)\) for the fixed confidence setting as
@@ -1186,11 +1405,11 @@ Thus, following Kaufmann et al. (2016), define the complexity
 \kappa_C(\nu) = \inf_{A \, \text{PAC}} \lim_{\delta \to 0} \sup \frac{\mathbb{E}_{\nu}[\tau_{\delta}]}{\log \frac{1}{\delta}}.
 \end{equation}
 
-So if we were to plug in the lower bound on the sampling complexity, we
-would arrive at a complexity measure that basically depends only on the
-Kullback-Leibler measuring for each arm how far it is away from the
-border between the two groups of arms. To see this, consider the lower
-bound on the complexity measure given in Kaufmann et al. (2016):
+By plugging in the lower bound on the sampling complexity, we arrive at
+a complexity measure that depends only on the Kullback-Leibler measuring
+for each arm how far it is away from the border between the two groups
+of arms. To see this, consider the lower bound on the complexity measure
+given in Kaufmann et al. (2016):
 
 \begin{equation*}
 \kappa_C(\nu) \geq \sum_{a \in \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m+1]})} + \sum_{a \notin \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m]})}
@@ -1200,13 +1419,14 @@ Given this description, we can already note that an intuitive extension
 of this complexity notion to the thresholding bandit problem might
 involve replacing \(\mu_{[m]}\) and \(\mu_{[m+1]}\) by the actual
 threshold \(\tau\) (notation in Locatelli et al.) that divides the group
-above the threshold from the group below the threshold. In that case,
-the previously used \(\alpha\) might be very similar to the \(\epsilon\)
-used in Locatelli et al. (2016).
+above the threshold from the group below the threshold. In this sense,
+the previously used \(\alpha\) is similar to the \(\epsilon\) used in
+Locatelli et al. (2016).
 
-To get there, however, at least two important steps remain. First, we
-need to define a complexity for the fixed budget problem. Second, we
-need to create algorithms that can match the lower bound.
+Before we get to an extension of the thresholding bandit problem,
+however, at least two important steps remain. First, we need to define a
+complexity for the fixed budget problem. Second, we need to create
+algorithms that can match the lower bound.
 
 Kaufmann et al. are able to provide a bound on their complexity measure
 in the fixed budget case, however only in the case of \textbf{two-armed}
@@ -2339,6 +2559,25 @@ The next arm to be pulled is the minimizer of the index
 end of the horizon \(T\), the algorithm outputs the set of arms
 \(\hat{S}_\tau = \{k: \hat{\mu}_k(T) \geq \tau\}\).
 
+\IncMargin{1em}
+
+\begin{algorithm}
+\SetKwData{Left}{left}\SetKwData{This}{this}\SetKwData{Up}{up}
+\SetKwFunction{Union}{Union}\SetKwFunction{FindCompress}{FindCompress}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+\Input{$\tau$, $\epsilon$}
+\Output{$\hat{S}_{\tau} = \{k: \hat{\mu}_k(T) \geq \tau\}$}
+\BlankLine
+\emph{Pull each arm once}\;
+\For{$t = K+1$ \KwTo $T$}{
+  \emph{Pull arm $I_t = \arg \min_{k\leq K} B_k^{SLR}(t) = T_k(t) \KL(\hat{\mu}_k(t) || \tau)$}\;
+  \emph{Observe reward $X \sim \nu_{I_t}$}\;
+}
+\caption{SLR algorithm for univariate exponential family of distributions}\label{algo_slr_1d}
+\end{algorithm}
+
+\DecMargin{1em}
+
 \subsubsection{2D-SLR Algorithm for Normal Distributions with Unknown
 Mean and Unknown
 Variance}\label{d-slr-algorithm-for-normal-distributions-with-unknown-mean-and-unknown-variance}
@@ -2419,6 +2658,52 @@ T_i(t)\frac{(\hat{\mu}_i(t) - \tau)^2}{2\sigma^2} < T_j(t)\frac{(\hat{\mu}_j(t) 
 \Leftrightarrow 
 B_i^{APT}(t) < B_j^{APT}(t)
 \]
+
+Given that in all other cases the Simple Likelihood Strategy is able to
+take more information about the distributions into account through the
+Kullback-Leibler divergence (in the case of the exponential family of
+distributions), the algorithm is expected to improve upon the Anytime
+Parameter Free strategy.
+
+As mentioned before, this improvement comes only at the cost of knowing
+the correct distribution upfront. In particular, as for the Anytime
+Parameter Free algorithm, there are no parameters which would need to be
+tuned upfront as is usually the case for upper-confidence bound based
+algorithms.
+
+Additionally, the Simple Likelihood Strategy offers an intuitive
+interpretation if we consider the index written in the form proposed by
+Zhang et al. (2017). Write the index again as
+
+\[
+B_i(t) = S_i(t) D_i(t),
+\]
+
+where \(S_i(t)\) is a confidence term of the estimate of the arm \(i\)
+at time \(t\), and \(D_i(t)\) is a measure of distance between the
+distribution of arm \(i\) and the threshold \(\tau\). The index of the
+Simple Likelihood Ratio strategy for univariate exponential family
+distributions can then be written with
+
+\[
+S_i(t) = T_i(t)
+\]
+
+and
+
+\[
+D_i(t) = \KL(\hat{\mu}_i(t)||\tau),
+\] where we employ the number of pulls so far for a given arm as the
+confidence measure, while the Kullback-Leibler divergence fulfills its
+role as distance between distributions. The larger the KL-divergence,
+the less inclined we are to draw the arm; the same holds, if we have
+pulled an arm many times. Since the KL-divergence reduces to the squared
+distance between means for Normal distributions of known variance, the
+SLR and APT algorithms are identical in this case.
+
+As we see in the experiments that follow, the Simple Likelihood Strategy
+is able to improve significantly upon the Anytime Parameter Free
+strategy in many cases.
 
 \section{Experiments}\label{experiments}
 
@@ -2654,6 +2939,25 @@ V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10 & V11\tabularnewline
 \subsection{\texorpdfstring{Experiment 5: Poisson Distribution with
 \(\tau = 1\)}{Experiment 5: Poisson Distribution with \textbackslash{}tau = 1}}\label{experiment-5-poisson-distribution-with-tau-1}
 
+\begin{longtable}[]{@{}rrrrrrrrrrrrrrrrrrrr@{}}
+\caption{Means of Poisson arms in simulation 5 compared to a threshold
+of 0.4.}\tabularnewline
+\toprule
+V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10 & V11 & V12 & V13 & V14
+& V15 & V16 & V17 & V18 & V19 & V20\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10 & V11 & V12 & V13 & V14
+& V15 & V16 & V17 & V18 & V19 & V20\tabularnewline
+\midrule
+\endhead
+0.0072 & 0.0576 & 0.0613 & 0.0925 & 0.1452 & 0.1559 & 0.1869 & 0.1958 &
+0.2235 & 0.2467 & 0.2664 & 0.3008 & 0.4295 & 0.4948 & 0.5857 & 0.6904 &
+0.7609 & 0.785 & 0.8878 & 1.7114\tabularnewline
+\bottomrule
+\end{longtable}
+
 \includegraphics{Draft_files/figure-latex/simulation5_results-1.pdf}
 
 \subsection{Real Data}\label{real-data}
@@ -2824,7 +3128,7 @@ threshold twice. The same is true for arm \(V139\), which is not visible
 when considering the overall mean alone. Furthermore, arms \(V159\) and
 \(V189\) come very close to the threshold at times.
 
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-5-1.pdf}
+\includegraphics{Draft_files/figure-latex/unnamed-chunk-6-1.pdf}
 
 These difficulties seem to have a large impact on the performance of all
 algorithms. Given that the data are \(\{0,1\}\) observations, we can
@@ -2842,7 +3146,7 @@ we use the parameters as in Mukherjee et al. (2017), that is,
 
 The corresponding results are shown in the next figure.
 
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-6-1.pdf}
+\includegraphics{Draft_files/figure-latex/unnamed-chunk-7-1.pdf}
 
 Compared to the previous simulations with synthetic data, the results
 are dramatic. First of all, we see that all strategies perform not well.
@@ -2968,9 +3272,12 @@ are less than 2\% (1.2\% vs 3\%), the difference to uniform sampling
 (10\%) is relevant. The performance of 10\% error rate is achieved by
 SLR about 1000 observations earlier than by EVT.
 
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-7-1.pdf}
-
 \includegraphics{Draft_files/figure-latex/unnamed-chunk-8-1.pdf}
+\includegraphics{Draft_files/figure-latex/unnamed-chunk-8-2.pdf}
+\includegraphics{Draft_files/figure-latex/unnamed-chunk-8-3.pdf}
+\includegraphics{Draft_files/figure-latex/unnamed-chunk-8-4.pdf}
+
+\includegraphics{Draft_files/figure-latex/unnamed-chunk-9-1.pdf}
 
 We can try to understand why some strategies fail, while showing
 significant improvements on synthetic data. Given that we run 5000
@@ -3026,7 +3333,14 @@ evaluated. We see in the curves of arms \(V32\) and arm \(V154\) that
 the EVT algorithm is less impacted by daily seasonalities, while APT
 clearly is.
 
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-9-1.pdf}
+\includegraphics{Draft_files/figure-latex/unnamed-chunk-10-1.pdf}
+
+\section{Conclusion}\label{conclusion}
+
+\section{Notes}\label{notes}
+
+The authors thank Alexandra Carpentier, Andrea Locatelli, and Urun Dogan
+for many hours of valuable feedback and ideas. \textless{}3
 
 
 \end{document}

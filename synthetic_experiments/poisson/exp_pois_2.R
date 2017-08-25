@@ -36,9 +36,11 @@ load(paste0(current_path, "pois2_comp_LR.Rda"))
 load(paste0(current_path, "pois2_comp_APT.Rda"))
 load(paste0(current_path, "pois2_comp_EVT.Rda"))
 
-plot(c(0,10000), c(0, -8), type = "n")
+plot(c(0,10000), c(0, -7), type = "n")
+abline(h=log(0.1), lty = 2)
 abline(h=log(0.01), lty = 2)
-lines(log(pois2_comp_APT), col = "black")
+lines(log(pois2_comp_UNIFORM), col = "black")
+lines(log(pois2_comp_APT), col = "darkgreen")
 lines(log(pois2_comp_LR), col = "blue")
 lines(log(pois2_comp_EVT), col = "red")
 

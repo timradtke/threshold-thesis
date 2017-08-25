@@ -60,6 +60,45 @@ compare_to_ground_truth <- function(true_means, sim_res, tau, epsilon) {
 
 #############################################################################
 
+# Instead of using the hard loss function from Locatelli et al. (2016),
+# use a loss that's more similar to simple regret (deviation from true mean)
+# for those that are classified wrong
+get_simple_regret <- function(true_means, sim_res, tau, epsilon) {
+  message(paste0("Comparing ", length(sim_res), " simulations."))
+  true_classification_up <- which(true_means > tau+epsilon)
+  true_classification_down <- which(true_means < tau-epsilon)
+  
+  get_iter_error <- function(x, true_class_up, true_class_down) {
+    wrong_class_index <- (true_means >= tau & x < tau) | (true_means < tau & x >= tau)
+    sum(abs(x-true_means)[wrong_class_index])
+  }
+  
+  get_error <- function(res_df, ...) {
+    apply(res_df$mean_storage, 1, get_iter_error, ...)
+  }
+  
+  comp_list <- lapply(sim_res, get_error, 
+                      true_class_up = true_classification_up, 
+                      true_class_down = true_classification_down)
+  
+  comp_mean <- rowMeans(as.data.frame(comp_list, 
+                                      col.names = 1:length(comp_list)))
+  
+  return(list(mean = comp_mean, full = comp_list))
+}
+
+#testt <- gex_APT
+#res <- get_simple_regret(mu_gex, testt, tau_gex, epsilon_gex)
+
+#set.seed(93468734)
+#tau_exp2 <- 1
+#epsilon_exp2 <- 0
+#mu_exp2 <- rexp(20, 1)
+#load(paste0(current_path, "exp2_EVT.Rda"))
+#res <- get_simple_regret(mu_exp2, exp2_EVT, tau_exp2, epsilon_exp2)
+#plot(res$mean)
+#############################################################################
+
 # Get the average performance over all simulations
 
 # expect a list of matrices of size rounds x K as input from the simulations,

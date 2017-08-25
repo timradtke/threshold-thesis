@@ -73,11 +73,16 @@ amo4_compholdout_LR <- compare_to_ground_truth(data_amo4_mean_secondhalf,
                                                tau_amo4, epsilon_amo4)$mean
 amo4_compown_LR <- compare_to_cv_data(data_amo4_own_means, amo4_LR, 
                                         tau_amo4, epsilon_amo4)$mean
+amo4_simpleregret_LR <- get_simple_regret(data_amo4_mean_firsthalf, 
+                                          amo4_LR, 
+                                          tau_amo4, epsilon_amo4)$mean
 save(amo4_comp_LR, file = paste0(current_path, "amo4_comp_LR.Rda"))
 save(amo4_compholdout_LR, file = paste0(current_path, 
                                         "amo4_compholdout_LR.Rda"))
 save(amo4_compown_LR, file = paste0(current_path, 
                                         "amo4_compown_LR.Rda"))
+save(amo4_simpleregret_LR, file = paste0(current_path, 
+                                         "amo4_simpleregret_LR.Rda"))
 rm(amo4_LR, amo4_comp_LR)
 gc()
 
@@ -89,15 +94,21 @@ system.time(amo4_EVT <- para_bandit_sim_EVT(data = data_amo4,
                                             tau = tau_amo4, 
                                             epsilon = epsilon_amo4))
 save(amo4_EVT, file = paste0(current_path, "amo4_EVT.Rda"))
+#load(file = paste0(current_path, "amo4_EVT.Rda"))
 amo4_comp_EVT <- compare_to_ground_truth(data_amo4_mean_firsthalf, 
                                          amo4_EVT, 
                                          tau_amo4, epsilon_amo4)$mean
 amo4_compholdout_EVT <- compare_to_ground_truth(data_amo4_mean_secondhalf, 
                                                 amo4_EVT, 
                                                 tau_amo4, epsilon_amo4)$mean
+amo4_simpleregret_EVT <- get_simple_regret(data_amo4_mean_firsthalf, 
+                                           amo4_EVT, 
+                                           tau_amo4, epsilon_amo4)$mean
 save(amo4_comp_EVT, file = paste0(current_path, "amo4_comp_EVT.Rda"))
 save(amo4_compholdout_EVT, file = paste0(current_path, 
                                          "amo4_compholdout_EVT.Rda"))
+save(amo4_simpleregret_EVT, file = paste0(current_path, 
+                                         "amo4_simpleregret_EVT.Rda"))
 rm(amo4_EVT, amo4_comp_EVT, amo4_compholdout_EVT)
 gc()
 
@@ -107,7 +118,7 @@ system.time(amo4_AugUCB <- para_bandit_sim_AugUCB(data = data_amo4,
                                                   rounds = 10080, 
                                                   tau = tau_amo4))
 save(amo4_AugUCB, file = paste0(current_path, "amo4_AugUCB.Rda"))
-#load(file = paste0(current_path, "amo4_AugUCB.Rda"))
+load(file = paste0(current_path, "amo4_AugUCB.Rda"))
 
 amo4_comp_AugUCB <- compare_to_ground_truth(data_amo4_mean_firsthalf, 
                                             amo4_AugUCB, 
@@ -115,9 +126,14 @@ amo4_comp_AugUCB <- compare_to_ground_truth(data_amo4_mean_firsthalf,
 amo4_compholdout_AugUCB <- compare_to_ground_truth(data_amo4_mean_secondhalf, 
                                                    amo4_AugUCB, 
                                                    tau_amo4, epsilon_amo4)$mean
+amo4_simpleregret_AugUCB <- get_simple_regret(data_amo4_mean_firsthalf, 
+                                           amo4_AugUCB, 
+                                           tau_amo4, epsilon_amo4)$mean
 save(amo4_comp_AugUCB, file = paste0(current_path, "amo4_comp_AugUCB.Rda"))
 save(amo4_compholdout_AugUCB, file = paste0(current_path, 
                                             "amo4_compholdout_AugUCB.Rda"))
+save(amo4_simpleregret_AugUCB, file = paste0(current_path, 
+                                          "amo4_simpleregret_AugUCB.Rda"))
 rm(amo4_AugUCB, amo4_comp_AugUCB, amo4_compholdout_AugUCB)
 gc()
 
@@ -130,13 +146,18 @@ amo4_BUCB <- para_bandit_sim_bucb(data = data_amo4, rounds = 10080,
                                   alpha = tau_amo4, beta = 1-tau_amo4)
 save(amo4_BUCB, 
      file = paste0(current_path, "amo4_BUCB.Rda"))
+load(file = paste0(current_path, "amo4_BUCB.Rda"))
 amo4_comp_BUCB <- compare_to_ground_truth(data_amo4_mean_firsthalf, amo4_BUCB, 
                                           tau_amo4, epsilon_amo4)$mean
 amo4_compholdout_BUCB <- compare_to_ground_truth(data_amo4_mean_secondhalf, 
                                                  amo4_BUCB, 
                                                  tau_amo4, epsilon_amo4)$mean
+amo4_simpleregret_BUCB <- get_simple_regret(data_amo4_mean_firsthalf, 
+                                              amo4_BUCB, 
+                                              tau_amo4, epsilon_amo4)$mean
 save(amo4_comp_BUCB, file = paste0(current_path, "amo4_comp_BUCB.Rda"))
 save(amo4_compholdout_BUCB, file = paste0(current_path, "amo4_compholdout_BUCB.Rda"))
+save(amo4_simpleregret_BUCB, file = paste0(current_path, "amo4_simpleregret_BUCB.Rda"))
 rm(amo4_BUCB)
 gc()
 
@@ -150,9 +171,12 @@ amo4_comp_APT <- compare_to_ground_truth(data_amo4_mean_firsthalf, amo4_APT,
                                          tau_amo4, epsilon_amo4)$mean
 amo4_compholdout_APT <- compare_to_ground_truth(data_amo4_mean_secondhalf, amo4_APT, 
                                                 tau_amo4, epsilon_amo4)$mean
-
+amo4_simpleregret_APT <- get_simple_regret(data_amo4_mean_firsthalf, 
+                                            amo4_APT, 
+                                            tau_amo4, epsilon_amo4)$mean
 save(amo4_comp_APT, file = paste0(current_path, "amo4_comp_APT.Rda"))
 save(amo4_compholdout_APT, file = paste0(current_path, "amo4_compholdout_APT.Rda"))
+save(amo4_simpleregret_APT, file = paste0(current_path, "amo4_simpleregret_APT.Rda"))
 rm(amo4_APT)
 gc()
 
@@ -169,9 +193,15 @@ amo4_comp_UNIFORM <- compare_to_ground_truth(data_amo4_mean_firsthalf,
 amo4_compholdout_UNIFORM <- compare_to_ground_truth(data_amo4_mean_secondhalf, 
                                                     amo4_UNIFORM, 
                                                     tau_amo4, epsilon_amo4)$mean
+amo4_simpleregret_UNIFORM <- get_simple_regret(data_amo4_mean_firsthalf, 
+                                               amo4_UNIFORM, 
+                                               tau_amo4, epsilon_amo4)$mean
+
 save(amo4_comp_UNIFORM, file = paste0(current_path, "amo4_comp_UNIFORM.Rda"))
 save(amo4_compholdout_UNIFORM, file = paste0(current_path, 
                                              "amo4_compholdout_UNIFORM.Rda"))
+save(amo4_simpleregret_UNIFORM, file = paste0(current_path, 
+                                             "amo4_simpleregret_UNIFORM.Rda"))
 rm(amo4_UNIFORM)
 gc()
 
@@ -240,3 +270,19 @@ lines(log(amo4_comp_LR), col = "red")
 lines(log(amo4_compown_LR), col = "blue")
 lines(log(amo4_comp_BUCB), col = "violet")
 abline(h = log(0.1), lty = 2)
+
+plot(c(0,10080), c(0, -8), type = "n")
+lines(log(amo4_simpleregret_UNIFORM), col = "black")
+lines(log(amo4_simpleregret_APT), col = "blue")
+lines(log(amo4_simpleregret_AugUCB), col = "green")
+lines(log(amo4_simpleregret_EVT), col = "darkgreen")
+lines(log(amo4_simpleregret_LR), col = "red")
+lines(log(amo4_simpleregret_BUCB), col = "violet")
+
+plot(c(0,10080), c(0, 0.7), type = "n")
+lines((amo4_simpleregret_UNIFORM), col = "black")
+lines((amo4_simpleregret_APT), col = "blue")
+lines((amo4_simpleregret_AugUCB), col = "green")
+lines((amo4_simpleregret_EVT), col = "darkgreen")
+lines((amo4_simpleregret_LR), col = "red")
+lines((amo4_simpleregret_BUCB), col = "violet")

@@ -35,6 +35,7 @@ load(paste0(current_path, "exp2_comp_LR.Rda"))
 load(paste0(current_path, "exp2_comp_APT.Rda"))
 load(paste0(current_path, "exp2_comp_EVT.Rda"))
 load(paste0(current_path, "exp2_comp_UNIFORM.Rda"))
+load(paste0(current_path, "exp2_comp_AugUCB.Rda"))
 
 plot(c(0,4000), c(0, -8), type = "n")
 abline(h=log(0.01), lty = 2)

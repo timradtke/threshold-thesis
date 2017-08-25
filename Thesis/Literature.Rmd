@@ -1,0 +1,44 @@
+---
+title: "Literature"
+output: pdf_document
+---
+
+Hermann Chernoff (1958). Sequential Design of Experiments. The Annals of Mathematical Statistics.
+
+Thompson, W. R. (1933). On the likelihood that one unknown probability exceeds another in view of the evidence of two samples. Biometrika 25 285–294.
+Thompson, W. R. (1935). On the Theory of Apportionment. Amer. J. Math. 57 450–456.
+MR1507085
+
+Gittins, J. C. (1979). Bandit processes and dynamic allocation indices (with discussion).
+J. R. Stat. Soc. Ser. B Stat. Methodol. 41 148–177. MR0547241
+
+Burnetas, A. N. and Katehakis, M. N. (1996). Optimal adaptive policies for sequential allocation problems. Adv. in Appl. Math. 17 122–142. MR1390571
+
+Lai, T. L. and Robbins, H. (1985). Asymptotically efficient adaptive allocation rules.
+Adv. in Appl. Math. 6 4–22. MR0776826
+
+Robbins, H. (1952). Some aspects of the sequential design of experiments. Bull. Amer.
+Math. Soc. (N.S.) 58 527–535. MR0050246
+
+Capp ́e, O., Garivier, A., Maillard, O.-A., Munos, R. and Stoltz, G. (2013). Supple-
+ment to “Kullback–Leibler upper confidence bounds for optimal sequential allocation.”
+DOI:10.1214/13-AOS1119SUPP.
+
+Capp ́e, O., Garivier, A., Maillard, O.-A., Munos, R. and Stoltz, G. (2013). Kullback–Leibler upper confidence bounds for optimal sequential allocation.
+
+Emilie Kaufmann, Olivier Cappé, and Aurélien Garivier (2012). On Bayesian Upper Confidence Bounds for Bandit Problems. Proceedings of the 15th International Conference on Artificial Intelligence and Statistics.
+
+Eric Brochu, Vlad M. Cora and Nando de Freitas (2010). A Tutorial on Bayesian Optimization of Expensive Cost Functions, with Application to Active User Modeling and Hierarchical Reinforcement Learning
+arXiv:1012.2599v1
+
+Jean-Yves Audibert, Sébastien Bubeck, Rémi Munos (2010). Best Arm Identification in Multi-Armed Bandits.
+
+Russo (2016)
+
+Garivier and Kaufmann (2016)
+
+(Kaufmann and Kalyanakrishnan, 2013; 
+
+Kaufmann et al. 2016)
+
+Locatelli et al. (2016)
