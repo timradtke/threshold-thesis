@@ -68,15 +68,19 @@ In the following, we first present the thresholding bandit problem in detail. To
 
 \newpage
 
-# Thresholding Bandit Problem
+# Thresholding Bandit Problem \label{Chapter_TBM}
 
-The *Thresholding Bandit Problem* described in Locatelli et al. (2016) can be considered a variant of a variant. It can be framed inside of the wider literature of *Pure Exploration* multi-armed bandit problems. In particular, it shares characteristics with the *Top-$m$* problem. This problem is concerned with finding the $m$ best arms as described by the means of their corresponding distributions. This in turn is similar to the *combinatorial bandit* problem, which also aims at finding the $m$ best arms. However, it is able to pull several arms at once: Think of an online shop that shows five recommended products on a product detail page. These five recommended products might each be represented by an arm, and we look for the products with the largest mean conversion rate. The thresholding bandit problem we discuss here, however, is concerned with pulling a single arm at a time. And so a more appropriate situation is that of a website presenting a banner. Again, think of an online shop trying to promote a certain category. The content team came up with a number of different designs for the banner, and it's not clear how many click-throughs they will gather. 
+To introduce the thresholding bandit problem, consider a game in which the learner is tasked to find those slot machines within a row of $K$ slot machines in a casino that give a mean payoff larger than a fixed threshold $\tau$, for example $\tau = 0$. The learner cannot pull all slot machines at the same time. Instead, he acquires samples sequentially from one slot machine at a time to learn about their payoff structure. The learner has a budget of $T$ slot machine pulls. After $t-1$ samples, the learner has observed $T_i(t-1)$ samples from slot machine $i$. The payoffs $X_{i,1}, ..., X_{i,T_i(t-1)}$ are drawn from the payoff distribution $\nu_i$ underlying the slot machine $i$. At time $t$, the learner considers the payoffs he observed so far in order to choose the next slot machine he would like to pull. His decision is lead by the goal to classify the slot machines with distribution $\nu_i$ and mean payoff $\mu_i$ after $T$ samples as being above or below the threshold with error probability as small as possible.
 
-The idea now is that we would like to classify the banners into two distinct groups: A group with mean conversion rates $\mu_i$ below threshold $\tau$, and a group with mean conversion rates $\mu_i$ above threshold $\tau$. This might be the optimization problem when we are concerned with not falling below a certain minimum level click-through rate with the banners we're choosing.
-
-If it turns out that in general we can find relatively quickly whether arms are above or below a threshold, then this kind of test can be used to safeguard against very bad versions in a test. Before we move to a Top-$m$ test, we might want to run a thresholding version and then continue only with the arms classified into the group above the threshold. This might be justified when adjusting parts of the checkout process of an online shop, where the conversion rate or the average order value should not drop below a threshold.
+The thresholding bandit problem can thus be framed in the wide literature on sequential sampling strategies. While its name is reminiscient of the multi-armed bandit setting, the thresholding bandit problem is more akin to best arm identification and Top-$m$ identification problems due to its focus on exploration: While the classical multi-armed bandit problems are concerned with cumulative regret which increases *during* sampling, best arm identification and thresholding bandits collect loss only once *after* the sampling procedure (compare Garivier and Kaufmann, 2016; Kaufmann et al., 2016; Kaufmann and Kalyanakrishnan, 2013). Furthermore, as there arises an implicit threshold between the means of the $m$-th best arm and the $m+1$-th best arm (Kaufmann et al., 2016; Kaufmann and Kalyanakrishnan, 2013), algorithms for the Top-$m$ identification problem classify arms at least implicitly as being above or below a threshold. The two settings are thus very related.
 
 ## Setup
+
+Consider a setting of $i=1, ..., K$ unknown probability distributions $\nu_i$. To stick with the idea of multi-armed bandits, we call those distributions arms, and observations from those arms rewards (Bubeck and Cesa-Bianchi, 2012). The learner is interested in learning about the structure of the arms; in particular, he would like to estimate the means $\mu_1, ..., \mu_K$ by sequentially drawing observations $X_{i,1}, X_{i,2}, ...$ from each arm. However, at time $t$ the learner cannot observe a reward from every distribution but must select a single arm $I_t$ from which he would like to observe the reward $X_{I_t,t}$. An adaptive sampling strategy makes the decision of which arm to pull usually by computing an index $B_i(t)$ for each arm. If $T_i(t)$ is the number of samples observed until time $t$ for arm $i$, then $B_i(t)$ is a function of the past rewards $X_{i,1}, ..., X_{i,T_i(t)}$ observed for arm $i$, and w.l.o.g. $I_t = \arg \min_{i = 1,...K} B_i(t)$. The set of indices can be called strategy (Kaufmann et al., 2012) which makes it clear that the strategy is adapted as more observations are collected. Strategies of this kind are also called index policies. 
+
+What index proves to be useful is determined by the loss function with which the decisions of the algorithm are evaluated. While many problems are concerned with finding the arm with the largest mean $\mu_i$, in which algorithms collect loss either cumulatively (Auer and Cesa-Bianchi, 2012) or once at the end of the sampling (Kaufmann et al., 2016), the thresholding bandit problem considers a slightly different loss function. Consider a fixed threshold value $\tau \in \mathbb{R}$ and an epsilon interval $\tau \pm \epsilon$ around the threshold for $\epsilon \geq 0$.
+
+------------ Old
 
 In any case, the problem boils down to the following. As usual in multi-armed bandit problems, we have $K$ arms $\mathcal{A} = \{1, \dots K\}$. We can pull arm $k$ at time $t$ to collect feedback in form of the random variable $X_{k,t}$ which is distributed according to the arm's distribution $\nu_k$. In general, we are concerned with estimating for each arm $i$ the mean $\mu_i$ of its distribution $\nu_i$. In contrast to most bandit problems, however, we do not directly compare arms with each other by comparing their means. That would for example be the case for pure exploration bandits, where it is necessary to compare the arms because one aims to find the best one relative to the others. In the case of the thresholding bandit, however, we compare each arm's mean $\mu_i$ individually against the threshold $\tau \in \mathbb{R}$ which is known and fixed before the experiment. One might compare this to a pure exploration bandit in which the mean of the best arm is known upfront. We will see later that this fact leads to advantages in the design of algorithms which are not as readily available in other bandit settings.
 
@@ -120,81 +124,11 @@ From the general setup, we already know how the algorithm will end. After it has
 
 To be specific, the APT algorithm initiates by pulling each arm once. Then, for each $t > K$, it calculates for every arm the values $T_i(t)$ and $\mu_i(t)$. Based on the empirical mean, the algorithm computes the estimated gap between the mean and the threshold as $\hat{\Delta}_i(t) = \hat{\Delta}_i^{\tau, \epsilon}(t) = |\mu_i(t) - \tau| + \epsilon$. The decision of which arm is sampled next is then based on the value $B_i(t+1) = \sqrt{T_i(t)} \hat{\Delta}_i(t)$: the algorithm pulls arm $I_{t+1} = \arg \min_{i\leq K} B_i(t+1)$ minimizing this decision quantity. After $T$ pulls overall, the arm returns the sets described in the general setup, $\hat{\mathcal{S}}_{\tau}$ and $\hat{\mathcal{S}}^C_{\tau}$.
 
-**Remark**: Obviously, the APT algorithm tends to pull arms more often with corresponding mean close to the threshold and interval (small $\hat{\Delta}_i(t))$. This makes sure that more evidence is gathered on arms which appear to be inherently difficult to classify based on the samples collected until time $T_i(t)$, as these arms stifle the confidence the most. That is, until we have collected enough evidence to make a confident classification even if the mean is truly close to the threshold. In that case, $\sqrt{T_i(t)}$ will raise $B_i(t+1)$. Consequently, other arms farther away from the threshold will be sampled again. In this way, the algorithm tries to distribute the budget $T$ over all arms so as to define a sampling rule optimizing the confidence of the final decision.
+The APT algorithm tends to pull arms more often with corresponding mean close to the threshold and interval (small $\hat{\Delta}_i(t))$. This makes sure that more evidence is gathered on arms which appear to be inherently difficult to classify based on the samples collected until time $T_i(t)$, as these arms stifle the confidence the most. That is, until we have collected enough evidence to make a confident classification even if the mean is truly close to the threshold. In that case, $\sqrt{T_i(t)}$ will raise $B_i(t+1)$. Consequently, other arms farther away from the threshold will be sampled again. In this way, the algorithm tries to distribute the budget $T$ over all arms so as to define a sampling rule optimizing the confidence of the final decision.
 
-## Discussion
+Locatelli et al. (2016) show that the APT algorithm is optimal in the sense that the upper bound on its expected loss reaches the lower bound for the expected loss.
 
-One of the APT algorithm's main features is its simplicity. The sampling rule is very straightforward, and, as highlighted in Locatelli et al. (2016), it does not require any knowledge about the type of sub-Gaussianity $R$, or the complexity $H$ upfront. This makes the algorithm immediately applicable in practice while it still enjoys its upper bound on the expected regret. This is in particular worth highlighting when comparing APT to algorithms used in the pure exploration bandit setting. There, many algorithms require knowledge about the corresponding complexity upfront. The problem however being, that to know the complexity, the experimenter has to know all means up to a permutation of the arms (for example, see Audibert et al., 2010). This, of course, is not given in practice and thus alternative algorithms try to estimate the complexity online which is not a desirable solution either as especially in the beginning plug-in estimates based on the estimated means may lead to wrong estimates of the complexity and consequently budget allocation based on mistaken beliefs (compare Garivier and Kaufmann, 2016).
-
-Furthermore, Locatelli et al. (2016) were able to present an upper bound for the APT algorithm matching the lower bound in their Theorem 1. Proofs of both bounds are given below.
-
-Where the APT algorithm shows room for improvement is when it comes to settings with distributions that are not sub-Gaussian. This is mentioned in Locatelli et al. (2016). In general, the problem becomes that the assumptions for the bounds no longer hold; furthermore, the statistic $B_i(t+1)$, and the term $\hat{\Delta}_i(t)$ are motivated by (sub-)Gaussian distributions. The more one moves away from Gaussian-like distributions, the less appropriate this term becomes, however. In particular, the empirical mean will be less concentrated around the true mean and more impacted by outliers which are more likely under non sub-Gaussian distributions. Locatelli et al. (2016) thus refers to Bubeck et al. (2013) which considers solutions for multi-armed bandits that are based on heavy-tail distributions. By using more robust estimators of the mean, one could equip the APT algorithm to deal with such distributions.
-
-Another step towards dealing with non sub-Gaussianity is made by Mukherjee et al. (2017) who use an estimate of the variance additionally to the empirical mean in their Augmented UCB solution. Utilizing this additional information, the algorithm seems to perform better than for example APT, going from simulation results displayed in the paper. However, the simulations deal exclusively with normal distributions, as the variance has to be bounded for the upper bound of the Augmented UCB to hold. We will continue to discuss the Augmented UCB solution in chapter 3.
-
-Yet another idea, again mentioned in Locatelli et al. (2016) is to show bounds based on the Kullback-Leibler divergence of the specific distribution directly. While the approximation through the Gaussian Kullback-Leibler divergence in the lower bound proof is convenient and leads to the simple APT algorithm, it might not stay appropriate for distributions whose Kullback-Leibler divergence tends to differ from the Gaussian. This, for example, is the case for Bernoulli distributions at very small parameters $\mu$. By looking at the graphical examples below it becomes obvious that the Kullback-Leibler divergence between Bernoulli distributions starts to lose any similarity to the quadratic approximation. The second graph then shows that the actual Kullback-Leibler divergence of Bernoulli distributions loses any symmetry over this range of parameter values. Given that Bernoulli distributions with very small parameter values arise naturally in many applications in website optimization, advertising click-through modeling, or anomaly detection in time series, there is a need to tackle this problem.
-
-Refer also to page 6 in Kaufmann et al. (2016): "This information-theoretic lower bound permits to interpret the quantity $H(\nu)$ defined in (2) as a subgaussian approximation". In the case of Normal distributions with known and equal mean, it holds that the Kullback-Leibler divergence between $\nu_i$ and $\nu_j$, parameterized by $\mu_i$ and $\mu_j$, can be written as
-
-$$
-\KL_{Normal}(\nu_i || \nu_j) = 2(\mu_i - \mu_j)^2.
-$$
-
-Writing $\mu_j = \tau$ and $\epsilon = 0$, we see that the APT algorithm essentially measures the KL-divergence between two Normal distributions. For two Bernoulli distributions $\nu_i$ and $\nu_j$, parameterized by $\mu_i$ and $\mu_j=\tau$, we write
-
-$$
-\KL_{Ber}(\nu_i||\nu_j) = \mu_i \log(\frac{\mu_i}{\tau}) + (1-\mu_i) \log(\frac{1-\mu_i}{1-\tau})
-$$
-
-In the case of $\tau = 0.5$, the latter KL-divergence is symmetric in its first argument, and thus can be well approximated by Pinsker's inequality:
-
-$$
-\KL_{Ber}(\nu_i||\nu_j) \geq 2(\mu_i - \tau)^2.
-$$
-
-This shows how the distance measure used in the APT algorithm, and consequently the complexity $H$, is a useful approximation of the KL-divergence for sub-Gaussian distributions. However, this approximation suffers as the distributions less and less similar to Gaussian distributions. Thus similarly to how UCB algorithms in the cumulative regret setting have been extended to KL-UCB algorithms (compare Cappé et al., 2013), also the APT algorithm offers room for improvement.
-
-And so a potential approach can be to use the Kullback-Leibler divergence as measure similar to the methods proposed in Kaufmann et al. (2015). They proposed Kullback-Leibler based approaches for the pure exploration bandit setting, which we will describe in chapter 2. Then, in chapter 3, we will come back to the problem of using the Kullback-Leibler divergence in the thresholding bandit setting. To conclude chapter 1, we proof the lower bound and upper bound for the APT algorithm as presented Theorem 1 and Theorem 2 in Locatelli et al. (2016).
-
-```{r, echo = FALSE}
-KL_ber <- function(p,q) p*log(p/q) + (1-p)*log((1-p)/(1-q))
-par(mfcol = c(1,2))
-
-plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1), type = "n", asp = 1,
-     xlab = "p_1", ylab = "KL(Ber(p_1),Ber(p_2))", main = "KL of Bernoullis")
-for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
-  lines(seq(0.00001,0.3, by = 0.000005),
-       KL_ber(seq(0.00001,0.3, by = 0.000005),i))
-}
-
-plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1), type = "n", asp = 1,
-     xlab = "p_1", ylab = "(p_1 - p_2)^2", main = "Gaussian approx.\n KL of Bernoullis")
-for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
-  lines(seq(0.00001,0.3, by = 0.000005),
-        (seq(0.00001,0.3, by = 0.000005)-i)^2)
-}
-par(mfcol = c(1,1))
-```
-
-```{r, echo = FALSE}
-KL_ber <- function(p,q) p*log(p/q) + (1-p)*log((1-p)/(1-q))
-par(mfcol = c(1,2))
-
-plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1), type = "n", asp = 1,
-     xlab = "p_1", ylab = "KL(Ber(p_2),Ber(p_1))", main = "KL of Bernoullis")
-for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
-  lines(seq(0.00001,0.3, by = 0.000005),
-        KL_ber(i,seq(0.00001,0.3, by = 0.000005)))
-}
-
-plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1), type = "n", asp = 1,
-     xlab = "p_1", ylab = "(p_2 - p_1)^2", main = "Gaussian approx.\n KL of Bernoullis")
-for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
-  lines(seq(0.00001,0.3, by = 0.000005),
-        (i-seq(0.00001,0.3, by = 0.000005))^2)
-}
-par(mfcol = c(1,1))
-```
+\newpage
 
 ## Lower Bound: Theorem and Proof
 
@@ -362,6 +296,8 @@ $\frac{1}{2}\mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp (- 3 \frac{T}
 & \geq 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) = \mathbb{P}_{\mathcal{B}^0}(\mathcal{A^C}) \\
 & \geq \frac{1}{2}
 \end{align*}
+
+\newpage
 
 ## Upper Bound on Expected Loss of APT
 
@@ -563,6 +499,80 @@ We have seen that on the favorable event $\xi$, which holds with large probabili
 $$
 \mathbb{E}[L] = 1 - \mathbb{P}(\xi) \leq 2(\log(T)+1)K \exp(-\frac{1}{64R^2}\frac{T}{H}).
 $$
+
+## Discussion
+
+One of the APT algorithm's main features is its simplicity. The sampling rule is very straightforward, and, as highlighted in Locatelli et al. (2016), it does not require any knowledge about the type of sub-Gaussianity $R$, or the complexity $H$ upfront. This makes the algorithm immediately applicable in practice while it still enjoys its upper bound on the expected regret. This is in particular worth highlighting when comparing APT to algorithms used in the pure exploration bandit setting. There, many algorithms require knowledge about the corresponding complexity upfront. The problem however being, that to know the complexity, the experimenter has to know all means up to a permutation of the arms (for example, see Audibert et al., 2010). This, of course, is not given in practice and thus alternative algorithms try to estimate the complexity online which is not a desirable solution either as especially in the beginning plug-in estimates based on the estimated means may lead to wrong estimates of the complexity and consequently budget allocation based on mistaken beliefs (compare Garivier and Kaufmann, 2016).
+
+Furthermore, Locatelli et al. (2016) were able to present an upper bound for the APT algorithm matching the lower bound in their Theorem 1. Proofs of both bounds are given below.
+
+Where the APT algorithm shows room for improvement is when it comes to settings with distributions that are not sub-Gaussian. This is mentioned in Locatelli et al. (2016). In general, the problem becomes that the assumptions for the bounds no longer hold; furthermore, the statistic $B_i(t+1)$, and the term $\hat{\Delta}_i(t)$ are motivated by (sub-)Gaussian distributions. The more one moves away from Gaussian-like distributions, the less appropriate this term becomes, however. In particular, the empirical mean will be less concentrated around the true mean and more impacted by outliers which are more likely under non sub-Gaussian distributions. Locatelli et al. (2016) thus refers to Bubeck et al. (2013) which considers solutions for multi-armed bandits that are based on heavy-tail distributions. By using more robust estimators of the mean, one could equip the APT algorithm to deal with such distributions.
+
+Another step towards dealing with non sub-Gaussianity is made by Mukherjee et al. (2017) who use an estimate of the variance additionally to the empirical mean in their Augmented UCB solution. Utilizing this additional information, the algorithm seems to perform better than for example APT, going from simulation results displayed in the paper. However, the simulations deal exclusively with normal distributions, as the variance has to be bounded for the upper bound of the Augmented UCB to hold. We will continue to discuss the Augmented UCB solution in chapter 3.
+
+Yet another idea, again mentioned in Locatelli et al. (2016) is to show bounds based on the Kullback-Leibler divergence of the specific distribution directly. While the approximation through the Gaussian Kullback-Leibler divergence in the lower bound proof is convenient and leads to the simple APT algorithm, it might not stay appropriate for distributions whose Kullback-Leibler divergence tends to differ from the Gaussian. This, for example, is the case for Bernoulli distributions at very small parameters $\mu$. By looking at the graphical examples below it becomes obvious that the Kullback-Leibler divergence between Bernoulli distributions starts to lose any similarity to the quadratic approximation. The second graph then shows that the actual Kullback-Leibler divergence of Bernoulli distributions loses any symmetry over this range of parameter values. Given that Bernoulli distributions with very small parameter values arise naturally in many applications in website optimization, advertising click-through modeling, or anomaly detection in time series, there is a need to tackle this problem.
+
+Refer also to page 6 in Kaufmann et al. (2016): "This information-theoretic lower bound permits to interpret the quantity $H(\nu)$ defined in (2) as a subgaussian approximation". In the case of Normal distributions with known and equal mean, it holds that the Kullback-Leibler divergence between $\nu_i$ and $\nu_j$, parameterized by $\mu_i$ and $\mu_j$, can be written as
+
+$$
+\KL_{Normal}(\nu_i || \nu_j) = 2(\mu_i - \mu_j)^2.
+$$
+
+Writing $\mu_j = \tau$ and $\epsilon = 0$, we see that the APT algorithm essentially measures the KL-divergence between two Normal distributions. For two Bernoulli distributions $\nu_i$ and $\nu_j$, parameterized by $\mu_i$ and $\mu_j=\tau$, we write
+
+$$
+\KL_{Ber}(\nu_i||\nu_j) = \mu_i \log(\frac{\mu_i}{\tau}) + (1-\mu_i) \log(\frac{1-\mu_i}{1-\tau})
+$$
+
+In the case of $\tau = 0.5$, the latter KL-divergence is symmetric in its first argument, and thus can be well approximated by Pinsker's inequality:
+
+$$
+\KL_{Ber}(\nu_i||\nu_j) \geq 2(\mu_i - \tau)^2.
+$$
+
+This shows how the distance measure used in the APT algorithm, and consequently the complexity $H$, is a useful approximation of the KL-divergence for sub-Gaussian distributions. However, this approximation suffers as the distributions less and less similar to Gaussian distributions. Thus similarly to how UCB algorithms in the cumulative regret setting have been extended to KL-UCB algorithms (compare Cappé et al., 2013), also the APT algorithm offers room for improvement.
+
+And so a potential approach can be to use the Kullback-Leibler divergence as measure similar to the methods proposed in Kaufmann et al. (2015). They proposed Kullback-Leibler based approaches for the pure exploration bandit setting, which we will describe in chapter 2. Then, in chapter 3, we will come back to the problem of using the Kullback-Leibler divergence in the thresholding bandit setting. To conclude chapter 1, we proof the lower bound and upper bound for the APT algorithm as presented Theorem 1 and Theorem 2 in Locatelli et al. (2016).
+
+```{r, echo = FALSE}
+KL_ber <- function(p,q) p*log(p/q) + (1-p)*log((1-p)/(1-q))
+par(mfcol = c(1,2))
+
+plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1), type = "n", asp = 1,
+     xlab = "p_1", ylab = "KL(Ber(p_1),Ber(p_2))", main = "KL of Bernoullis")
+for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
+  lines(seq(0.00001,0.3, by = 0.000005),
+       KL_ber(seq(0.00001,0.3, by = 0.000005),i))
+}
+
+plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1), type = "n", asp = 1,
+     xlab = "p_1", ylab = "(p_1 - p_2)^2", main = "Gaussian approx.\n KL of Bernoullis")
+for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
+  lines(seq(0.00001,0.3, by = 0.000005),
+        (seq(0.00001,0.3, by = 0.000005)-i)^2)
+}
+par(mfcol = c(1,1))
+```
+
+```{r, echo = FALSE}
+KL_ber <- function(p,q) p*log(p/q) + (1-p)*log((1-p)/(1-q))
+par(mfcol = c(1,2))
+
+plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1), type = "n", asp = 1,
+     xlab = "p_1", ylab = "KL(Ber(p_2),Ber(p_1))", main = "KL of Bernoullis")
+for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
+  lines(seq(0.00001,0.3, by = 0.000005),
+        KL_ber(i,seq(0.00001,0.3, by = 0.000005)))
+}
+
+plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1), type = "n", asp = 1,
+     xlab = "p_1", ylab = "(p_2 - p_1)^2", main = "Gaussian approx.\n KL of Bernoullis")
+for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
+  lines(seq(0.00001,0.3, by = 0.000005),
+        (i-seq(0.00001,0.3, by = 0.000005))^2)
+}
+par(mfcol = c(1,1))
+```
 
 \newpage
 

@@ -58,14 +58,14 @@ rbind(table(loc6g_APT[[2]]$arm_sequence), mu_loc6g, sd_loc6g)
 ########################################################################
 # Gaussian Likelihood Ratio 2D-SLR
 
-system.time(loc6g_LR <- para_bandit_sim_LR_gaussian(data = data_loc6g[1:500], 
-                                                   rounds = 3000, 
-                                                   tau = tau_loc6g, 
-                                                   epsilon = epsilon_loc6g))
+system.time(loc6g_LR <- para_bandit_sim_LR_gaussian(data = data_loc6g, 
+                                                    rounds = 10000, 
+                                                    tau = tau_loc6g, 
+                                                    epsilon = epsilon_loc6g))
 
 save(loc6g_LR, file = paste0(current_path, "loc6g_LR.Rda"))
 loc6g_comp_LR <- compare_to_ground_truth(mu_loc6g, loc6g_LR, 
-                                        tau_loc6g, epsilon_loc6g)$mean
+                                         tau_loc6g, epsilon_loc6g)$mean
 save(loc6g_comp_LR, file = paste0(current_path, "loc6g_comp_LR.Rda"))
 rm(loc6g_LR)
 gc()
@@ -73,8 +73,8 @@ gc()
 ########################################################################
 # Anytime Parameter Free (Locatelli et. al, 2016)
 
-system.time(loc6g_APT <- para_bandit_sim_APT(data = data_loc6g[1:500], 
-                                            rounds = 3000, 
+system.time(loc6g_APT <- para_bandit_sim_APT(data = data_loc6g, 
+                                            rounds = 10000, 
                                             tau = tau_loc6g, 
                                             epsilon = epsilon_loc6g,
                                             do_verbose = TRUE))
@@ -88,8 +88,8 @@ gc()
 ########################################################################
 # Uniform Sampling
 
-system.time(loc6g_UNIFORM <- para_bandit_sim_uniform(data = data_loc6g[1:500], 
-                                                    rounds = 3000))
+system.time(loc6g_UNIFORM <- para_bandit_sim_uniform(data = data_loc6g, 
+                                                    rounds = 10000))
 save(loc6g_UNIFORM, file = paste0(current_path, "loc6g_UNIFORM.Rda"))
 loc6g_comp_UNIFORM <- compare_to_ground_truth(mu_loc6g, 
                                              loc6g_UNIFORM, 
@@ -100,8 +100,9 @@ rm(loc6g_UNIFORM)
 gc()
 
 
+load(file = paste0(current_path, "loc6g_comp_LR.Rda"))
 
-plot(c(0,8000), c(-8,0), type = "n")
+plot(c(0,10000), c(-8,0), type = "n")
 lines(log(loc6g_comp_LR))
 lines(log(loc6g_comp_APT), col = "blue")
 lines(log(loc6g_comp_UNIFORM), col = "red")

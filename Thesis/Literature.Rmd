@@ -33,6 +33,8 @@ arXiv:1012.2599v1
 
 Jean-Yves Audibert, Sébastien Bubeck, Rémi Munos (2010). Best Arm Identification in Multi-Armed Bandits.
 
+Bubeck, S. and Cesa-Bianchi, N. (2012). Regret analysis of stochastic and nonstochastic multi-armed bandit problems. Foundations and Trends in Machine Learning 5 1–122.
+
 Russo (2016)
 
 Garivier and Kaufmann (2016)
