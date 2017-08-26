@@ -53,6 +53,7 @@ save(data_amo4_shuffled_mean_secondhalf, file = paste0(current_path, "data_amo4_
 rm(pv_list, pv_own_means, pv_next_means, pv_products_wide)
 gc()
 
+load(paste0(current_path, "data_amo4_mean_firsthalf.Rda"))
 load(paste0(current_path, "data_amo4_shuffled_mean_firsthalf.Rda"))
 load(paste0(current_path, "data_amo4_shuffled_mean_secondhalf.Rda"))
 load(paste0(current_path, "data_amo4_shuffled_own_means.Rda"))
@@ -63,9 +64,9 @@ epsilon_amo4_shuffled <- 0
 ########################################################################
 # Standard Likelihood Ratio
 system.time(amo4_shuffled_LR <- para_bandit_sim_LR(data = data_amo4_shuffled, 
-                                          rounds = 10080, 
-                                          tau = tau_amo4_shuffled, 
-                                          epsilon = epsilon_amo4_shuffled))
+                                                   rounds = 10080, 
+                                                   tau = tau_amo4_shuffled, 
+                                                   epsilon = epsilon_amo4_shuffled))
 
 save(amo4_shuffled_LR, file = paste0(current_path, "amo4_shuffled_LR.Rda"))
 #load(file = paste0(current_path, "amo4_shuffled_LR.Rda"))
@@ -258,9 +259,9 @@ gc()
 
 round(data_amo4_shuffled_mean_firsthalf - tau_amo4_shuffled,2)
 
-load(paste0(current_path, "amo4_shuffled_comp_UNIFORM.Rda"))
+load(paste0(current_path, "amo4_comp_UNIFORM.Rda"))
 load(paste0(current_path, "amo4_shuffled_comp_APT.Rda"))
-load(paste0(current_path, "amo4_shuffled_comp_LR.Rda"))
+load(paste0(current_path, "amo4_comp_LR.Rda"))
 load(paste0(current_path, "amo4_shuffled_comp_AugUCB.Rda"))
 load(paste0(current_path, "amo4_shuffled_comp_EVT.Rda"))
 load(paste0(current_path, "amo4_shuffled_comp_BUCB.Rda"))
@@ -270,9 +271,10 @@ lines(log(amo4_shuffled_comp_UNIFORM), col = "black")
 lines(log(amo4_shuffled_comp_APT), col = "blue")
 lines(log(amo4_shuffled_comp_AugUCB), col = "green")
 lines(log(amo4_shuffled_comp_EVT), col = "darkgreen")
-lines(log(amo4_shuffled_comp_LR), col = "red")
+lines(log(amo4_comp_LR), col = "red")
 lines(log(amo4_shuffled_compown_LR), col = "blue")
 lines(log(amo4_shuffled_comp_BUCB), col = "violet")
+lines(log(amo4_shuffled_comp_LR), col = "orange")
 abline(h = log(0.1), lty = 2)
 
 plot(c(0,10080), c(0, -8), type = "n")
