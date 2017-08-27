@@ -52,6 +52,8 @@ gc()
 # Plot the results
 
 load(paste0(current_path, "/loc6nt_comp_BUCB_horizon_7000.Rda"))
+load(paste0(current_path, "/loc6nt_comp_BUCB_horizon_c5_7000.Rda"))
+load(paste0(current_path, "/loc6nt_comp_BUCB_horizon_c15_7000.Rda"))
 load(paste0(current_path, "/loc6nt_comp_AugUCB_7000.Rda"))
 load(paste0(current_path, "/loc6nt_comp_KLUCB370_5000.Rda"))
 load(paste0(current_path, "/loc6nt_comp_UNIFORM_7000.Rda"))
@@ -60,6 +62,8 @@ load(paste0(current_path, "/loc6nt_comp_LR_7000.Rda"))
 
 plot(c(0,7000), c(0, -5), type = "n")
 lines(log(loc6nt_comp_BUCB_horizon_7000), col = "blue")
+lines(log(loc6nt_comp_BUCB_horizon_c5_7000), col = "lightblue")
+lines(log(loc6nt_comp_BUCB_horizon_c15_7000), col = "darkblue")
 #lines(log(loc6nt_comp_BUCB_horizon), col = "lightblue")
 #lines(log(loc6nt_comp_APT), col = "pink")
 lines(log(loc6nt_comp_LR_7000), col = "green")
@@ -106,6 +110,48 @@ save(loc6nt_comp_BUCB_horizon_7000, file = paste0(current_path,
                                                   "loc6nt_comp_BUCB_horizon_7000.Rda"))
 
 ########################################################################
+# Try a different exploration parameter for BUCB
+
+loc6nt_BUCB_horizon_c5_7000 <- para_bandit_sim_bucb(data = data_list6, 
+                                                 rounds = 7000, 
+                                                 rate = "inverse_horizon_c",
+                                                 tau = tau_loc6nt, 
+                                                 epsilon = epsilon_loc6nt, 
+                                                 alpha = tau_loc6nt, 
+                                                 beta = 1-tau_loc6nt,
+                                                 const = 5)
+save(loc6nt_BUCB_horizon_c5_7000, 
+     file = paste0(current_path, "loc6nt_BUCB_horizon_c5_7000.Rda"))
+loc6nt_comp_BUCB_horizon_c5_7000 <- compare_to_ground_truth(mean_loc6nt, 
+                                                         loc6nt_BUCB_horizon_c5_7000,
+                                                         tau_loc6nt,
+                                                         epsilon_loc6nt)$mean
+save(loc6nt_comp_BUCB_horizon_c5_7000, file = paste0(current_path, 
+                                                  "loc6nt_comp_BUCB_horizon_c5_7000.Rda"))
+rm(loc6nt_BUCB_horizon_c5_7000)
+
+########################################################################
+# Try a different exploration parameter for BUCB
+
+loc6nt_BUCB_horizon_c15_7000 <- para_bandit_sim_bucb(data = data_list6, 
+                                                    rounds = 7000, 
+                                                    rate = "inverse_horizon_c",
+                                                    tau = tau_loc6nt, 
+                                                    epsilon = epsilon_loc6nt, 
+                                                    alpha = tau_loc6nt, 
+                                                    beta = 1-tau_loc6nt,
+                                                    const = 1/5)
+save(loc6nt_BUCB_horizon_c15_7000, 
+     file = paste0(current_path, "loc6nt_BUCB_horizon_c15_7000.Rda"))
+loc6nt_comp_BUCB_horizon_c15_7000 <- compare_to_ground_truth(mean_loc6nt, 
+                                                            loc6nt_BUCB_horizon_c15_7000,
+                                                            tau_loc6nt,
+                                                            epsilon_loc6nt)$mean
+save(loc6nt_comp_BUCB_horizon_c15_7000, file = paste0(current_path, 
+                                                     "loc6nt_comp_BUCB_horizon_c15_7000.Rda"))
+rm(loc6nt_BUCB_horizon_c15_7000)
+
+########################################################################
 # Standard AugUCB
 loc6nt_AugUCB_7000 <- para_bandit_sim_AugUCB(data = data_list6, 
                                              rounds = 7000, 
@@ -138,7 +184,7 @@ system.time(loc6nt_LR_7000 <- para_bandit_sim_LR(data = data_list6,
 
 save(loc6nt_LR_7000, file = paste0(current_path, "loc6nt_LR_7000.Rda"))
 loc6nt_comp_LR_7000 <- compare_to_ground_truth(mean_loc6nt, loc6nt_LR_7000, 
-                                               tau_loc6nt, epsilon_loc6nt)$mean
+                                                tau_loc6nt, epsilon_loc6nt)$mean
 save(loc6nt_comp_LR_7000, file = paste0(current_path, 
                                         "loc6nt_comp_LR_7000.Rda"))
 

@@ -44,3 +44,7 @@ Garivier and Kaufmann (2016)
 Kaufmann et al. 2016)
 
 Locatelli et al. (2016)
+
+Zhong et al. (2017)
+
+Bubeck, Sébastien, Cesa-Bianchi, Nicolo, and Lugosi, Gábor. Bandits with heavy tail. Information Theory, IEEE Transactions on, 59(11):7711-7717, 2013a.

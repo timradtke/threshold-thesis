@@ -204,12 +204,61 @@ $$
 
 The probability that this favorable event occurs should be large, or equivalently, the probability that the deviation is small should be large. Then it follows that the separation condition holds with large probability. 
 
-- Show Chernoff/Hoeffding bound detailed
-- Show union bound to get deviation for all arms $i \leq K$ and every round $s \leq T$
+We know that $X_i$ are $R$-sub-Gaussian by assumption. That is, we have 
+
+$$
+\mathbb{E}[\exp (tX_{i,s}-t\mathbb{E}[X_{i,s}])] = \mathbb{E}[\exp (t(X_{i,s}-\mathbb{E}[X_{i,s}]))] \leq \exp (R^2t^2/2)
+$$
+
+where the RHS is the moment-generating function of the random variable $X_{i,s}-\mathbb{E}[X_{i,s}]$. While Höffding's Lemma and Höffding's Inequality are commonly applied to bounded random variables $Z$ with $\mathbb{P}(a\leq Z \leq b) = 1$ and $\mathbb{E}[Z] = 0$, we see that $Z$ are $R$-sub-Gaussian with $R^2 = \frac{(a-b)^2}{4}$. Using this last equality, we can easily apply Höffding's Inequality to our case. 
+
+\begin{lemma}[Höffding's Inequality (Kloft Lecture Notes)] \label{lemma:HoeffdingsInequality}
+Let $X_1, ..., X_s$ be independent, identically distributed random variables with mean $\mathbb{E}[X_t] = \mu$ and $\mathbb{P}(a_t \leq X_t - \mathbb{E}[X] \leq b_t) = 1$. Denote their empirical mean by $\bar{X}_s=\frac{1}{s}\sum_{t=1}^{s}X_t$. Then, for any $\gamma > 0$, we have the following concentration inequality:
+
+\begin{equation*}
+\mathbb{P}(|\bar{X}_s - \mu| \geq \gamma) \leq 2\exp (-2s^2\gamma^2/\sum_{t=1}^s(b_t - a_t)^2).
+\end{equation*}
+\end{lemma}
+
+If we replace $\sum_{t=1}^s(b_t - a_t)^2$ by $4sR^2$, we have the concentration inequality for our $R$-sub-Gaussian random variables:
+
+$$
+\mathbb{P}(|\bar{X}_s - \mu| \geq \gamma) \leq 2\exp (-\frac{s\gamma^2}{2R^2}).
+$$
+
+Writing $\gamma = \sqrt{\frac{T\delta^2}{Hs}}$, we get for the favorable event $\xi_i = \{|\bar{X}_s - \mu| \leq \sqrt{\frac{T\delta^2}{Hs}}\}$ of an individual arm $i$, for each $i \in \mathbb{A}$ and each $s \in \{1, ..., T\}$:
+
+$$
+\mathbb{P}(\xi_i) = \mathbb{P}\Big(|\bar{X}_{i,s} - \mu_i| \leq \sqrt{\frac{T\delta^2}{Hs}}\Big) \geq 1 - 2\exp (-\frac{T\delta^2}{2R^2H}),
+$$
+where $T$ is again the total budget of samples, and $H$ the complexity. Now let
+
+$$
+\tilde{\xi} = \Big\{\forall i \in \mathbb{A}: |\frac{1}{s} \sum_{t=1}^{s}X_{i,t} - \mu_i| \leq \sqrt{\frac{T \delta^2}{H s}} \Big\}.
+$$
+
+To derive the probability of event $\tilde{\xi}$, we apply a union bound on $\mathbb{P}(\cup_{i=1}^K \xi_i^C)$:
+
+\begin{align*}
+\mathbb{P}(\tilde{\xi}) & = & 1-\mathbb{P}(\xi^C) \\
+& = & 1-\mathbb{P}(\cup_{i=1}^K \xi_i^C) \\
+& \geq & 1 - \sum_{i=1}^K \mathbb{P}(\xi_i^C) \\
+& \geq & 1 - 2K\exp (-\frac{T\delta^2}{2R^2H})
+\end{align*}
+
+We could use the same union bound a second time to bound over all $s \in \{1, ..., T\}$ and derive for the favorable event $\xi$:
+
+$$
+\mathbb{P}(\xi) \geq 1 - 2TK \exp(-\frac{T\delta^2}{2R^2H})
+$$
+
+Locatelli et al. (2016) use instead of Höffding's inequality a Sub-Gaussian martingale inequality including a peeling argument in order to derive a better bound of
 
 $$
 \mathbb{P}(\xi) \geq 1 - 2(\log(T) +1)K \exp(-\frac{T\delta^2}{2R^2H})
 $$
+
+This bound is non-trivial for much smaller values of $T$, and we will use it in the following.
 
 ### Need to Bound $T_i$
 
@@ -340,6 +389,8 @@ $$
 $$
 
 \newpage
+
+We now present the lower bound given in Locatelli et al. (2016) for the thresholding bandit problem. In order to derive the bound, a problem is specified to show that the error of the lower bound is attained even in this specific problem. In particular, for a set of problems with Gaussian distributions of variance $1$, the largest probability of error on these problems that the best algorithm exhibits is still at least as large as the lower bound.
 
 ## Lower Bound: Theorem and Proof \label{sec:LowerBoundLocatelli}
 
@@ -512,20 +563,16 @@ $\frac{1}{2}\mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp (- 3 \frac{T}
 
 ## Discussion \label{sec:DiscussionLocatelli}
 
-One of the APT algorithm's main features is its simplicity. The sampling rule is very straightforward, and, as highlighted in Locatelli et al. (2016), it does not require any knowledge about the type of sub-Gaussianity $R$, or the complexity $H$ upfront. This makes the algorithm immediately applicable in practice while it still enjoys its upper bound on the expected regret. This is in particular worth highlighting when comparing APT to algorithms used in the pure exploration bandit setting. There, many algorithms require knowledge about the corresponding complexity upfront. The problem however being, that to know the complexity, the experimenter has to know all means up to a permutation of the arms (for example, see Audibert et al., 2010). This, of course, is not given in practice and thus alternative algorithms try to estimate the complexity online which is not a desirable solution either as especially in the beginning plug-in estimates based on the estimated means may lead to wrong estimates of the complexity and consequently budget allocation based on mistaken beliefs (compare Garivier and Kaufmann, 2016).
+One of the APT algorithm's main features is its simplicity. The sampling rule is very straightforward, and, as highlighted in Locatelli et al. (2016), it does not require any knowledge about the type of sub-Gaussianity $R$, or the complexity $H$ upfront. This makes the algorithm immediately applicable in practice while it still enjoys its upper bound on the expected regret. This is in particular worth highlighting when comparing APT to algorithms used in the best arm identification or Top-$m$ setting. As alluded to in \autoref{sec:TheAPTAlgorithm}, many algorithms that fix the sampling budget upfront (i.e., fixed budget algorithms as UCB-E or KL-LUCB-E) require knowledge about the corresponding complexity upfront (Audibert et al., 2010; Kaufmann and Kalyanakrishnan, 2013). The problem however being, that to know the complexity, the experimenter has to know all means up to a permutation of the arms. This, of course, is not given in practice. Thus alternative algorithms try to estimate the complexity online which can be difficult as especially in the beginning plug-in estimates based on the estimated means may lead to wrong estimates of the complexity, which in turn leads to poor budget allocation based on mistaken beliefs (compare Garivier and Kaufmann, 2016). On the other hand, the sequential sampling strategy has to rely on some estimate. While the APT algorithm does not explicitly estimate the complexity, the gaps that serve as index are essentially the same. Faced not with sub-Gaussian but more heavy-tailed distributions, these estimates might well lead to poor performance.
 
-Furthermore, Locatelli et al. (2016) were able to present an upper bound for the APT algorithm matching the lower bound in their Theorem 1. Proofs of both bounds are given below.
+Here, the APT algorithm shows room for improvement, as also mentioned in Locatelli et al. (2016). The problem is that the assumptions for the bounds no longer hold as arms are less sub-Gaussian; of course the complexity $H$ and the term $\hat{\Delta}_i(t)$ in the algorithm's index are motivated by sub-Gaussian distributions. The more one moves away from those, the less appropriate these quantities become. In particular, the empirical mean will be less (or not at all) concentrated around the true mean and more impacted by outliers which are more likely under non sub-Gaussian distributions. Locatelli et al. (2016) thus refers to Bubeck et al. (2013a) which considers solutions for multi-armed bandits that are based on heavy-tail distributions. By using more robust estimators of the mean, one could equip the APT algorithm to deal with such distributions.
 
-Where the APT algorithm shows room for improvement is when it comes to settings with distributions that are not sub-Gaussian. This is mentioned in Locatelli et al. (2016). In general, the problem becomes that the assumptions for the bounds no longer hold; furthermore, the statistic $B_i(t+1)$, and the term $\hat{\Delta}_i(t)$ are motivated by (sub-)Gaussian distributions. The more one moves away from Gaussian-like distributions, the less appropriate this term becomes, however. In particular, the empirical mean will be less concentrated around the true mean and more impacted by outliers which are more likely under non sub-Gaussian distributions. Locatelli et al. (2016) thus refers to Bubeck et al. (2013) which considers solutions for multi-armed bandits that are based on heavy-tail distributions. By using more robust estimators of the mean, one could equip the APT algorithm to deal with such distributions.
+Both Mukherjee et al. (2017) as well as Zhong et al. (2017) use estimates of the variance of the arms for their algorithms for the thresholding bandit problem and try to thereby improve upon the performance of the APT algorithm. While their simulations show promising results, their bounds rely on the assumption of bounded reward distributions. Thus their algorithms are not necessarily able to improve upon the assumption of sub-Gaussian distributions made by Locatelli et al. (2016). We will continue to discuss their results in \autoref{chap:VarianceBasedAlgorithms}.
 
-Another step towards dealing with non sub-Gaussianity is made by Mukherjee et al. (2017) who use an estimate of the variance additionally to the empirical mean in their Augmented UCB solution. Utilizing this additional information, the algorithm seems to perform better than for example APT, going from simulation results displayed in the paper. However, the simulations deal exclusively with normal distributions, as the variance has to be bounded for the upper bound of the Augmented UCB to hold. We will continue to discuss the Augmented UCB solution in chapter 3.
-
-Yet another idea, again mentioned in Locatelli et al. (2016) is to show bounds based on the Kullback-Leibler divergence of the specific distribution directly. While the approximation through the Gaussian Kullback-Leibler divergence in the lower bound proof is convenient and leads to the simple APT algorithm, it might not stay appropriate for distributions whose Kullback-Leibler divergence tends to differ from the Gaussian. This, for example, is the case for Bernoulli distributions at very small parameters $\mu$. By looking at the graphical examples below it becomes obvious that the Kullback-Leibler divergence between Bernoulli distributions starts to lose any similarity to the quadratic approximation. The second graph then shows that the actual Kullback-Leibler divergence of Bernoulli distributions loses any symmetry over this range of parameter values. Given that Bernoulli distributions with very small parameter values arise naturally in many applications in website optimization, advertising click-through modeling, or anomaly detection in time series, there is a need to tackle this problem.
-
-Refer also to page 6 in Kaufmann et al. (2016): "This information-theoretic lower bound permits to interpret the quantity $H(\nu)$ defined in (2) as a subgaussian approximation". In the case of Normal distributions with known and equal mean, it holds that the Kullback-Leibler divergence between $\nu_i$ and $\nu_j$, parameterized by $\mu_i$ and $\mu_j$, can be written as
+Yet another idea, again mentioned in Locatelli et al. (2016) is to show bounds based on the Kullback-Leibler divergence of the specific distribution directly. While the approximation through the Gaussian Kullback-Leibler divergence in the lower bound proof is convenient and leads to the simple APT algorithm, it might not stay appropriate for distributions whose Kullback-Leibler divergence tends to differ from the Gaussian. This, for example, is the case for Bernoulli distributions at very small parameters $\mu$. We have for the Kullback-Leibler divergence of two Gaussian distributions $\nu_i$ and $\nu_j$ of mean $\mu_i$ and $\mu_j$ with equal variance:
 
 $$
-\KL_{Normal}(\nu_i || \nu_j) = 2(\mu_i - \mu_j)^2.
+\KL_{N}(\nu_i || \nu_j) = 2(\mu_i - \mu_j)^2.
 $$
 
 Writing $\mu_j = \tau$ and $\epsilon = 0$, we see that the APT algorithm essentially measures the KL-divergence between two Normal distributions. For two Bernoulli distributions $\nu_i$ and $\nu_j$, parameterized by $\mu_i$ and $\mu_j=\tau$, we write
@@ -534,15 +581,17 @@ $$
 \KL_{Ber}(\nu_i||\nu_j) = \mu_i \log(\frac{\mu_i}{\tau}) + (1-\mu_i) \log(\frac{1-\mu_i}{1-\tau})
 $$
 
-In the case of $\tau = 0.5$, the latter KL-divergence is symmetric in its first argument, and thus can be well approximated by Pinsker's inequality:
+In the case of $\tau = 0.5$, the latter KL-divergence is symmetric in its first argument, and thus can be relatively well approximated by Pinsker's inequality (SHOW IN GRAPH!):
 
 $$
 \KL_{Ber}(\nu_i||\nu_j) \geq 2(\mu_i - \tau)^2.
 $$
 
-This shows how the distance measure used in the APT algorithm, and consequently the complexity $H$, is a useful approximation of the KL-divergence for sub-Gaussian distributions. However, this approximation suffers as the distributions less and less similar to Gaussian distributions. Thus similarly to how UCB algorithms in the cumulative regret setting have been extended to KL-UCB algorithms (compare Cappé et al., 2013), also the APT algorithm offers room for improvement.
+This is of course equal to the Gaussian KL-divergence described before. This approximation, however, suffers for heavily for very small values of $\mu_i$ and $\tau$. In particular, the Bernoulli KL-divergence becomes asymmetric in its first argument as $\tau \neq 0.5$. Thus, in contrast to the complexity measure $H$ based on the Gaussian KL-divergence, a complexity measure based on the Bernoulli KL-divergence would evaluate two arms as differently difficult if their absolute distance to the threshold is the same, but they lie on different sides of the threshold.
 
-And so a potential approach can be to use the Kullback-Leibler divergence as measure similar to the methods proposed in Kaufmann et al. (2015). They proposed Kullback-Leibler based approaches for the pure exploration bandit setting, which we will describe in chapter 2. Then, in chapter 3, we will come back to the problem of using the Kullback-Leibler divergence in the thresholding bandit setting. To conclude chapter 1, we proof the lower bound and upper bound for the APT algorithm as presented Theorem 1 and Theorem 2 in Locatelli et al. (2016).
+Thus similarly to how UCB algorithms in the cumulative regret setting have been extended to KL-UCB algorithms (compare Cappé et al., 2013), also the APT algorithm offers room for improvement. As a more explicit example of such adaptation, consider the case of Top-$m$ identification described in Kaufmann et al. (2016). The authors develop a lower bound based on KL-divergence, and note that "This information-theoretic lower bound permits to interpret the quantity $H(\nu)$ [...] as a subgaussian approximation". Given that Bernoulli distributions with very small parameter values arise naturally in many applications, an improvement in this regard would be valuable.
+
+In what follows, we first examine in \autoref{chap:KullbackLeiblerPureExploration} how information theoretic quantities are employed in the best arm identification and Top-$m$ problem as detailed in Kaufmann and Garivier (2016) and Kaufmann et al. (2016). Before introducing a new algorithm for the thresholding bandit problem based on Kullback-Leibler divergences in \autoref{sec:LikelihoodRatioForExponentialFamily}, we first describe the variance-based approaches in \autoref{chap:VarianceBasedAlgorithms}.
 
 ```{r, echo = FALSE}
 KL_ber <- function(p,q) p*log(p/q) + (1-p)*log((1-p)/(1-q))
@@ -586,7 +635,7 @@ par(mfcol = c(1,1))
 
 \newpage
 
-# Kullback-Leibler Complexity of Pure Exploration
+# Kullback-Leibler Complexity of Pure Exploration \label{chap:KullbackLeiblerPureExploration}
 
 In the previous chapter, we discussed the thresholding bandit problem as presented in Locatelli et al. (2016). Doing so, we came across the complexity term $H = \sum_{i=1}^{K} \Delta_i^{-2}$. Furthermore, we noted the fact that an algorithm and bounds based on *only* the gap between the respective mean and the threshold are useful in the case of sub-Gaussian problems. Furthermore, even for the case of Bernoulli arms, which are sub-Gaussian since their feedback is bounded on $[0,1]$, the gap $\Delta$ becomes less and less appropriate in situations in which both $\mu$ of the Bernoulli, and $\tau$ are very close to 0 or 1.
 
@@ -954,9 +1003,9 @@ Large motiviation for the idea of adjusting the complexity measure (and thus the
 
 To this end, in the following, we first present an extension of mean based algorithms to an algorithm that incorporates empirical variances as described in Mukherjee et al. (2017). Afterwards, we propose and discuss potential further improvements based on Kullback-Leibler divergence and Bayesian posterior distributions. Finally, we compare the performance of different algorithms based on simulations and real world data sets.
 
-## Variance Based Algorithms for Thresholding Bandits
+## Variance Based Algorithms for Thresholding Bandits \label{chap:VarianceBasedAlgorithms}
 
-### Augmented-UCB Algorithm
+### Augmented-UCB Algorithm \label{sec:AugUCBAlgorithm}
 
 Mukherjee et al. (2017) propose an algorithm based on variance estimates called Augmented-UCB (AugUCB). The setting in which the algorithm is proposed is very similar to the setting in Locatelli et al. (2016). The algorithm itself, however, differs heavily from the APT algorithm. So is AugUCB for example not an anytime algorithm. Furthermore, arms can be deleted in every round if there are "far enough" away from the mean. Both the decision of which arm is played in a given round, and whether an arm is removed from the active set of arm, is based not only on the empirical mean estimate $\mu_i(t)$, but also on a term $s_i$ that is increasing linearly in the estimated standard deviation. While the APT algorithm plays the arm minimizing the quantity $B_i(t+1) = \sqrt{T_i(t)} \hat{\Delta}_i(t) = \sqrt{T_i(t)} (|\hat{\mu}_i(t) - \tau| + \epsilon)$, AugUCB plays the arm minimizing the quantity $(\hat{\Delta}_i(t) - 2s_i)$, where $s_i$ is based on the variance estimate $\hat{v}_i$, and an exploration $\psi_m$ term linear in $T$, and an elimination parameter $\rho$ (compare Algorithm 1 in Mukherjee et al., 2017):
 
@@ -988,7 +1037,7 @@ Compare Mukherjee et al. (2017) for the notation. Then it becomes clear that the
 
 -> Happens for exponential distribution
 
-### Anytime Parameter-free Empirical Variance Guided Algorithm
+### Anytime Parameter-free Empirical Variance Guided Algorithm \label{sec:EVTAlgorithm}
 
 Another algorithm for the thresholding bandit problem is introduced in Zhong et al. (2017). Indeed, they discuss several variations of their algorithm which extend their central idea to applications in which several samples need to be pulled in a parallel and asynchronous fashion. An easy example known from the multi-armed bandit literature (SOURCE????!!??!?!?!) is a website where different versions are served to customers and each version is an arm in the bandit setting. If the feedback that is observed by the algorithm is whether or not a user makes a purchase, then it is likely that a new user arrives before the feedback for the previous user has been observed. The algorithm has to pull the next arm before the feedback of the previous arm has been observed. With their variants the authors approach this problem of having to take asynchronous and parallel actions. But their algorithm can also be reduced to a simpler version that can be compared directly with the problem described in Locatelli et al. (2016) where we assume the problem of the feedback lag away.
 
@@ -1078,7 +1127,7 @@ lines(c(seq(0.1,0.9,0.0001)),
 abline(v = 0.5, lty = 2)
 ```
 
-## Likelihood Ratio for Exponential Family Distributions
+## Likelihood Ratio for Exponential Family Distributions \label{sec:LikelihoodRatioForExponentialFamily}
 
 We now present an approach that builds on the idea of the likelihood ratio statistic for hypothesis tests. We first present the general idea of likelihood ratio based tests, and then introduce our new algorithm for the thresholding bandit problem.
 
@@ -1402,7 +1451,18 @@ rbind(loc6nt_APT_ma, loc6nt_LR_ma) %>%
   labs(x = "Index", y = "10 Rounds Moving Average",
        title = "Average Number of Pulls Allocated to Each Arm per Round",
        subtitle = "5000 iterations; a value of 1000 means that in 20% of 
-the iterations the arm was pulled in that round.")
+the iterations the arm was pulled in that round.") +
+  theme(legend.position = "bottom")
+
+rbind(loc6nt_BUCB_c15_ma, loc6nt_BUCB_ma, loc6nt_BUCB_c5_ma) %>%
+  ggplot(aes(x = index, y = mean, group = arm, color = arm)) +
+  geom_line(size = 0.3) +
+  facet_grid(.~algorithm) +
+  labs(x = "Index", y = "10 Rounds Moving Average",
+       title = "Average Number of Pulls Allocated to Each Arm per Round",
+       subtitle = "5000 iterations; a value of 1000 means that in 20% of 
+       the iterations the arm was pulled in that round.")+
+  theme(legend.position = "bottom")
 ```
 
 ### Experiment 3: Bernoulli with $\tau = 0.01$
@@ -1459,11 +1519,13 @@ load(paste0(current_path, "exp2_comp_LR.Rda"))
 load(paste0(current_path, "exp2_comp_APT.Rda"))
 load(paste0(current_path, "exp2_comp_EVT.Rda"))
 load(paste0(current_path, "exp2_comp_UNIFORM.Rda"))
+load(paste0(current_path, "exp2_comp_AugUCB.Rda"))
 
-alg_names <- c(rep(c("Uniform", "APT","SLR"), 
+alg_names <- c(rep(c("Uniform", "APT","SLR", "AugUCB"), 
                    each = 3981), rep("EVT", 3961))
-index <- c(rep(20:4000, times = 3), 40:4000)
-alg_res <- log(c(exp2_comp_UNIFORM, exp2_comp_APT, exp2_comp_LR, exp2_comp_EVT))
+index <- c(rep(20:4000, times = 4), 40:4000)
+alg_res <- log(c(exp2_comp_UNIFORM, exp2_comp_APT, exp2_comp_LR,
+                 exp2_comp_AugUCB, exp2_comp_EVT))
 exp2_comp_res <- data.frame(index = index, names = alg_names, 
                             results = alg_res)
 ggplot(exp2_comp_res, aes(x = index, y = results)) + 
@@ -1493,11 +1555,13 @@ current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis
 load(paste0(current_path, "pois2_comp_LR.Rda"))
 load(paste0(current_path, "pois2_comp_APT.Rda"))
 load(paste0(current_path, "pois2_comp_EVT.Rda"))
-#load(paste0(current_path, "pois2_comp_UNIFORM.Rda"))
+load(paste0(current_path, "pois2_comp_UNIFORM.Rda"))
 
-alg_names <- c(rep(c("APT", "SLR"), each = 9981), rep("EVT", 9961))
-index <- c(rep(20:10000, times = 2), 40:10000)
-alg_res <- log(c(pois2_comp_APT, pois2_comp_LR, pois2_comp_EVT))
+alg_names <- c(rep(c("Uniform", "APT", "SLR"), each = 9981), 
+               rep("EVT", 9961))
+index <- c(rep(20:10000, times = 3), 40:10000)
+alg_res <- log(c(pois2_comp_UNIFORM, pois2_comp_APT, 
+                 pois2_comp_LR, pois2_comp_EVT))
 pois2_comp_res <- data.frame(index = index, names = alg_names, 
                             results = alg_res)
 ggplot(pois2_comp_res, aes(x = index, y = results)) + 

@@ -35,6 +35,7 @@ gc()
 load(paste0(current_path, "pois2_comp_LR.Rda"))
 load(paste0(current_path, "pois2_comp_APT.Rda"))
 load(paste0(current_path, "pois2_comp_EVT.Rda"))
+load(paste0(current_path, "pois2_comp_UNIFORM.Rda"))
 
 plot(c(0,10000), c(0, -7), type = "n")
 abline(h=log(0.1), lty = 2)
