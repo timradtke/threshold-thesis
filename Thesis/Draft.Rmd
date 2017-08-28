@@ -388,8 +388,6 @@ $$
 \mathbb{E}[L] = 1 - \mathbb{P}(\xi) \leq 2(\log(T)+1)K \exp(-\frac{1}{64R^2}\frac{T}{H}).
 $$
 
-\newpage
-
 We now present the lower bound given in Locatelli et al. (2016) for the thresholding bandit problem. In order to derive the bound, a problem is specified to show that the error of the lower bound is attained even in this specific problem. In particular, for a set of problems with Gaussian distributions of variance $1$, the largest probability of error on these problems that the best algorithm exhibits is still at least as large as the lower bound.
 
 ## Lower Bound: Theorem and Proof \label{sec:LowerBoundLocatelli}
@@ -559,9 +557,10 @@ $\frac{1}{2}\mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp (- 3 \frac{T}
 & \geq \frac{1}{2}
 \end{align*}
 
-\newpage
-
 ## Discussion \label{sec:DiscussionLocatelli}
+
+- Mention Optimality (Upper Bound matches lower bound)
+- Anytime
 
 One of the APT algorithm's main features is its simplicity. The sampling rule is very straightforward, and, as highlighted in Locatelli et al. (2016), it does not require any knowledge about the type of sub-Gaussianity $R$, or the complexity $H$ upfront. This makes the algorithm immediately applicable in practice while it still enjoys its upper bound on the expected regret. This is in particular worth highlighting when comparing APT to algorithms used in the best arm identification or Top-$m$ setting. As alluded to in \autoref{sec:TheAPTAlgorithm}, many algorithms that fix the sampling budget upfront (i.e., fixed budget algorithms as UCB-E or KL-LUCB-E) require knowledge about the corresponding complexity upfront (Audibert et al., 2010; Kaufmann and Kalyanakrishnan, 2013). The problem however being, that to know the complexity, the experimenter has to know all means up to a permutation of the arms. This, of course, is not given in practice. Thus alternative algorithms try to estimate the complexity online which can be difficult as especially in the beginning plug-in estimates based on the estimated means may lead to wrong estimates of the complexity, which in turn leads to poor budget allocation based on mistaken beliefs (compare Garivier and Kaufmann, 2016). On the other hand, the sequential sampling strategy has to rely on some estimate. While the APT algorithm does not explicitly estimate the complexity, the gaps that serve as index are essentially the same. Faced not with sub-Gaussian but more heavy-tailed distributions, these estimates might well lead to poor performance.
 
@@ -581,7 +580,7 @@ $$
 \KL_{Ber}(\nu_i||\nu_j) = \mu_i \log(\frac{\mu_i}{\tau}) + (1-\mu_i) \log(\frac{1-\mu_i}{1-\tau})
 $$
 
-In the case of $\tau = 0.5$, the latter KL-divergence is symmetric in its first argument, and thus can be relatively well approximated by Pinsker's inequality (SHOW IN GRAPH!):
+In the case of $\tau = 0.5$, the latter KL-divergence is symmetric in its first argument, and thus can be relatively well approximated by Pinsker's inequality:
 
 $$
 \KL_{Ber}(\nu_i||\nu_j) \geq 2(\mu_i - \tau)^2.
@@ -593,47 +592,50 @@ Thus similarly to how UCB algorithms in the cumulative regret setting have been 
 
 In what follows, we first examine in \autoref{chap:KullbackLeiblerPureExploration} how information theoretic quantities are employed in the best arm identification and Top-$m$ problem as detailed in Kaufmann and Garivier (2016) and Kaufmann et al. (2016). Before introducing a new algorithm for the thresholding bandit problem based on Kullback-Leibler divergences in \autoref{sec:LikelihoodRatioForExponentialFamily}, we first describe the variance-based approaches in \autoref{chap:VarianceBasedAlgorithms}.
 
-```{r, echo = FALSE}
+```{r KLApproximationComparison, echo = FALSE, message = FALSE, out.width = '80%', fig.align = "center", fig.cap= "The approximation of the Bernoulli KL-divergence by the Gaussian KL-divergence works well if the second argument is equal to 0.5. Else we observe poor approximation in both value and symmetry. This becomes more obvious as the arguments move away from 0.5."}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
 KL_ber <- function(p,q) p*log(p/q) + (1-p)*log((1-p)/(1-q))
-par(mfcol = c(1,2))
+KL_gauss <- function(p,q) 2*(p-q)^2
 
-plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1), type = "n", asp = 1,
-     xlab = "p_1", ylab = "KL(Ber(p_1),Ber(p_2))", main = "KL of Bernoullis")
-for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
-  lines(seq(0.00001,0.3, by = 0.000005),
-       KL_ber(seq(0.00001,0.3, by = 0.000005),i))
-}
+kldf <- data.frame(mu = rep(seq(0.00001, 0.99999, 
+                                length.out = 10000), 2),
+                   tau = c(rep(0.5, 10000), rep(0.05, 10000)))
 
-plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1), type = "n", asp = 1,
-     xlab = "p_1", ylab = "(p_1 - p_2)^2", main = "Gaussian approx.\n KL of Bernoullis")
-for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
-  lines(seq(0.00001,0.3, by = 0.000005),
-        (seq(0.00001,0.3, by = 0.000005)-i)^2)
-}
-par(mfcol = c(1,1))
+kldf_long <- kldf %>% mutate(Gaussian = KL_gauss(mu, tau),
+                             Bernoulli = KL_ber(mu, tau)) %>%
+  gather(key = KL_Type, value = KL, -mu, -tau) %>%
+  mutate(tau = as.character(tau))
+
+kldf2 <- data.frame(mu = rep(seq(0.00001, 0.09999, 
+                                length.out = 10000), 1),
+                   tau = c(rep(0.05, 10000)))
+
+kldf2_long <- kldf2 %>% mutate(Gaussian = KL_gauss(mu, tau),
+                              Bernoulli = KL_ber(mu, tau)) %>%
+  gather(key = KL_Type, value = KL, -mu, -tau) %>%
+  mutate(tau = as.character(tau))
+
+kldf_total <- cbind.data.frame(level = c(rep("Global", 40000),
+                                         rep("Local", 20000)),
+                               rbind.data.frame(kldf_long, kldf2_long))
+
+ggplot(kldf_total, aes(x = mu, y = KL, 
+                      group = interaction(KL_Type, tau))) +
+  facet_grid(level~., scales = "free") +
+  geom_line(aes(color = tau, linetype = KL_Type)) +
+  labs(x = "First argument of KL-divergence",
+       y = "KL-divergence",
+       title = "Comparison of Bernoulli KL-divergence and 
+Gaussian Approximation")  +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  scale_color_discrete(name = "Second argument of KL-divergence") +
+  scale_linetype_discrete(name = "Type of KL-divergence") +
+  guides(color = guide_legend(title.position = "top"),
+         linetype = guide_legend(title.position = "top"))
 ```
-
-```{r, echo = FALSE}
-KL_ber <- function(p,q) p*log(p/q) + (1-p)*log((1-p)/(1-q))
-par(mfcol = c(1,2))
-
-plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1), type = "n", asp = 1,
-     xlab = "p_1", ylab = "KL(Ber(p_2),Ber(p_1))", main = "KL of Bernoullis")
-for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
-  lines(seq(0.00001,0.3, by = 0.000005),
-        KL_ber(i,seq(0.00001,0.3, by = 0.000005)))
-}
-
-plot(x = 1, y = 1, xlim = c(0, 0.3), ylim = c(0, 1), type = "n", asp = 1,
-     xlab = "p_1", ylab = "(p_2 - p_1)^2", main = "Gaussian approx.\n KL of Bernoullis")
-for(i in c(0.0001,0.001, 0.005,0.01,0.05,0.1)) {
-  lines(seq(0.00001,0.3, by = 0.000005),
-        (i-seq(0.00001,0.3, by = 0.000005))^2)
-}
-par(mfcol = c(1,1))
-```
-
-\newpage
 
 # Kullback-Leibler Complexity of Pure Exploration \label{chap:KullbackLeiblerPureExploration}
 
@@ -874,7 +876,7 @@ As we will consider only problems with exponential family distributions, the dis
 \text{Alt}(\bm{\mu}) := \{\bm{\lambda} \in \mathcal{S}: a^*(\bm{\lambda}) \neq a^*(\bm{\mu})\}
 \end{equation*}
 
-where $\bm{\lambda}$ is the vector of means defining the distributions of the alternative problem to $\bm{\mu}$. Lastly, we have the set of probability distributions on the arms $\mathcal{A}$: $\Sigma_K = \{w \in \mathbb{R}_{+}^K: w_1 + \dots + w_K = 1\}$. \marginpar{Give more intuition for what these probability distributions are} We are now ready to state the theorem.
+where $\bm{\lambda}$ is the vector of means defining the distributions of the alternative problem to $\bm{\mu}$. Lastly, we have the set of probability distributions on the arms $\mathcal{A}$: $\Sigma_K = \{w \in \mathbb{R}_{+}^K: w_1 + \dots + w_K = 1\}$. We are now ready to state the theorem.
 
 \begin{theorem}[Theorem 1, Garivier and Kaufmann, 2016] \label{theorem:GarivierKaufmannTheorem1}
 Let $\delta \in (0,1)$. For any $\delta$-PAC strategy and any bandit model $\bm{\mu} \in \mathcal{S}$,
@@ -989,41 +991,41 @@ Using the information from the lower bound of how well any $\delta$-PAC algorith
 
 \newpage
 
-# Extensions to the Thresholding Bandit Problem
+# Extensions to the Thresholding Bandit Problem \label{chap:Extensions}
 
-## Introduction
+## Introduction \label{sec:ExtensionsIntroduction}
 
-We have introduced the thresholding bandit problem in chapter 1. The APT algorith described in Locatelli et al. (2016) is able to match a lower bound (be more specific!) given in the same paper, and has several favorable characteristics such as its overall simplicity and it being an anytime algorithm. However, the bounds on the expected loss assume the arms' distributions to be $R$-sub-Gaussian. This is reflected in the algorithm's complexity measure $H = \sum_{i=1}^K (\Delta_i^{\tau, \epsilon})^{-2}$, where $\Delta_i^{\tau,\epsilon} = |\mu_i - \tau| + \epsilon$, which -- given the known threshold $\tau \pm \epsilon$ -- only depends on the distribution's mean. This is appropriate for Gaussian arms with equal variances, but potentially inefficient for other kinds of distributions.
+In \autoref{chap:ThresholdingBanditProblem} we have introduced the thresholding bandit problem as proposed in Locatelli et al. (2016) alongside the APT algorithm. We have seen that the upper bound on the APT algorithm matches the lower bound for the thresholding bandit problem given in Locatelli et al. (2016). The algorithm also exhibits favorable characteristics such that its upper bound holds at any stopping time, and that it does not require any parameter to be known upfront. However, we have seen that the index and the complexity term $H$ employed by the APT algorithm are the most effective for $R$-sub-Gaussian distributions. Both are related to the KL-divergence between two Gaussian distributions of equal variance. Given that this sub-Gaussian approximation can be poor in certain cases, we motivated the use of information theoretic measures in an algorithm's index (compare \autoref{sec:DiscussionLocatelli}).
+
+Another goal can be to compare the distributions with the threshold based not only on the empirical mean -- as done by the APT algorithm. A logical extension is for example the empirical variance. After all arms do not necessarily have the same variance, even if they are sub-Gaussian. And given two arms for which we estimate the same mean, we would prefer to draw more samples from the arm with the larger variance.
 
 In the case of Gaussian distributions with varying variances, for example, it makes sense to take the variance into account; after all, given two Gaussians with equal mean, intuitively we would prefer to get a sample from the distribution of larger variance.
 
-In the case of Gaussians, the complexity $H$ is nice also because it reflects the Kullback-Leibler divergence between two Gaussians. And since Bernoulli distributions are bounded on the interval $[0,1]$, they are consequently sub-Gaussian, meaning that their Kullback-Leibler divergence can be approximated by the Gaussian one. However, while Bernoullis are sub-Gaussian, the approximation of their divergence by the Gaussian divergence becomes less and less optimal as the parameter (and thus mean) goes to $0$ or $1$, as shown in chapter 1. And while online advertisements might not be an obvious use case for thresholding bandits, they are just one real life scenario dominated by Bernoulli distributions with very small parameters. Thus it is worthwile to adapt current solutions of the thresholding bandit problem to cases in which the Gaussian Kullback-Leibler divergence is no longer an appropriate approximation.
+For these reasons, in the following, we first present in \autoref{sec:VarianceBasedAlgorithms} two algorithms which incorporate empirical variances as described in Mukherjee et al. (2017) and Zhong et al. (2017). We then introduce a new algorithm based on the concept of likelihood ratios in \autoref{sec:LikelihoodRatioForExponentialFamily}. Finally, we compare the performance of different algorithms based on simulations and real world data sets in \autoref{chap:Experiments}.
 
-Large motiviation for the idea of adjusting the complexity measure (and thus the algorithms) to distributions more generally based on the Kullback-Leibler divergence stems from the work discussed in chapter 2, complexity measures were defined for the pure exploration bandits in terms of the Kullback-Leibler divergence. Based on this, the authors were for example able to point our differences between Gaussian and Bernoulli bandits. We expect that results in a similar vain could be derived for thresholding bandits.
-
-To this end, in the following, we first present an extension of mean based algorithms to an algorithm that incorporates empirical variances as described in Mukherjee et al. (2017). Afterwards, we propose and discuss potential further improvements based on Kullback-Leibler divergence and Bayesian posterior distributions. Finally, we compare the performance of different algorithms based on simulations and real world data sets.
-
-## Variance Based Algorithms for Thresholding Bandits \label{chap:VarianceBasedAlgorithms}
+## Variance Based Algorithms for the Thresholding Bandit \label{sec:VarianceBasedAlgorithms}
 
 ### Augmented-UCB Algorithm \label{sec:AugUCBAlgorithm}
 
-Mukherjee et al. (2017) propose an algorithm based on variance estimates called Augmented-UCB (AugUCB). The setting in which the algorithm is proposed is very similar to the setting in Locatelli et al. (2016). The algorithm itself, however, differs heavily from the APT algorithm. So is AugUCB for example not an anytime algorithm. Furthermore, arms can be deleted in every round if there are "far enough" away from the mean. Both the decision of which arm is played in a given round, and whether an arm is removed from the active set of arm, is based not only on the empirical mean estimate $\mu_i(t)$, but also on a term $s_i$ that is increasing linearly in the estimated standard deviation. While the APT algorithm plays the arm minimizing the quantity $B_i(t+1) = \sqrt{T_i(t)} \hat{\Delta}_i(t) = \sqrt{T_i(t)} (|\hat{\mu}_i(t) - \tau| + \epsilon)$, AugUCB plays the arm minimizing the quantity $(\hat{\Delta}_i(t) - 2s_i)$, where $s_i$ is based on the variance estimate $\hat{v}_i$, and an exploration $\psi_m$ term linear in $T$, and an elimination parameter $\rho$ (compare Algorithm 1 in Mukherjee et al., 2017):
+Combining learnings from the APT and other algorithms, Mukherjee et al. (2017) propose the Augmented-UCB (AugUCB) algorithm based on variance estimates for the thresholding bandit problem. The setting they consider is thus very similar to the setting in Locatelli et al. (2016). The main difference being that, while Locatelli et al. (2016) assume $R$-sub-Gaussian reward distributions, Mukherjee et al. (2017) assume rewards to be bounded in $[0,1]$, which makes the AugUCB applicable to less distributions. The AugUCB algorithm itself differs significantly from the APT algorithm. The two main ideas it employs are first, upper confidence bounds based on the Bernstein inequality and empirical variance estimates to compute the index based on which an arm is chosen at every round. Second, if an arm estimate is "far enough away" from the threshold as measured by the confidence bounds, it will be "eliminated", and no longer be pulled until the end of the budget. Both ideas are based not only on the empirical mean estimate $\mu_i(t)$, but also on a term $s_i$ that is increasing linearly in the estimated standard deviation. While the APT algorithm plays the arm minimizing the quantity $B_i^{APT}(t+1) = \sqrt{T_i(t)} \hat{\Delta}_i(t) = \sqrt{T_i(t)} (|\hat{\mu}_i(t) - \tau| + \epsilon)$, AugUCB plays the arm minimizing the quantity $\hat{\Delta}_i(t) - 2s_i$, where $s_i$ is based on the variance estimate $\hat{v}_i$, and an exploration $\psi_m$ term linear in $T$, as well as an elimination parameter $\rho$ (compare Algorithm 1 in Mukherjee et al., 2017):
 
 \begin{equation*}
-s_i = \sqrt{\frac{\rho \psi_m (\hat{v}_i + 1) \log(T \epsilon_m)}{4n_i}}
+s_i = \sqrt{\frac{\rho \psi_m (\hat{v}_i + 1) \log(T \epsilon_m)}{4n_i}}.
 \end{equation*}
 
-Consequently, the authors also introduce complexity measures which take the variance into account. From Gabillon et al. (2011) they use $H_{\sigma, 1}= \sum_{i=1}^K \frac{\sigma_i + \sqrt{\sigma_i^2 + (16/3)\Delta_i}}{\Delta_i^2}$. Furthermore, with $\stackrel{\sim}{\Delta}_i^2 = \frac{\Delta_i^2}{\sigma_i + \sqrt{\sigma_i^2 + (16/3)\Delta_i}}$, and with $\stackrel{\sim}{\Delta}_{(i)}$ being an increasing ordering of $\stackrel{\sim}{\Delta}_i$, the authors define a complexity corresponding to $H_{CSAR,2}$ in Chen et al. (2014):
+Consequently, the authors also introduce complexity measures which take the variance into account. From Gabillon et al. (2011) they use $H_{\sigma, 1}= \sum_{i=1}^K \frac{\sigma_i + \sqrt{\sigma_i^2 + (16/3)\Delta_i}}{\Delta_i^2}$. Furthermore, with $\stackrel{\sim}{\Delta}_i^2 = \frac{\Delta_i^2}{\sigma_i + \sqrt{\sigma_i^2 + (16/3)\Delta_i}}$, where $\stackrel{\sim}{\Delta}_{(i)}$ is an increasing ordering of $\stackrel{\sim}{\Delta}_i$, the authors define a complexity corresponding to $H_{CSAR,2}$ in Chen et al. (2014):
 
 \begin{equation*}
-H_{\sigma,2} = \max_{i \ in \mathcal{A}} \frac{i}{\stackrel{\sim}{\Delta}_{(i)}^2}.
+H_{\sigma,2} = \max_{i \in \mathcal{A}} \frac{i}{\stackrel{\sim}{\Delta}_{(i)}^2}.
 \end{equation*}
 
-While the latter complexity appears in the provided upper bound on the AugUCB algorithm's expected loss, it could be replaced by $H_{\sigma, 1}$ since $H_{\sigma, 2} \leq H_{\sigma,1}$. $H_{\sigma,1}$ is of course more directly comparable to the complexity $H$ that we are used to.
+While the latter complexity appears in the provided upper bound on the AugUCB algorithm's expected loss, it could be replaced by $H_{\sigma, 1}$ since $H_{\sigma, 2} \leq H_{\sigma,1}$. $H_{\sigma,1}$ is more easily compared to the complexity $H$ defined in Locatelli et al. (2016). Essentially, every arm's complexity contribution is additionally scaled by a term increasing in the arm's variance (see also the graph comparing the complexity terms of APT, AugUCB, and EVT algorithms below).
 
-While in the case of the APT algorithm the number of times a specific arm has been drawn $T_i$ measures how concentrated the estimated mean is around the true mean (and thus for large $T_i$ an arm is no longer drawn even if $\hat{\mu}$ is close to $\tau$); in the case of the AugUCB algorithm this is regulated by the combination of the variance estimate $\hat{v}_i$ and the exploration factor $\psi_m$, where they ensure that certain arms are no longer pulled when the algorithm is sufficiently confident in its knowledge about the true mean. Therefore, when using a very similar favorable event in the proof of their upper bound, Mukherjee et al. (2017) have to bound the probability that an an arm is not removed from the active set after the a certain number of rounds -- even though the arm is above (respectively below) the threshold. If this probability is low, then this means that the algorithm is able to be certain about an arm's true mean *quickly* by employing variance estimates. In comparison, Locatelli et al (2016) used bounds on on how often arms are drawn ($T_i$) to give a bound on the probability of the favorable event. In order to derive the bound, Mukherjee et al. (2017) use the Bernstein inequality.
+In the case of the APT algorithm the number of times a specific arm has been drawn $T_i$ measures how concentrated the estimated mean is around the true mean (and thus for large $T_i$ an arm is no longer drawn even if $\hat{\mu}$ is close to $\tau$). This exploration is regulated by the combination of the variance estimate $\hat{v}_i$ and the exploration factor $\psi_m$ in the case of the AugUCB algorithm. The terms ensure that certain arms are no longer pulled when the algorithm is sufficiently confident in the location of true mean. Indeed, the AugUCB algorithm goes a little further than the APT algorithm in that it eliminates arms (no longer considers them in sampling) when a separation condition is estimated to hold. The same separation condition of estimated mean away from the threshold is used in the authors' upper bound proof and is reminiscient of the separation condition used in Locatelli et al.'s (2016) upper bound proof.
 
-It has to be noted that Mukherjee et al. (2017) have to assume that the distributions have rewards bounded in $[0,1]$ in order to derive the bound on the probability that an arm has not been eliminated correctly in round $T_i$. Thus, the distributions for which their upper bound holds are a subset of the sub-Gaussian distributions considered in Locatelli et al. (2016). However, it is not that the authors need to assume that the rewards are in $[0,1]$, but this was assumed so that the variance of the distribution is in $[0,1]$. Thus, the upper bound holds in particular for Gaussian distributions with variance $\sigma^2 \in [0,1]$.
+Therefore, when using a very similar favorable event in the proof of their upper bound, Mukherjee et al. (2017) have to bound the probability that an an arm is not removed from the active set after the a certain number of rounds -- even though the arm is above (respectively below) the threshold. If this probability is low, then the algorithm is able to be certain about an arm's true mean by employing variance estimates. In comparison, Locatelli et al (2016) used bounds on on how often arms are drawn ($T_i$) to give a bound on the probability of the favorable event. In order to derive the bound, Mukherjee et al. (2017) use the Bernstein inequality.
+
+It has to be noted that Mukherjee et al. (2017) have to assume that the distributions have rewards bounded in $[0,1]$ in order to derive the bound on the probability that an arm has not been eliminated correctly in round $T_i$. Else it would not be possible to upper bound the $s_i$ term by $\Delta_i/4$ as Mukherjee et al. do in their proof. Thus, the distributions for which their upper bound holds are a subset of the $R$-sub-Gaussian distributions considered in Locatelli et al. (2016). However, while the authors demand in their setting that the rewards are bounded in $[0,1]$, it seems that the upper bound only requires the arms' variances to be bounded in $[0,1]$ such that $\hat{v}_i \in [0,1]$. Thus, the upper bound should hold in particular for Gaussian distributions with variance $\sigma^2 \in [0,1]$. Consequently, the simulations by Mukherjee et al. are performed on Gaussian arms with variance smaller than one.
 
 Based on this assumption, the authors show that the probability that an arm has not been eliminated after $m_i$ rounds is given by (compare equation (2) in Mukherjee et al., 2017):
 
@@ -1031,11 +1033,7 @@ Based on this assumption, the authors show that the probability that an arm has 
 \mathbb{P}(\hat{\mu}_i > \mu_i + 2s_i) \leq \mathbb{P} (\hat{\mu}_i > \mu_i + 2\bar{s}_i) + \mathbb{P}(\hat{v}_i \geq \sigma^2_i + \sqrt{\rho \epsilon_{T_i}})
 \end{equation}
 
-Compare Mukherjee et al. (2017) for the notation. Then it becomes clear that the left part of the RHS gives the probability that the mean estimate is out of wack, while the right term gives the probability that the variance is overestimated. The first term is bounded by the Bernstein inequality. In the cumulative regret setting, there exists a similar decomposition that bounds the expected number of pulls of a suboptimal arm. Compare for example chapter 3.1 in "Thompson Sampling: An Asymptotically Optimal Finite Time Analysis" by Kaufmann, Korda and Munos (2012). There they decompose the expected number of draws of an suboptimal arm for an optimistic (UCB like) into the probability that the optimal arm's mean is underestimated, and the probability that the UCB of the suboptimal arm is still very large. To give bounds for UCB algorithms, it is then shown that these two terms show a certain convergence. Mukherjee et al. do similarly for their variance based algorithm in the thresholding setting.
-
-(since the AugUCB eliminates arms, it is interesting to see how it behaves when the underlying CTR changes over time...)
-
--> Happens for exponential distribution
+Compare Mukherjee et al. (2017) for the notation. Then it becomes clear that the left part of the RHS gives the probability that the mean estimate is out of wack, while the right term gives the probability that the variance is overestimated. The first term is bounded by the Bernstein inequality. In the cumulative regret setting, there exists a similar decomposition for algorithms based on upper confidence bounds. There, the expected number of pulls of a suboptimal arm is bounded. Compare for example chapter 3.1 in Kaufmann, Korda and Munos (2012), in which the authors decompose the expected number of draws of an suboptimal arm into the probability that the optimal arm's mean is underestimated, and the probability that the upper confidence bound of the suboptimal arm is still very large. To give bounds for UCB algorithms, certain convergence rates are shown for these two probabilities. Mukherjee et al. do similarly for their upper confidence algorithm in the thresholding setting.
 
 ### Anytime Parameter-free Empirical Variance Guided Algorithm \label{sec:EVTAlgorithm}
 
@@ -1073,14 +1071,28 @@ We see that in both formulations either the distance term $D_i$ or the confidenc
 
 In comparison with the APT algorithm, the EVT$_{pf}$ algorithm adds the empirical variance into the index to measure how well we can expect the distribution (and the mean) to be seperated from the threshold; it serves as a crude measure of distance between threshold and distribution. We note that for a Bernoulli distributed random variable, $D_i^{EVT}$ is decreasing as the mean approaches the threshold. Similar should hold in general for bounded variables as the variance and the mean are linked by the distance of the mean to the bound of the support (in contrast to, for example, a normal distributed random variable where a change in the mean does not correspond to a change in the variance). This is important as the bounds of the EVT$_{pf}$ algorithm only hold for random variables bounded in $[0,1]$.
 
-```{r EVT_Index_Bernoulli, echo = FALSE}
+```{r EVT_Index_Bernoulli, echo = FALSE, message = FALSE, warning = FALSE, fig.align = "center", out.width='80%', fig.cap = "This graph displays the distance part of the index of the APT, SLR, and EVT algorithms. While EVT's distance is based on both the empirical mean and empirical variance, the empirical mean determines the variance in the case of Bernoullis. We see that the distance of both EVT and SLR has an asymmetric behavior."}
 bfun <- function(mu, tau) sqrt((mu*(1-mu))^2 + abs(tau-mu)) - mu*(1-mu)
-plot(seq(0,1,0.0001), bfun(0,seq(0,1,0.0001)), type = "l",
-     xlab = "Sample Mean", ylab = "Distance $D_i(t)$", main = "Variation over tau")
-for(i in 1:length(seq(0,1,by=0.1))) {
-  lines(seq(0,1,0.0001), bfun(seq(0,1,by=0.1)[i], seq(0,1,0.0001)), 
-        col = rainbow(length(seq(0,1,by=0.1)))[i])
-}
+KL_ber <- function(p,q) p*log(p/q) + (1-p)*log((1-p)/(1-q))
+KL_gauss <- function(p,q) 2*(p-q)^2
+
+evtdf <- data.frame(mu = seq(0.0000001,0.5,length.out = 10000),
+                    tau = rep(0.1, 10000)) %>%
+  mutate(APT = KL_gauss(mu, tau),
+         SLR = KL_ber(mu, tau),
+         EVT = bfun(mu, tau)) %>%
+  gather(key = Algorithm, value = Distance, -mu, -tau) %>%
+  mutate(tau = as.character(tau))
+
+ggplot(evtdf, aes(x = mu, y = Distance, 
+                  group = Algorithm, color = Algorithm,
+                  linetype = Algorithm)) +
+  geom_line() +
+  labs(title = "Comparison of Distance Measures by Algorithm",
+       subtitle = "For Bernoulli arms and a threshold at 0.1.",
+       x = "Empirical Mean Estimate") +
+  theme_bw() +
+  theme(legend.position = "bottom")
 ```
 
 By defining a new complexity measure $H^{\text{EVT}_{pf}}$ for the EVT$_{pf}$ algorithm, Zhong et al. (2017) are able to derive an upper bound on the expected loss of the algorithm. Let the complexity increase in the variance and decrease in the distance of the mean from the threshold such that
@@ -1108,7 +1120,7 @@ Given a lower bound that is also adapted to the new complexity $H^{\text{EVT}_{p
 
 When comparing the two complexities for example for Bernoulli random variables against some fixed threshold, we see that the smaller complexity of the EVT$_{pf}$ algorithm implies in particular that EVT$_{pf}$ could be able to cope with distributions of parameter $\mu$ close to $\tau$ much better than APT.
 
-```{r Hevt_Hapt_Comparison, echo = FALSE, message = FALSE}
+```{r Hevt_Hapt_Comparison, echo = FALSE, message = FALSE, fig.align="center", out.width = '80%', fig.cap = "This graph compares the complexity terms used in the APT, AugUCB, and EVT algorithms respectively. We observe that as the mean of the arm's distribution is closer to the threshold, the complexity of the problem increases much less rapidly for the EVT algorithm. Thus, the EVT should be able to cope with arms close to the threshold better than the APT algorithm. The complexity displayed for the AugUCB is an upper bound on the complexity used in the upper bound of Mukherjee et al. (2017)."}
 hevt <- function(mu, tau) {
   (mu*(1-mu))^2 * (abs(mu-tau))^{-2} + abs(mu-tau)^{-1}
 }
@@ -1117,14 +1129,27 @@ hapt <- function(mu, tau) {
   abs(mu-tau)^{-2}
 }
 
-plot(seq(0.1,0.9,0.0001), 
-     hapt(seq(0.1,0.9,0.0001), 0.5), type = "l",
-     ylim = c(0,400), ylab = "Complexity", xlab = "Bernoulli Mean",
-     main = "APT vs EVT Complexity for tau = 0.5")
-lines(c(seq(0.1,0.9,0.0001)), 
-      hevt(c(seq(0.1,0.9,0.0001)), 0.5),
-      col = "blue")
-abline(v = 0.5, lty = 2)
+haugucb <- function(mu, tau) {
+  vars <- mu*(1-mu)
+  (sqrt(vars) + sqrt(vars + (16/3)*(abs(mu-tau))))/(abs(mu-tau)^2)
+}
+
+hcompdf <- data.frame(mu = seq(0.1,0.9,length.out = 10000),
+                      tau = rep(0.5, 10000)) %>%
+  mutate(APT = hapt(mu, tau),
+         EVT = hevt(mu, tau),
+         AugUCB = haugucb(mu, tau)) %>%
+  gather(key = Algorithm, value = Complexity, -mu, -tau)
+
+ggplot(hcompdf, aes(x = mu, y = Complexity, group = Algorithm,
+                    color = Algorithm, linetype = Algorithm)) +
+  geom_line() +
+  geom_vline(aes(xintercept = 0.5), linetype = 2) +
+  ylim(c(0,400)) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  labs(x = "Mean", title = "Comparison of Complexity Terms",
+       subtitle = "Complexity of single Bernoulli arm for APT and EVT and a threshold at 0.5.")
 ```
 
 ## Likelihood Ratio for Exponential Family Distributions \label{sec:LikelihoodRatioForExponentialFamily}
@@ -1330,9 +1355,9 @@ where we employ the number of pulls so far for a given arm as the confidence mea
 
 As we see in the experiments that follow, the Simple Likelihood Strategy is able to improve significantly upon the Anytime Parameter Free strategy in many cases.
 
-# Experiments
+# Experiments \label{chap:Experiments}
 
-## Synthetic Data
+## Synthetic Data \label{sec:SyntheticData}
 
 In order to evaluate the empirical performance of the proposed algorithms, we run the algorithm on synthetic data as is usual. We compare its performance on this data not only against the APT algorithm, but also against the variance-based algorithms. Thus we also compare the variance-based algorithms for the first time directly against each other instead of just relative to the APT algorithm.
 
@@ -1354,7 +1379,7 @@ This first experiment gives an experiment where all algorithms should perform we
 
 As the next figure shows, essentially all methods converge rapidly to an error rate of zero. Except for the uniform method that clearly lacks behind. We also observe that the variance based algorithms (Augmented UCB and EVT) lag behind at first. Augmented UCB is able to adjust its sampling scheme after 1000 iterations and rapdily improves to the level of APT. EVT takes about 250 samples more to start a quick descend to the performance of the other algorithms. All of this, however, happens below an error rate of 0.01. While the SLR algorithm improves upon APT, the improvement is a slight one, and not very large in terms of budget difference. This underlines that the scenario at hand is the ideal one for the APT algorithm.
 
-```{r simulation1_results, echo = FALSE}
+```{r simulation1_results, echo = FALSE, fig.align = "center", out.width = '80%'}
 library(ggplot2)
 current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/synthetic_experiments/"
 
@@ -1381,7 +1406,9 @@ ggplot(loc2_comp_res, aes(x = index, y = results)) +
                                    tau,' = 0.5')), 
        y = "log(Error)", x = "Round Index") + 
   coord_cartesian(xlim = c(0,2000)) +
-  scale_color_discrete(name = "Algorithm")
+  scale_color_discrete(name = "Algorithm") + 
+  theme_bw() +
+  theme(legend.position = "bottom")
 
 ```
 
@@ -1411,7 +1438,7 @@ knitr::kable(t(mean_loc6nt), digits = 3, col.names = paste0("V", 1:10), caption 
 
 
 
-```{r simulation2_results, echo = FALSE}
+```{r simulation2_results, echo = FALSE, fig.align = "center", out.width = '80%'}
 library(ggplot2)
 current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/synthetic_experiments/"
 
@@ -1437,31 +1464,39 @@ ggplot(loc6nt_comp_res, aes(x = index, y = results)) +
        subtitle = expression(paste("Difficult scenario for APT; ", 
                                    tau,' = 0.05 and 10 arms. Dashed line at Error = 0.1.')), 
        y = "log(Error)", x = "Round Index") +
-  scale_color_discrete(name = "Algorithm")
+  scale_color_discrete(name = "Algorithm") +
+  theme_bw() + 
+  theme(legend.position = "bottom")
 ```
 
-```{r, echo = FALSE, message = FALSE}
+```{r, echo = FALSE, message = FALSE, fig.align = "center", out.width = '80%'}
 load(file = "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/Thesis/experiment_postprocessing/loc6nt_ma.Rda")
 library(dplyr)
 
 rbind(loc6nt_APT_ma, loc6nt_LR_ma) %>%
-  ggplot(aes(x = index, y = mean, group = arm, color = arm)) +
+  rename(Arm = arm) %>%
+  ggplot(aes(x = index, y = mean, group = Arm, color = Arm)) +
   geom_line(size = 0.3) +
   facet_grid(.~algorithm) +
   labs(x = "Index", y = "10 Rounds Moving Average",
        title = "Average Number of Pulls Allocated to Each Arm per Round",
        subtitle = "5000 iterations; a value of 1000 means that in 20% of 
 the iterations the arm was pulled in that round.") +
+  theme_bw() +
   theme(legend.position = "bottom")
+```
 
+```{r, echo = FALSE, message = FALSE, fig.align = "center", out.width = '80%'}
 rbind(loc6nt_BUCB_c15_ma, loc6nt_BUCB_ma, loc6nt_BUCB_c5_ma) %>%
-  ggplot(aes(x = index, y = mean, group = arm, color = arm)) +
+  rename(Arm = arm) %>%
+  ggplot(aes(x = index, y = mean, group = Arm, color = Arm)) +
   geom_line(size = 0.3) +
   facet_grid(.~algorithm) +
   labs(x = "Index", y = "10 Rounds Moving Average",
        title = "Average Number of Pulls Allocated to Each Arm per Round",
        subtitle = "5000 iterations; a value of 1000 means that in 20% of 
-       the iterations the arm was pulled in that round.")+
+       the iterations the arm was pulled in that round.") +
+  theme_bw() +
   theme(legend.position = "bottom")
 ```
 
@@ -1480,7 +1515,7 @@ knitr::kable(t(mean_loc7nt), digits = 4, col.names = paste0("V", 1:11), caption 
 ```
 
 
-```{r simulation3_results, echo = FALSE}
+```{r simulation3_results, echo = FALSE, fig.align = "center", out.width = '80%'}
 library(ggplot2)
 current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/synthetic_experiments/"
 
@@ -1497,21 +1532,22 @@ index <- c(rep(11:10000, times = 5), 22:10000)
 alg_res <- log(c(loc7nt_comp_UNIFORM_10000, loc7nt_comp_APT_10000,
                  loc7nt_comp_AugUCB_10000, loc7nt_comp_LR_10000,
                  loc7nt_comp_BUCB_horizon_10000, loc7nt_comp_EVT))
-loc7nt_comp_res <- data.frame(index = index, names = alg_names, 
+loc7nt_comp_res <- data.frame(index = index, Algorithm = alg_names, 
                             results = alg_res)
 ggplot(loc7nt_comp_res, aes(x = index, y = results)) + 
-  geom_line(aes(group = names, color = names)) +
+  geom_line(aes(group = Algorithm, color = Algorithm)) +
   geom_hline(aes(yintercept = log(0.1)), linetype = 2) +
-  geom_vline(aes(xintercept = 7000), linetype = 2) +
   labs(title = "Results of Synthetic Experiment 3", 
        subtitle = expression(paste("Difficult scenario for APT; ", 
                         tau,' = 0.01 and 11 arms. Dashed line at Error = 0.1.')), 
-       y = "log(Error)", x = "Round Index")
+       y = "log(Error)", x = "Round Index") +
+  theme_bw() +
+  theme(legend.position = "bottom")
 ```
 
 ## Experiment 4: Exponential Distribution with $\tau = 1$
 
-```{r simulation4_results, echo = FALSE}
+```{r simulation4_results, echo = FALSE, fig.align = "center", out.width = '80%'}
 library(ggplot2)
 current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/synthetic_experiments/exponential/"
 
@@ -1526,15 +1562,17 @@ alg_names <- c(rep(c("Uniform", "APT","SLR", "AugUCB"),
 index <- c(rep(20:4000, times = 4), 40:4000)
 alg_res <- log(c(exp2_comp_UNIFORM, exp2_comp_APT, exp2_comp_LR,
                  exp2_comp_AugUCB, exp2_comp_EVT))
-exp2_comp_res <- data.frame(index = index, names = alg_names, 
+exp2_comp_res <- data.frame(index = index, Algorithm = alg_names, 
                             results = alg_res)
 ggplot(exp2_comp_res, aes(x = index, y = results)) + 
-  geom_line(aes(group = names, color = names)) +
+  geom_line(aes(group = Algorithm, color = Algorithm)) +
   geom_hline(aes(yintercept = log(0.1)), linetype = 2) +
   labs(title = "Results of Experiment 4", 
        subtitle = expression(paste("Exponential distributed arms; ", 
                         tau,' = 1 and 20 arms. Dashed line at Error = 0.1.')), 
-       y = "log(Error)", x = "Round Index")
+       y = "log(Error)", x = "Round Index") +
+  theme_bw() +
+  theme(legend.position = "bottom")
 ```
 
 ## Experiment 5: Poisson Distribution with $\tau = 1$
@@ -1548,7 +1586,7 @@ mu_pois2 <- rexp(20, 1/0.7)
 knitr::kable(t(sort(mu_pois2)), digits = 4, col.names = paste0("V", 1:20), caption = "Means of Poisson arms in simulation 5 compared to a threshold of 0.4.")
 ```
 
-```{r simulation5_results, echo = FALSE}
+```{r simulation5_results, echo = FALSE, fig.align = "center", out.width = '80%'}
 library(ggplot2)
 current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/synthetic_experiments/poisson/"
 
@@ -1562,15 +1600,17 @@ alg_names <- c(rep(c("Uniform", "APT", "SLR"), each = 9981),
 index <- c(rep(20:10000, times = 3), 40:10000)
 alg_res <- log(c(pois2_comp_UNIFORM, pois2_comp_APT, 
                  pois2_comp_LR, pois2_comp_EVT))
-pois2_comp_res <- data.frame(index = index, names = alg_names, 
+pois2_comp_res <- data.frame(index = index, Algorithm = alg_names, 
                             results = alg_res)
 ggplot(pois2_comp_res, aes(x = index, y = results)) + 
-  geom_line(aes(group = names, color = names)) +
+  geom_line(aes(group = Algorithm, color = Algorithm)) +
   geom_hline(aes(yintercept = log(0.1)), linetype = 2) +
-  labs(title = "Results of Experiment 4", 
+  labs(title = "Results of Experiment 5", 
        subtitle = expression(paste("Poisson distributed arms; ", 
                         tau,' = 0.4 and 20 arms. Dashed line at Error = 0.1.')), 
-       y = "log(Error)", x = "Round Index")
+       y = "log(Error)", x = "Round Index") +
+  theme_bw() +
+  theme(legend.position = "bottom")
 ```
 
 ## Real Data
@@ -1622,7 +1662,7 @@ In order to visualize the time dependency that we expect for our samples, we plo
 
 The graph again underlines that arm $V64$ is likely to be very difficult to classify given that it's moving average even crosses the threshold twice. The same is true for arm $V139$, which is not visible when considering the overall mean alone. Furthermore, arms $V159$ and $V189$ come very close to the threshold at times.
 
-```{r, echo = FALSE, message = FALSE}
+```{r, echo = FALSE, message = FALSE, fig.align = "center", out.width = '80%'}
 library(zoo)
 library(tidyr)
 library(dplyr)
@@ -1633,7 +1673,8 @@ real_daily <- data.frame(index = 1:8641,
                                 lapply(data_amo3_wide[1:10080,], FUN = rollapply, 
                                        width = 24*60, mean)) %>%
   gather(arm, mean, -index) %>%
-  mutate(source = rep("Real", 86410))
+  mutate(source = rep("Real", 86410)) %>%
+  rename(Arm = arm)
 
 real_means <- colMeans(data_amo3_wide[1:10080,])
 tau_amo3 <- 2/60
@@ -1648,16 +1689,19 @@ names(syn_data) <- names(data_amo3_wide)
 syn_daily <- data.frame(source = rep("Synthetic", 8641),
                         index = 1:8641,
                         lapply(syn_data, FUN = zoo::rollapply, width = 24*60, mean)) %>%
-  gather(arm, mean, -index, -source)
+  gather(arm, mean, -index, -source) %>%
+  rename(Arm = arm)
 
 rbind(real_daily, syn_daily) %>%
-  ggplot(aes(x = index, y = mean, group = arm, color = arm)) +
+  ggplot(aes(x = index, y = mean, group = Arm, color = Arm)) +
   geom_line(size = 0.4) +
   geom_hline(aes(yintercept = tau_amo3), linetype = 2) +
   facet_grid(.~source) + 
   labs(title = "Moving average over 24*60 observations (1 day)", 
        subtitle = "Horizontal bar indicates the threshold.", 
-       x = "Index", y = "One day moving average")
+       x = "Index", y = "One day moving average") +
+  theme_bw() +
+  theme(legend.position = "bottom")
 ```
 
 These difficulties seem to have a large impact on the performance of all algorithms. Given that the data are $\{0,1\}$ observations, we can compare all algorithms in a setting in which one expects all assumptions to hold before having observed the data. The distribution is sub-Gaussian for the APT algorithm, bounded between $0$ and $1$ for the variance-based algorithms, and assumed to be Bernoulli for the SLR algorithm. Additionally, we use the B-UCB algorithm as it performed often best on the synthetic data.
@@ -1666,7 +1710,7 @@ We set $\epsilon = 0$, and $\tau = 2/60$. For the AugUCB algorithm we use the pa
 
 The corresponding results are shown in the next figure.
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.align = "center", out.width = '80%'}
 library(ggplot2)
 current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/"
 
@@ -1681,14 +1725,16 @@ alg_names <- c(rep(c("Uniform", "APT", "AugUCB","SLR","B-UCB"),
                    each = 10071), rep("EVT", 10061))
 index <- c(rep(10:10080, times = 5), 20:10080)
 alg_res <- log(c(amo3_comp_UNIFORM, amo3_comp_APT, amo3_comp_AugUCB, amo3_comp_LR, amo3_comp_BUCB, amo3_comp_EVT))
-loc3_comp_res <- data.frame(index = index, names = alg_names, 
+loc3_comp_res <- data.frame(index = index, Algorithm = alg_names, 
                             results = alg_res)
 ggplot(loc3_comp_res, aes(x = index, y = results)) + 
-  geom_line(aes(group = names, color = names)) +
+  geom_line(aes(group = Algorithm, color = Algorithm)) +
   geom_hline(aes(yintercept = log(0.1)), linetype = 2) +
   labs(title = "Results of Real Data Experiment 1", 
-       subtitle = paste0("Sample Mean Complexity of "), 
-       y = "log(Error)", x = "Round Index")
+       subtitle = paste0("Dashed Line indicates Error = 0.1."), 
+       y = "log(Error)", x = "Round Index") +
+  theme_bw() +
+  theme(legend.position = "bottom")
 ```
 
 Compared to the previous simulations with synthetic data, the results are dramatic. First of all, we see that all strategies perform not well. All of them end above the 10% error mark after 1 week of data. Second, the uniform sampling strategy fares best when evaluated against the sample mean of all observations used during training. This of course is the opposite of what we would like to see, and the opposite of what we saw on the synthetic data, where we were able to improve upon the naive strategy. Third, again in contrast to the results on synthetic data, we observe non-monotonicity in the error curves. Given that the highs and lows run very much parallel for the different models, it stands to reason that this effect is caused by the variation in means of the arms over time. Indeed, roughly comparing the error curves to the moving averages in the previous figure, the increase in errors after round $5000$ and the decreasing error after round $7500$ seems to line up more or less with the fluctuations observed in the data. Given that we evaluate the models against a sample mean of all observations, it is not surprising that the uniform sampling strategy has a certain advantage when it comes to "factoring out" the seasonalities. In contrast, the adaptive sampling schemes try to adapt more or less quickly to the changes in the means; a feature that would be valuable in a cumulative regret multi-armed bandit setting. Here, however, it leads to wrong estimates of the sample mean.
@@ -1722,7 +1768,7 @@ Given the moving averages and the previous experiment, the performance results o
 
 This last fact is of particular interest, as Bayes-UCB is dramatically better than the other strategies in experiments on synthetic data. On the right hand side of the same figure, the performance of the algorithms on synthetic data from Bernoulli distributions with the same sample mean is depicted. On this data, Bayes-UCB performs very well, ending at an average error of about 0.1% of the simulations. This mirrors its performance observed in the previous simulations with synthetic data. Also all other strategies perform clearly better now, and their error rates are strictly decreasing. Interestingly, the uniform sampling scheme is now much worse than in the experiment on real data; it does no longer have the advantage of sampling the different mean phases at a representative rate. Instead, it is no in its original position of serving as upper bound on the error rate. Excluding Bayes-UCB, we see that the SLR algorithm performs better the best, followed by the variance-based algorithms. APT comes in at the same error rate as uniform sampling. While the difference between SLR and EVT are less than 2% (1.2% vs 3%), the difference to uniform sampling (10%) is relevant. The performance of 10% error rate is achieved by SLR about 1000 observations earlier than by EVT.
 
-```{r, echo = FALSE, message = FALSE}
+```{r, echo = FALSE, message = FALSE, fig.align = "center", out.width = '80%'}
 library(zoo)
 library(tidyr)
 library(dplyr)
@@ -1730,7 +1776,8 @@ library(ggplot2)
 load("/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/data_amo4_wide.Rda")
 
 real_daily <- data.frame(index = 1:8641,
-                                lapply(data_amo4_wide[1:10080,], FUN = rollapply, 
+                                lapply(data_amo4_wide[1:10080,], 
+                                       FUN = rollapply, 
                                        width = 24*60, mean)) %>%
   gather(arm, mean, -index) %>%
   mutate(source = rep("Real", 86410))
@@ -1751,13 +1798,15 @@ syn_daily <- data.frame(source = rep("Synthetic", 8641),
   gather(arm, mean, -index, -source)
 
 rbind(real_daily, syn_daily) %>%
-  ggplot(aes(x = index, y = mean, group = arm, color = arm)) +
+  rename(Arm = arm) %>%
+  ggplot(aes(x = index, y = mean, group = Arm, color = Arm)) +
   geom_line(size = 0.4) +
   geom_hline(aes(yintercept = tau_amo4), linetype = 2) +
   facet_grid(.~source) + 
   labs(title = "Moving average over 24*60 observations (1 day)", 
        subtitle = "Horizontal bar indicates the threshold.", 
        x = "Index", y = "One day moving average") +
+  theme_bw() +
   theme(legend.position = "bottom")
 
 amo4_cummean_real <- data_amo4_wide[1:10080,] %>% tbl_df() %>%
@@ -1773,7 +1822,8 @@ amo4_cummean_syn <- syn_data %>% tbl_df() %>%
   mutate(source = rep("Synthetic", 100800))
 
 rbind(amo4_cummean_real, amo4_cummean_syn) %>%
-  ggplot(aes(x = index, y = mean, group = arm, color = arm)) +
+  rename(Arm = arm) %>%
+  ggplot(aes(x = index, y = mean, group = Arm, color = Arm)) +
   geom_line(size = 0.4) +
   geom_hline(aes(yintercept = tau_amo4), linetype = 2) +
   facet_grid(.~source) + 
@@ -1781,6 +1831,7 @@ rbind(amo4_cummean_real, amo4_cummean_syn) %>%
        subtitle = "Horizontal bar indicates the threshold.", 
        x = "Index", y = "Running average") +
   ylim(c(0,0.3)) +
+  theme_bw() +
   theme(legend.position = "bottom")
 
 amo4_cummean_real_12hrs <- data_amo4_wide[721:10800,] %>% 
@@ -1791,7 +1842,8 @@ amo4_cummean_real_12hrs <- data_amo4_wide[721:10800,] %>%
   mutate(source = rep("Real", 100800))
 
 rbind(amo4_cummean_real_12hrs, amo4_cummean_syn) %>%
-  ggplot(aes(x = index, y = mean, group = arm, color = arm)) +
+  rename(Arm = arm) %>%
+  ggplot(aes(x = index, y = mean, group = Arm, color = Arm)) +
   geom_line(size = 0.4) +
   geom_hline(aes(yintercept = tau_amo4), linetype = 2) +
   facet_grid(.~source) + 
@@ -1799,6 +1851,7 @@ rbind(amo4_cummean_real_12hrs, amo4_cummean_syn) %>%
        subtitle = "Horizontal bar indicates the threshold.", 
        x = "Index", y = "Running average") +
   ylim(c(0,0.3)) +
+  theme_bw() +
   theme(legend.position = "bottom")
 
 load("/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/data_amo4_shuffled_wide.Rda")
@@ -1807,14 +1860,16 @@ set.seed(214237)
 shuffle_idx <- sample(1:(24*60), 24*60)
 data_amo4_shuffled_wide[1:1440,] <- data_amo4_shuffled_wide[shuffle_idx,]
 
-amo4_shuffled_cummean_real <- data_amo4_shuffled_wide[1:10080,] %>% tbl_df() %>%
+amo4_shuffled_cummean_real <- data_amo4_shuffled_wide[1:10080,] %>%
+  tbl_df() %>%
   mutate_each(funs(cummean)) %>%
   mutate(index = 1:10080) %>%
   gather(arm, mean, -index) %>%
   mutate(source = rep("Real", 100800))
 
 rbind(amo4_shuffled_cummean_real, amo4_cummean_syn) %>%
-  ggplot(aes(x = index, y = mean, group = arm, color = arm)) +
+  rename(Arm = arm) %>%
+  ggplot(aes(x = index, y = mean, group = Arm, color = Arm)) +
   geom_line(size = 0.4) +
   geom_hline(aes(yintercept = tau_amo4), linetype = 2) +
   facet_grid(.~source) + 
@@ -1822,14 +1877,13 @@ rbind(amo4_shuffled_cummean_real, amo4_cummean_syn) %>%
        subtitle = "Horizontal bar indicates the threshold.", 
        x = "Index", y = "Running average") +
   ylim(c(0,0.3)) +
+  theme_bw() +
   theme(legend.position = "bottom")
-
-
 ```
 
 
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.align = "center", out.width = '80%'}
 library(ggplot2)
 current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/"
 
@@ -1864,16 +1918,19 @@ alg_res <- log(c(amo4sim_comp_UNIFORM, amo4sim_comp_APT, amo4sim_comp_AugUCB,
 source_name <- rep("Synthetic", 60416)
 loc4sim_comp_res <- data.frame(source = source_name, index = index, 
                                names = alg_names, results = alg_res)
-loc4total <- rbind(loc4_comp_res, loc4sim_comp_res)
+loc4total <- rbind(loc4_comp_res, loc4sim_comp_res) %>%
+  rename(Algorithm = names)
 
 ggplot(loc4total, aes(x = index, y = results, 
-                      group = names, color = names)) + 
+                      group = Algorithm, color = Algorithm)) + 
   geom_line() +
   facet_grid(.~source) +
   geom_hline(aes(yintercept = log(0.1)), linetype = 2) +
   labs(title = "Results of Real Data Experiment 2", 
-       subtitle = paste0("Sample Mean Complexity of "), 
-       y = "log(Error)", x = "Round Index")
+       subtitle = paste0("Dashed line indicates Error = 0.1."), 
+       y = "log(Error)", x = "Round Index") +
+  theme_bw() +
+  theme(legend.position = "bottom")
 ```
 
 We can try to understand why some strategies fail, while showing significant improvements on synthetic data. Given that we run 5000 iterations of the experiment, we can assess in how many of these iterations a given arm was pulled at a given round. Comparing these sampling shares across algorithms may give us hints to as to why algorithms perform a certain way. Given the setup with 5000 iterations and 10 arms in the current experiment, we would expect for the uniform strategy on average 500 pulls for each arm in every round. Given this benchmark, we can now look at how the other strategies split their budget. In the figures below, we have plotted not the absolute pulls per round, but have applied a 10-round moving average to remove some of the fluctuation in the plotted lines.
@@ -1892,10 +1949,11 @@ rbind(amo4_LR_ma, amo4sim_LR_ma, amo4_AugUCB_ma, amo4sim_AugUCB_ma) %>%
   geom_line(size = 0.3) +
   facet_grid(source~algorithm) +
   labs(x = "Index", y = "10 Rounds Moving Average",
-       title = "Average Number of Pulls Allocated to Each Arm per Round")
+       title = "Average Number of Pulls Allocated to Each Arm per Round") +
+  theme_bw()
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.align = "center", out.width = '80%'}
 load(file = "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/Thesis/experiment_postprocessing/amo4_arm_seq_ma.Rda")
 rbind(amo4sim_APT_ma, amo4_APT_ma, amo4_LR_ma, amo4sim_LR_ma, amo4_EVT_ma, amo4sim_EVT_ma, amo4_BUCB_ma, amo4sim_BUCB_ma) %>%
   ggplot(aes(x = index, y = mean, group = arm, color = arm)) +
@@ -1903,12 +1961,13 @@ rbind(amo4sim_APT_ma, amo4_APT_ma, amo4_LR_ma, amo4sim_LR_ma, amo4_EVT_ma, amo4s
   facet_grid(source~algorithm) +
   labs(x = "Index", y = "10 Rounds Moving Average",
        title = "Share of Iterations Pulling an Arm at a Given Round") +
+  theme_bw() +
   theme(legend.position = "bottom") +
-  scale_color_discrete(name = "Arms")
+  scale_color_discrete(name = "Arm")
 ```
 
 # Conclusion
 
 # Notes
 
-The authors thank Alexandra Carpentier, Andrea Locatelli, and Urun Dogan for many hours of valuable feedback and ideas. <3
+The author thanks Alexandra Carpentier, Andrea Locatelli, and Urun Dogan for many hours of valuable feedback and ideas. <3

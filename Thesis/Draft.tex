@@ -936,8 +936,6 @@ upper bounded by
 \mathbb{E}[L] = 1 - \mathbb{P}(\xi) \leq 2(\log(T)+1)K \exp(-\frac{1}{64R^2}\frac{T}{H}).
 \]
 
-\newpage
-
 We now present the lower bound given in Locatelli et al. (2016) for the
 thresholding bandit problem. In order to derive the bound, a problem is
 specified to show that the error of the lower bound is attained even in
@@ -1287,10 +1285,16 @@ et al. (2016), given simply by
 & \geq \frac{1}{2}
 \end{align*}
 
-\newpage
-
 \subsection{\texorpdfstring{Discussion
 \label{sec:DiscussionLocatelli}}{Discussion }}\label{discussion}
+
+\begin{itemize}
+\tightlist
+\item
+  Mention Optimality (Upper Bound matches lower bound)
+\item
+  Anytime
+\end{itemize}
 
 One of the APT algorithm's main features is its simplicity. The sampling
 rule is very straightforward, and, as highlighted in Locatelli et al.
@@ -1367,7 +1371,7 @@ parameterized by \(\mu_i\) and \(\mu_j=\tau\), we write
 
 In the case of \(\tau = 0.5\), the latter KL-divergence is symmetric in
 its first argument, and thus can be relatively well approximated by
-Pinsker's inequality (SHOW IN GRAPH!):
+Pinsker's inequality:
 
 \[
 \KL_{Ber}(\nu_i||\nu_j) \geq 2(\mu_i - \tau)^2.
@@ -1401,13 +1405,16 @@ problem as detailed in Kaufmann and Garivier (2016) and Kaufmann et al.
 (2016). Before introducing a new algorithm for the thresholding bandit
 problem based on Kullback-Leibler divergences in
 \autoref{sec:LikelihoodRatioForExponentialFamily}, we first describe the
-variance-based approaches in \autoref{sec:VarianceBasedAlgorithms}.
+variance-based approaches in \autoref{chap:VarianceBasedAlgorithms}.
 
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-1-1.pdf}
+\begin{figure}
 
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-2-1.pdf}
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/KLApproximationComparison-1} 
 
-\newpage
+}
+
+\caption{The approximation of the Bernoulli KL-divergence by the Gaussian KL-divergence works well if the second argument is equal to 0.5. Else we observe poor approximation in both value and symmetry. This becomes more obvious as the arguments move away from 0.5.}\label{fig:KLApproximationComparison}
+\end{figure}
 
 \section{\texorpdfstring{Kullback-Leibler Complexity of Pure Exploration
 \label{chap:KullbackLeiblerPureExploration}}{Kullback-Leibler Complexity of Pure Exploration }}\label{kullback-leibler-complexity-of-pure-exploration}
@@ -1555,7 +1562,7 @@ And so the final lower bound can be written as
 \mathbb{E}_{\nu}[\tau] \geq \Big( \sum_{a \in \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m+1]})} + \sum_{a \notin \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m]})} \Big) \log \big(\frac{1}{2.4\delta} \big).
 \end{equation*}
 
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-3-1.pdf}
+\includegraphics{Draft_files/figure-latex/unnamed-chunk-1-1.pdf}
 
 Given this general lower bound for the sampling complexity, or expected
 number of draws, it makes sense to define the complexity of a Top-\(m\)
@@ -1879,9 +1886,8 @@ problems for which the optimal arm is different from the one in
 where \(\bm{\lambda}\) is the vector of means defining the distributions
 of the alternative problem to \(\bm{\mu}\). Lastly, we have the set of
 probability distributions on the arms \(\mathcal{A}\):
-\(\Sigma_K = \{w \in \mathbb{R}_{+}^K: w_1 + \dots + w_K = 1\}\).
-\marginpar{Give more intuition for what these probability distributions are}
-We are now ready to state the theorem.
+\(\Sigma_K = \{w \in \mathbb{R}_{+}^K: w_1 + \dots + w_K = 1\}\). We are
+now ready to state the theorem.
 
 \begin{theorem}[Theorem 1, Garivier and Kaufmann, 2016] \label{theorem:GarivierKaufmannTheorem1}
 Let $\delta \in (0,1)$. For any $\delta$-PAC strategy and any bandit model $\bm{\mu} \in \mathcal{S}$,
@@ -2174,88 +2180,81 @@ Theorem \ref{theorem:GarivierKaufmannTheorem1} using equation
 
 \newpage
 
-\section{Extensions to the Thresholding Bandit
-Problem}\label{extensions-to-the-thresholding-bandit-problem}
+\section{\texorpdfstring{Extensions to the Thresholding Bandit Problem
+\label{chap:Extensions}}{Extensions to the Thresholding Bandit Problem }}\label{extensions-to-the-thresholding-bandit-problem}
 
-\subsection{Introduction}\label{introduction-1}
+\subsection{\texorpdfstring{Introduction
+\label{sec:ExtensionsIntroduction}}{Introduction }}\label{introduction-1}
 
-We have introduced the thresholding bandit problem in chapter 1. The APT
-algorith described in Locatelli et al. (2016) is able to match a lower
-bound (be more specific!) given in the same paper, and has several
-favorable characteristics such as its overall simplicity and it being an
-anytime algorithm. However, the bounds on the expected loss assume the
-arms' distributions to be \(R\)-sub-Gaussian. This is reflected in the
-algorithm's complexity measure
-\(H = \sum_{i=1}^K (\Delta_i^{\tau, \epsilon})^{-2}\), where
-\(\Delta_i^{\tau,\epsilon} = |\mu_i - \tau| + \epsilon\), which -- given
-the known threshold \(\tau \pm \epsilon\) -- only depends on the
-distribution's mean. This is appropriate for Gaussian arms with equal
-variances, but potentially inefficient for other kinds of distributions.
+In \autoref{chap:ThresholdingBanditProblem} we have introduced the
+thresholding bandit problem as proposed in Locatelli et al. (2016)
+alongside the APT algorithm. We have seen that the upper bound on the
+APT algorithm matches the lower bound for the thresholding bandit
+problem given in Locatelli et al. (2016). The algorithm also exhibits
+favorable characteristics such that its upper bound holds at any
+stopping time, and that it does not require any parameter to be known
+upfront. However, we have seen that the index and the complexity term
+\(H\) employed by the APT algorithm are the most effective for
+\(R\)-sub-Gaussian distributions. Both are related to the KL-divergence
+between two Gaussian distributions of equal variance. Given that this
+sub-Gaussian approximation can be poor in certain cases, we motivated
+the use of information theoretic measures in an algorithm's index
+(compare \autoref{sec:DiscussionLocatelli}).
+
+Another goal can be to compare the distributions with the threshold
+based not only on the empirical mean -- as done by the APT algorithm. A
+logical extension is for example the empirical variance. After all arms
+do not necessarily have the same variance, even if they are
+sub-Gaussian. And given two arms for which we estimate the same mean, we
+would prefer to draw more samples from the arm with the larger variance.
 
 In the case of Gaussian distributions with varying variances, for
 example, it makes sense to take the variance into account; after all,
 given two Gaussians with equal mean, intuitively we would prefer to get
 a sample from the distribution of larger variance.
 
-In the case of Gaussians, the complexity \(H\) is nice also because it
-reflects the Kullback-Leibler divergence between two Gaussians. And
-since Bernoulli distributions are bounded on the interval \([0,1]\),
-they are consequently sub-Gaussian, meaning that their Kullback-Leibler
-divergence can be approximated by the Gaussian one. However, while
-Bernoullis are sub-Gaussian, the approximation of their divergence by
-the Gaussian divergence becomes less and less optimal as the parameter
-(and thus mean) goes to \(0\) or \(1\), as shown in chapter 1. And while
-online advertisements might not be an obvious use case for thresholding
-bandits, they are just one real life scenario dominated by Bernoulli
-distributions with very small parameters. Thus it is worthwile to adapt
-current solutions of the thresholding bandit problem to cases in which
-the Gaussian Kullback-Leibler divergence is no longer an appropriate
-approximation.
+For these reasons, in the following, we first present in
+\autoref{sec:VarianceBasedAlgorithms} two algorithms which incorporate
+empirical variances as described in Mukherjee et al. (2017) and Zhong et
+al. (2017). We then introduce a new algorithm based on the concept of
+likelihood ratios in \autoref{sec:LikelihoodRatioForExponentialFamily}.
+Finally, we compare the performance of different algorithms based on
+simulations and real world data sets in \autoref{chap:Experiments}.
 
-Large motiviation for the idea of adjusting the complexity measure (and
-thus the algorithms) to distributions more generally based on the
-Kullback-Leibler divergence stems from the work discussed in chapter 2,
-complexity measures were defined for the pure exploration bandits in
-terms of the Kullback-Leibler divergence. Based on this, the authors
-were for example able to point our differences between Gaussian and
-Bernoulli bandits. We expect that results in a similar vain could be
-derived for thresholding bandits.
-
-To this end, in the following, we first present an extension of mean
-based algorithms to an algorithm that incorporates empirical variances
-as described in Mukherjee et al. (2017). Afterwards, we propose and
-discuss potential further improvements based on Kullback-Leibler
-divergence and Bayesian posterior distributions. Finally, we compare the
-performance of different algorithms based on simulations and real world
-data sets.
-
-\subsection{\texorpdfstring{Variance Based Algorithms for Thresholding
-Bandits
-\label{chap:VarianceBasedAlgorithms}}{Variance Based Algorithms for Thresholding Bandits }}\label{variance-based-algorithms-for-thresholding-bandits}
+\subsection{\texorpdfstring{Variance Based Algorithms for the
+Thresholding Bandit
+\label{sec:VarianceBasedAlgorithms}}{Variance Based Algorithms for the Thresholding Bandit }}\label{variance-based-algorithms-for-the-thresholding-bandit}
 
 \subsubsection{\texorpdfstring{Augmented-UCB Algorithm
 \label{sec:AugUCBAlgorithm}}{Augmented-UCB Algorithm }}\label{augmented-ucb-algorithm}
 
-Mukherjee et al. (2017) propose an algorithm based on variance estimates
-called Augmented-UCB (AugUCB). The setting in which the algorithm is
-proposed is very similar to the setting in Locatelli et al. (2016). The
-algorithm itself, however, differs heavily from the APT algorithm. So is
-AugUCB for example not an anytime algorithm. Furthermore, arms can be
-deleted in every round if there are ``far enough'' away from the mean.
-Both the decision of which arm is played in a given round, and whether
-an arm is removed from the active set of arm, is based not only on the
-empirical mean estimate \(\mu_i(t)\), but also on a term \(s_i\) that is
-increasing linearly in the estimated standard deviation. While the APT
-algorithm plays the arm minimizing the quantity
-\(B_i(t+1) = \sqrt{T_i(t)} \hat{\Delta}_i(t) = \sqrt{T_i(t)} (|\hat{\mu}_i(t) - \tau| + \epsilon)\),
+Combining learnings from the APT and other algorithms, Mukherjee et al.
+(2017) propose the Augmented-UCB (AugUCB) algorithm based on variance
+estimates for the thresholding bandit problem. The setting they consider
+is thus very similar to the setting in Locatelli et al. (2016). The main
+difference being that, while Locatelli et al. (2016) assume
+\(R\)-sub-Gaussian reward distributions, Mukherjee et al. (2017) assume
+rewards to be bounded in \([0,1]\), which makes the AugUCB applicable to
+less distributions. The AugUCB algorithm itself differs significantly
+from the APT algorithm. The two main ideas it employs are first, upper
+confidence bounds based on the Bernstein inequality and empirical
+variance estimates to compute the index based on which an arm is chosen
+at every round. Second, if an arm estimate is ``far enough away'' from
+the threshold as measured by the confidence bounds, it will be
+``eliminated'', and no longer be pulled until the end of the budget.
+Both ideas are based not only on the empirical mean estimate
+\(\mu_i(t)\), but also on a term \(s_i\) that is increasing linearly in
+the estimated standard deviation. While the APT algorithm plays the arm
+minimizing the quantity
+\(B_i^{APT}(t+1) = \sqrt{T_i(t)} \hat{\Delta}_i(t) = \sqrt{T_i(t)} (|\hat{\mu}_i(t) - \tau| + \epsilon)\),
 AugUCB plays the arm minimizing the quantity
-\((\hat{\Delta}_i(t) - 2s_i)\), where \(s_i\) is based on the variance
+\(\hat{\Delta}_i(t) - 2s_i\), where \(s_i\) is based on the variance
 estimate \(\hat{v}_i\), and an exploration \(\psi_m\) term linear in
-\(T\), and an elimination parameter \(\rho\) (compare Algorithm 1 in
-Mukherjee et al., 2017):
+\(T\), as well as an elimination parameter \(\rho\) (compare Algorithm 1
+in Mukherjee et al., 2017):
 
 \begin{equation*}
-s_i = \sqrt{\frac{\rho \psi_m (\hat{v}_i + 1) \log(T \epsilon_m)}{4n_i}}
+s_i = \sqrt{\frac{\rho \psi_m (\hat{v}_i + 1) \log(T \epsilon_m)}{4n_i}}.
 \end{equation*}
 
 Consequently, the authors also introduce complexity measures which take
@@ -2263,49 +2262,63 @@ the variance into account. From Gabillon et al. (2011) they use
 \(H_{\sigma, 1}= \sum_{i=1}^K \frac{\sigma_i + \sqrt{\sigma_i^2 + (16/3)\Delta_i}}{\Delta_i^2}\).
 Furthermore, with
 \(\stackrel{\sim}{\Delta}_i^2 = \frac{\Delta_i^2}{\sigma_i + \sqrt{\sigma_i^2 + (16/3)\Delta_i}}\),
-and with \(\stackrel{\sim}{\Delta}_{(i)}\) being an increasing ordering
-of \(\stackrel{\sim}{\Delta}_i\), the authors define a complexity
+where \(\stackrel{\sim}{\Delta}_{(i)}\) is an increasing ordering of
+\(\stackrel{\sim}{\Delta}_i\), the authors define a complexity
 corresponding to \(H_{CSAR,2}\) in Chen et al. (2014):
 
 \begin{equation*}
-H_{\sigma,2} = \max_{i \ in \mathcal{A}} \frac{i}{\stackrel{\sim}{\Delta}_{(i)}^2}.
+H_{\sigma,2} = \max_{i \in \mathcal{A}} \frac{i}{\stackrel{\sim}{\Delta}_{(i)}^2}.
 \end{equation*}
 
 While the latter complexity appears in the provided upper bound on the
 AugUCB algorithm's expected loss, it could be replaced by
 \(H_{\sigma, 1}\) since \(H_{\sigma, 2} \leq H_{\sigma,1}\).
-\(H_{\sigma,1}\) is of course more directly comparable to the complexity
-\(H\) that we are used to.
+\(H_{\sigma,1}\) is more easily compared to the complexity \(H\) defined
+in Locatelli et al. (2016). Essentially, every arm's complexity
+contribution is additionally scaled by a term increasing in the arm's
+variance (see also the graph comparing the complexity terms of APT,
+AugUCB, and EVT algorithms below).
 
-While in the case of the APT algorithm the number of times a specific
-arm has been drawn \(T_i\) measures how concentrated the estimated mean
-is around the true mean (and thus for large \(T_i\) an arm is no longer
-drawn even if \(\hat{\mu}\) is close to \(\tau\)); in the case of the
-AugUCB algorithm this is regulated by the combination of the variance
-estimate \(\hat{v}_i\) and the exploration factor \(\psi_m\), where they
-ensure that certain arms are no longer pulled when the algorithm is
-sufficiently confident in its knowledge about the true mean. Therefore,
-when using a very similar favorable event in the proof of their upper
-bound, Mukherjee et al. (2017) have to bound the probability that an an
-arm is not removed from the active set after the a certain number of
-rounds -- even though the arm is above (respectively below) the
-threshold. If this probability is low, then this means that the
-algorithm is able to be certain about an arm's true mean \emph{quickly}
-by employing variance estimates. In comparison, Locatelli et al (2016)
-used bounds on on how often arms are drawn (\(T_i\)) to give a bound on
-the probability of the favorable event. In order to derive the bound,
-Mukherjee et al. (2017) use the Bernstein inequality.
+In the case of the APT algorithm the number of times a specific arm has
+been drawn \(T_i\) measures how concentrated the estimated mean is
+around the true mean (and thus for large \(T_i\) an arm is no longer
+drawn even if \(\hat{\mu}\) is close to \(\tau\)). This exploration is
+regulated by the combination of the variance estimate \(\hat{v}_i\) and
+the exploration factor \(\psi_m\) in the case of the AugUCB algorithm.
+The terms ensure that certain arms are no longer pulled when the
+algorithm is sufficiently confident in the location of true mean.
+Indeed, the AugUCB algorithm goes a little further than the APT
+algorithm in that it eliminates arms (no longer considers them in
+sampling) when a separation condition is estimated to hold. The same
+separation condition of estimated mean away from the threshold is used
+in the authors' upper bound proof and is reminiscient of the separation
+condition used in Locatelli et al.'s (2016) upper bound proof.
+
+Therefore, when using a very similar favorable event in the proof of
+their upper bound, Mukherjee et al. (2017) have to bound the probability
+that an an arm is not removed from the active set after the a certain
+number of rounds -- even though the arm is above (respectively below)
+the threshold. If this probability is low, then the algorithm is able to
+be certain about an arm's true mean by employing variance estimates. In
+comparison, Locatelli et al (2016) used bounds on on how often arms are
+drawn (\(T_i\)) to give a bound on the probability of the favorable
+event. In order to derive the bound, Mukherjee et al. (2017) use the
+Bernstein inequality.
 
 It has to be noted that Mukherjee et al. (2017) have to assume that the
 distributions have rewards bounded in \([0,1]\) in order to derive the
 bound on the probability that an arm has not been eliminated correctly
-in round \(T_i\). Thus, the distributions for which their upper bound
-holds are a subset of the sub-Gaussian distributions considered in
-Locatelli et al. (2016). However, it is not that the authors need to
-assume that the rewards are in \([0,1]\), but this was assumed so that
-the variance of the distribution is in \([0,1]\). Thus, the upper bound
-holds in particular for Gaussian distributions with variance
-\(\sigma^2 \in [0,1]\).
+in round \(T_i\). Else it would not be possible to upper bound the
+\(s_i\) term by \(\Delta_i/4\) as Mukherjee et al. do in their proof.
+Thus, the distributions for which their upper bound holds are a subset
+of the \(R\)-sub-Gaussian distributions considered in Locatelli et al.
+(2016). However, while the authors demand in their setting that the
+rewards are bounded in \([0,1]\), it seems that the upper bound only
+requires the arms' variances to be bounded in \([0,1]\) such that
+\(\hat{v}_i \in [0,1]\). Thus, the upper bound should hold in particular
+for Gaussian distributions with variance \(\sigma^2 \in [0,1]\).
+Consequently, the simulations by Mukherjee et al. are performed on
+Gaussian arms with variance smaller than one.
 
 Based on this assumption, the authors show that the probability that an
 arm has not been eliminated after \(m_i\) rounds is given by (compare
@@ -2320,21 +2333,16 @@ that the left part of the RHS gives the probability that the mean
 estimate is out of wack, while the right term gives the probability that
 the variance is overestimated. The first term is bounded by the
 Bernstein inequality. In the cumulative regret setting, there exists a
-similar decomposition that bounds the expected number of pulls of a
-suboptimal arm. Compare for example chapter 3.1 in ``Thompson Sampling:
-An Asymptotically Optimal Finite Time Analysis'' by Kaufmann, Korda and
-Munos (2012). There they decompose the expected number of draws of an
-suboptimal arm for an optimistic (UCB like) into the probability that
-the optimal arm's mean is underestimated, and the probability that the
-UCB of the suboptimal arm is still very large. To give bounds for UCB
-algorithms, it is then shown that these two terms show a certain
-convergence. Mukherjee et al. do similarly for their variance based
+similar decomposition for algorithms based on upper confidence bounds.
+There, the expected number of pulls of a suboptimal arm is bounded.
+Compare for example chapter 3.1 in Kaufmann, Korda and Munos (2012), in
+which the authors decompose the expected number of draws of an
+suboptimal arm into the probability that the optimal arm's mean is
+underestimated, and the probability that the upper confidence bound of
+the suboptimal arm is still very large. To give bounds for UCB
+algorithms, certain convergence rates are shown for these two
+probabilities. Mukherjee et al. do similarly for their upper confidence
 algorithm in the thresholding setting.
-
-(since the AugUCB eliminates arms, it is interesting to see how it
-behaves when the underlying CTR changes over time\ldots{})
-
--\textgreater{} Happens for exponential distribution
 
 \subsubsection{\texorpdfstring{Anytime Parameter-free Empirical Variance
 Guided Algorithm
@@ -2422,7 +2430,14 @@ variable where a change in the mean does not correspond to a change in
 the variance). This is important as the bounds of the EVT\(_{pf}\)
 algorithm only hold for random variables bounded in \([0,1]\).
 
-\includegraphics{Draft_files/figure-latex/EVT_Index_Bernoulli-1.pdf}
+\begin{figure}
+
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/EVT_Index_Bernoulli-1} 
+
+}
+
+\caption{This graph displays the distance part of the index of the APT, SLR, and EVT algorithms. While EVT's distance is based on both the empirical mean and empirical variance, the empirical mean determines the variance in the case of Bernoullis. We see that the distance of both EVT and SLR has an asymmetric behavior.}\label{fig:EVT_Index_Bernoulli}
+\end{figure}
 
 By defining a new complexity measure \(H^{\text{EVT}_{pf}}\) for the
 EVT\(_{pf}\) algorithm, Zhong et al. (2017) are able to derive an upper
@@ -2481,7 +2496,14 @@ complexity of the EVT\(_{pf}\) algorithm implies in particular that
 EVT\(_{pf}\) could be able to cope with distributions of parameter
 \(\mu\) close to \(\tau\) much better than APT.
 
-\includegraphics{Draft_files/figure-latex/Hevt_Hapt_Comparison-1.pdf}
+\begin{figure}
+
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/Hevt_Hapt_Comparison-1} 
+
+}
+
+\caption{This graph compares the complexity terms used in the APT, AugUCB, and EVT algorithms respectively. We observe that as the mean of the arm's distribution is closer to the threshold, the complexity of the problem increases much less rapidly for the EVT algorithm. Thus, the EVT should be able to cope with arms close to the threshold better than the APT algorithm. The complexity displayed for the AugUCB is an upper bound on the complexity used in the upper bound of Mukherjee et al. (2017).}\label{fig:Hevt_Hapt_Comparison}
+\end{figure}
 
 \subsection{\texorpdfstring{Likelihood Ratio for Exponential Family
 Distributions
@@ -2875,9 +2897,11 @@ As we see in the experiments that follow, the Simple Likelihood Strategy
 is able to improve significantly upon the Anytime Parameter Free
 strategy in many cases.
 
-\section{Experiments}\label{experiments}
+\section{\texorpdfstring{Experiments
+\label{chap:Experiments}}{Experiments }}\label{experiments}
 
-\subsection{Synthetic Data}\label{synthetic-data}
+\subsection{\texorpdfstring{Synthetic Data
+\label{sec:SyntheticData}}{Synthetic Data }}\label{synthetic-data}
 
 In order to evaluate the empirical performance of the proposed
 algorithms, we run the algorithm on synthetic data as is usual. We
@@ -2948,7 +2972,7 @@ improvement is a slight one, and not very large in terms of budget
 difference. This underlines that the scenario at hand is the ideal one
 for the APT algorithm.
 
-\includegraphics{Draft_files/figure-latex/simulation1_results-1.pdf}
+\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/simulation1_results-1} \end{center}
 
 \subsubsection{\texorpdfstring{Experiment 2: Bernoulli with
 \(\tau = 0.05\)}{Experiment 2: Bernoulli with \textbackslash{}tau = 0.05}}\label{experiment-2-bernoulli-with-tau-0.05}
@@ -3054,10 +3078,11 @@ V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10\tabularnewline
 \bottomrule
 \end{longtable}
 
-\includegraphics{Draft_files/figure-latex/simulation2_results-1.pdf}
+\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/simulation2_results-1} \end{center}
 
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-4-1.pdf}
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-4-2.pdf}
+\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-2-1} \end{center}
+
+\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-3-1} \end{center}
 
 \subsubsection{\texorpdfstring{Experiment 3: Bernoulli with
 \(\tau = 0.01\)}{Experiment 3: Bernoulli with \textbackslash{}tau = 0.01}}\label{experiment-3-bernoulli-with-tau-0.01}
@@ -3100,12 +3125,12 @@ V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10 & V11\tabularnewline
 \bottomrule
 \end{longtable}
 
-\includegraphics{Draft_files/figure-latex/simulation3_results-1.pdf}
+\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/simulation3_results-1} \end{center}
 
 \subsection{\texorpdfstring{Experiment 4: Exponential Distribution with
 \(\tau = 1\)}{Experiment 4: Exponential Distribution with \textbackslash{}tau = 1}}\label{experiment-4-exponential-distribution-with-tau-1}
 
-\includegraphics{Draft_files/figure-latex/simulation4_results-1.pdf}
+\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/simulation4_results-1} \end{center}
 
 \subsection{\texorpdfstring{Experiment 5: Poisson Distribution with
 \(\tau = 1\)}{Experiment 5: Poisson Distribution with \textbackslash{}tau = 1}}\label{experiment-5-poisson-distribution-with-tau-1}
@@ -3129,7 +3154,7 @@ V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10 & V11 & V12 & V13 & V14
 \bottomrule
 \end{longtable}
 
-\includegraphics{Draft_files/figure-latex/simulation5_results-1.pdf}
+\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/simulation5_results-1} \end{center}
 
 \subsection{Real Data}\label{real-data}
 
@@ -3299,7 +3324,7 @@ threshold twice. The same is true for arm \(V139\), which is not visible
 when considering the overall mean alone. Furthermore, arms \(V159\) and
 \(V189\) come very close to the threshold at times.
 
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-6-1.pdf}
+\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-5-1} \end{center}
 
 These difficulties seem to have a large impact on the performance of all
 algorithms. Given that the data are \(\{0,1\}\) observations, we can
@@ -3317,7 +3342,7 @@ we use the parameters as in Mukherjee et al. (2017), that is,
 
 The corresponding results are shown in the next figure.
 
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-7-1.pdf}
+\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-6-1} \end{center}
 
 Compared to the previous simulations with synthetic data, the results
 are dramatic. First of all, we see that all strategies perform not well.
@@ -3443,12 +3468,15 @@ are less than 2\% (1.2\% vs 3\%), the difference to uniform sampling
 (10\%) is relevant. The performance of 10\% error rate is achieved by
 SLR about 1000 observations earlier than by EVT.
 
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-8-1.pdf}
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-8-2.pdf}
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-8-3.pdf}
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-8-4.pdf}
+\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-7-1} \end{center}
 
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-9-1.pdf}
+\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-7-2} \end{center}
+
+\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-7-3} \end{center}
+
+\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-7-4} \end{center}
+
+\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-8-1} \end{center}
 
 We can try to understand why some strategies fail, while showing
 significant improvements on synthetic data. Given that we run 5000
@@ -3504,13 +3532,13 @@ evaluated. We see in the curves of arms \(V32\) and arm \(V154\) that
 the EVT algorithm is less impacted by daily seasonalities, while APT
 clearly is.
 
-\includegraphics{Draft_files/figure-latex/unnamed-chunk-10-1.pdf}
+\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-9-1} \end{center}
 
 \section{Conclusion}\label{conclusion}
 
 \section{Notes}\label{notes}
 
-The authors thank Alexandra Carpentier, Andrea Locatelli, and Urun Dogan
+The author thanks Alexandra Carpentier, Andrea Locatelli, and Urun Dogan
 for many hours of valuable feedback and ideas. \textless{}3
 
 

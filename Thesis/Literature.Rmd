@@ -48,3 +48,13 @@ Locatelli et al. (2016)
 Zhong et al. (2017)
 
 Bubeck, Sébastien, Cesa-Bianchi, Nicolo, and Lugosi, Gábor. Bandits with heavy tail. Information Theory, IEEE Transactions on, 59(11):7711-7717, 2013a.
+
+Mukherjee et al. (2017)
+
+Victor Gabillon, Mohammad Ghavamzadeh, Alessandro Lazaric, and Sébastien Bubeck. Multi-bandit best arm identification. In *Advances in Neural Information Processing Systems, pages 2222-2230, 2011.
+
+Shouyuan Chen, Tian Lin, Irwin King, Michael R Lyu, and Wei Chen. Combinatorial pure exploration of multi-armed bandits. In *Advances in Neural Information Processing Systems, pages 379-387, 2014.
+
+"Thompson Sampling: An Asymptotically Optimal Finite Time Analysis" by Kaufmann, Korda and Munos (2012)
+
+Lihong Li, Wei Chu, John Langford, Robert E. Schapire. A Contextual-Bandit Approach to Personalized News Article Recommendation. WWW 2010, April 26–30, 2010, Raleigh, North Carolina, USA. ACM 978-1-60558-799-8/10/04.
