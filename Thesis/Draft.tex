@@ -96,6 +96,7 @@
 \newtheorem{lemma}{Lemma}
 \newcommand{\KL}{\,\text{KL}}
 \newcommand{\der}{\,\text{d}}
+\newcommand*{\Alignyesnumber}{\refstepcounter{equation}\tag{\theequation}}%
 
 \begin{document}
 \maketitle
@@ -2348,46 +2349,48 @@ algorithm in the thresholding setting.
 Guided Algorithm
 \label{sec:EVTAlgorithm}}{Anytime Parameter-free Empirical Variance Guided Algorithm }}\label{anytime-parameter-free-empirical-variance-guided-algorithm}
 
-Another algorithm for the thresholding bandit problem is introduced in
-Zhong et al. (2017). Indeed, they discuss several variations of their
-algorithm which extend their central idea to applications in which
-several samples need to be pulled in a parallel and asynchronous
-fashion. An easy example known from the multi-armed bandit literature
-(SOURCE????!!??!?!?!) is a website where different versions are served
-to customers and each version is an arm in the bandit setting. If the
-feedback that is observed by the algorithm is whether or not a user
-makes a purchase, then it is likely that a new user arrives before the
-feedback for the previous user has been observed. The algorithm has to
-pull the next arm before the feedback of the previous arm has been
-observed. With their variants the authors approach this problem of
-having to take asynchronous and parallel actions. But their algorithm
-can also be reduced to a simpler version that can be compared directly
-with the problem described in Locatelli et al. (2016) where we assume
-the problem of the feedback lag away.
+Another algorithm for the thresholding bandit problem employing
+empirical variance estimates is introduced in Zhong et al. (2017).
+Indeed, the authors discuss several variations of their algorithm which
+extend their central idea to applications in which several samples need
+to be pulled in a parallel and asynchronous fashion. An standard example
+known from the multi-armed bandit literature (see for example Li et al.
+(2010)) is a website for which different versions are served to visitors
+and each version is an arm in the bandit setting. If the feedback that
+is observed by the algorithm is whether or not a user makes a purchase,
+then it is likely that a new user arrives before the feedback for the
+previous user has been observed. The algorithm has to pull the next arm
+before the feedback of the previous arm has been observed. With their
+variants the authors approach this problem of having to take
+asynchronous and parallel actions. But their algorithm can also be
+reduced to a simpler version that can be compared directly with the
+problem described in Locatelli et al. (2016) where the feedback lag is
+assumed to be zero.
 
-This simpler version is the anytime parameter-free version of their
-Empirical Variance Guided Algorithm (EVT\(_{pf}\)). The EVT\(_{pf}\)
-algorithm is a smart extension of the APT algorithm to an approach that
-takes the empirical variance of the arms into account and deduces an
-upper bound through Bernstein bounds.
+This simpler version is the parameter-free version of their Empirical
+Variance Guided Algorithm (EVT\(_{pf}\)). The EVT\(_{pf}\) algorithm is
+an extension of the APT algorithm that takes the empirical variance of
+the arms into account and deduces an upper bound through empirical
+Bernstein bounds in a proof following the model of the one described in
+Locatelli et al. (2016).
 
 In order to describe their algorithm, we adapt a formulation used in
 Zhong et al. (2017) to describe the index used by the algorithms in a
-more general fashion. Write the index \(B_i(t)\) of arm \(i\) at round
+more general fashion. Write the index \(B_i(t+1)\) of arm \(i\) at round
 \(t\) as previously as
 
 \[
-B_i(t) = S_i(t) D_i(t),
+B_i(t+1) = S_i(t) D_i(t),
 \]
 
 where \(D_i(t)\) is some measure of the distance between the mean
-\(\mu_i\) or the distribution \(\nu_i\) of the arm \(i\) from the
-threshold \(\tau\), while \(S_i(t)\) is some confidence value. Thus, for
-the APT algorithm, if we let \(\epsilon = 0\) as in Zhong et al. (2016),
-we have
+\(\mu_i\) or the distribution \(\nu_i\) of arm \(i\) from the threshold
+\(\tau\), while \(S_i(t)\) is some confidence value measuring how
+confident we can be in \$. Thus, for the APT algorithm, if we let
+\(\epsilon = 0\) as in Zhong et al. (2016), we have
 
 \[
-D_i^{APT}(t) = \hat{\Delta}_i(t) = |\hat{\mu}_i(t) - \tau| \quad \land \quad S_i^{APT}(t) = \sqrt{T_i(t)}
+D_i^{APT}(t) = \hat{\Delta}_i(t) = |\hat{\mu}_i(t) - \tau| \quad \text{and} \quad S_i^{APT}(t) = \sqrt{T_i(t)}
 \]
 
 We see that \(D_i(t)\) is the probably most straightforward distance
@@ -2399,36 +2402,32 @@ Based on this, we can now easily compare APT to EVT\(_{pf}\) for which
 the index can be written as:
 
 \[
-D_i^{EVT}(t) = \hat{\Delta}_i(t) = |\hat{\mu}_i(t) - \tau| \quad \land \quad S_i^{EVT}(t) = \Big(\frac{1}{T_i(t) + \sqrt{\frac{1}{T_i(t)}}\hat{\sigma}_{i}(t)}\Big)^{-1}
+D_i^{EVT_{pf}}(t) = \sqrt{\hat{\sigma}^2_{i}(t) + \hat{\Delta}_i(t)} - \hat{\sigma}_i(t) \quad \text{and} \quad S_i^{EVT_{pf}} = \sqrt{T_i(t)}
 \]
 
-or equivalently as
-
-\[
-D_i^{EVT}(t) = \sqrt{\hat{\sigma}^2_{i}(t) + \hat{\Delta}_i(t)} - \hat{\sigma}_i(t) \quad \land \quad S_i^{EVT} = \sqrt{T_i(t)}
-\]
-
-We see that in both formulations either the distance term \(D_i\) or the
-confidence term \(S_i\) between the two algorithms is equivalent. While
-the empirical variance is a natural confidence measure -- and thus makes
-sense in the \(S_i^{EVT}\) part in the first equation -- it also
-describes the shape of the distribution and thus is also a measure of
-how far the distribution (in contrast to just the mean) is away from the
-threshold, and thus can belong to \(D_i^{EVT}\). We will focus on the
-latter formulation for the remaining paper.
-
-In comparison with the APT algorithm, the EVT\(_{pf}\) algorithm adds
-the empirical variance into the index to measure how well we can expect
-the distribution (and the mean) to be seperated from the threshold; it
-serves as a crude measure of distance between threshold and
-distribution. We note that for a Bernoulli distributed random variable,
-\(D_i^{EVT}\) is decreasing as the mean approaches the threshold.
-Similar should hold in general for bounded variables as the variance and
-the mean are linked by the distance of the mean to the bound of the
-support (in contrast to, for example, a normal distributed random
-variable where a change in the mean does not correspond to a change in
-the variance). This is important as the bounds of the EVT\(_{pf}\)
-algorithm only hold for random variables bounded in \([0,1]\).
+We see that both algorithms employ the same confidence term. The
+empirical variance describes the shape of the distribution and thus is a
+measure of how far the distribution (in contrast to just the mean) is
+away from the threshold. It consequently makes sense to have it appear
+in \(D_i^{EVT}\). And in contrast to the APT algorithm, the EVT\(_{pf}\)
+algorithm consequently takes more information about the arms into
+account than just their mean. As mentioned previously, this should
+especially be valuable whenever arms have indeed different variances.
+Similar (very roughly) to how the Kullback-Leibler divergence measures
+distances between distributions, the \(D_i^{EVT}\) including the
+empirical variance serves as a crude measure of distance between
+threshold and distribution. We note that for a Bernoulli distributed
+random variable, \(D_i^{EVT}\) is always decreasing as the mean
+approaches the threshold (compare the figure 2). Similar should hold in
+general for bounded variables as the variance and the mean are linked by
+the distance of the mean to the bound of the support (in contrast to,
+for example, a normal distributed random variable where a change in the
+mean does not correspond to a change in the variance). This is important
+as the bounds of the EVT\(_{pf}\) algorithm only hold for random
+variables bounded in \([0,1]\). In contrast to the AugUCB, this
+restriction is not just on the variance of the arm but explicitly on the
+reward itself in the current version that builds on empirical Bernstein
+bounds as shown in Maurer and Pontil (2009).
 
 \begin{figure}
 
@@ -2464,18 +2463,20 @@ where $C$ is some positive constant.
 
 The authors approach the proof very similarly as Locatelli et al. (2016)
 in the proof of their lower bound. They define favorable events that
-hold with large probability, make sure the same separation condition
-holds for them given that each arm is pulled often enough. Additionally
-to a favorable event that bounds the deviation between sample mean and
-population mean, they define a second event on which the sample standard
-deviation is close to the population standard deviation. This is bounded
-in large probability by a Bernstein inequality. The union of the two
-events then serves as the favorable event in the remainder of their
-proof.
+hold with large probability, and ensure that the same separation
+condition as in Locatelli et al. holds for them given that each arm is
+pulled sufficiently often. Additionally to a favorable event that bounds
+the deviation between sample mean and population mean, they define a
+second event on which the sample standard deviation is close to the
+population standard deviation. This is bounded in large probability by
+an empirical Bernstein inequality (Maurer and Pontil, 2009). The union
+of the two events then serves as the favorable event in the remainder of
+their proof.
 
-Given a lower bound that is also adapted to the new complexity
-\(H^{\text{EVT}_{pf}}\), the authors show that the EVT\(_pf\) algorithm
-is optimal. Furthermore, they compare their algorithms in experiments
+Given a lower bound adapted to the new complexity
+\(H^{\text{EVT}_{pf}}\), the Zhong et al. (2017) show that the
+EVT\(_pf\) algorithm is optimal in that its upper bound matches the
+lower bound. Furthermore, they compare their algorithm in experiments
 against the APT algorithm. The experiments use data generated from
 uniform distributions. Each experiment compares 100 arms with variances
 picked at random from a range of possible variances. Over three
@@ -2494,37 +2495,38 @@ When comparing the two complexities for example for Bernoulli random
 variables against some fixed threshold, we see that the smaller
 complexity of the EVT\(_{pf}\) algorithm implies in particular that
 EVT\(_{pf}\) could be able to cope with distributions of parameter
-\(\mu\) close to \(\tau\) much better than APT.
+\(\mu\) close to \(\tau\) much better than APT (compare figure 3).
 
 \begin{figure}
 
-{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/Hevt_Hapt_Comparison-1} 
+{\centering \includegraphics[width=0.7\linewidth]{Draft_files/figure-latex/Hevt_Hapt_Comparison-1} 
 
 }
 
-\caption{This graph compares the complexity terms used in the APT, AugUCB, and EVT algorithms respectively. We observe that as the mean of the arm's distribution is closer to the threshold, the complexity of the problem increases much less rapidly for the EVT algorithm. Thus, the EVT should be able to cope with arms close to the threshold better than the APT algorithm. The complexity displayed for the AugUCB is an upper bound on the complexity used in the upper bound of Mukherjee et al. (2017).}\label{fig:Hevt_Hapt_Comparison}
+\caption{Comparing the complexity terms used in the APT, AugUCB, and EVT algorithms, we observe that the problem complexity of the EVT algorithm increases much less rapidly than for the other algorithms. Thus, the EVT should be able to cope with arms close to the threshold better than the APT algorithm. The complexity displayed for the AugUCB is an upper bound on the complexity used in the upper bound of Mukherjee et al. (2017).}\label{fig:Hevt_Hapt_Comparison}
 \end{figure}
 
-\subsection{\texorpdfstring{Likelihood Ratio for Exponential Family
-Distributions
-\label{sec:LikelihoodRatioForExponentialFamily}}{Likelihood Ratio for Exponential Family Distributions }}\label{likelihood-ratio-for-exponential-family-distributions}
+\subsection{\texorpdfstring{Likelihood Ratio for Sequential Sampling
+\label{sec:LikelihoodRatioForExponentialFamily}}{Likelihood Ratio for Sequential Sampling }}\label{likelihood-ratio-for-sequential-sampling}
 
-We now present an approach that builds on the idea of the likelihood
-ratio statistic for hypothesis tests. We first present the general idea
-of likelihood ratio based tests, and then introduce our new algorithm
-for the thresholding bandit problem.
+We now present a new sequential sampling algorithm for the fixed budget
+thresholding bandit problem that builds on the idea of the likelihood
+ratio statistic for hypothesis tests. We first shortly describe the
+general idea of likelihood ratio based tests, to then introduce this new
+algorithm for the thresholding bandit problem, which we call Simple
+Likelihood Ratio (SLR) algorithm.
 
-\subsubsection{Likelihood Ratio-based Hypothesis
-Tests}\label{likelihood-ratio-based-hypothesis-tests}
+\subsubsection{\texorpdfstring{Likelihood Ratio-based Hypothesis Tests
+\label{sec:LRTests}}{Likelihood Ratio-based Hypothesis Tests }}\label{likelihood-ratio-based-hypothesis-tests}
 
 In a standard parametric testing problem, we have drawn an iid sample
 \(x = (x_1, ..., x_T)\), where each \(x_i\) is a realization from the
 random variable \(X_i\). We assume that \(X_i\) follows some probability
 distribution \(Q(\theta)\) paramaterized by a vector \(\theta\). Let
 \(q(x;\theta)\) be the density function corresponding to the
-distribution. In a standard hypothesis test, we test whether an
-alternative parameterization is more likely than the parameterization
-given by the null hypothesis. That is, we test
+distribution. We would like to test whether an alternative
+parameterization is more likely than the parameterization given by the
+null hypothesis. That is, we test
 
 \[
 H_0: \quad \theta = \theta_{H_0} \qquad \text{vs.} \qquad H_1: \quad \theta = \theta_{H_1}
@@ -2535,84 +2537,141 @@ computes the likelihood \(L(x|\theta)\) of the observed sample under
 both parameterizations:
 \(L_{H_0} = L(x|\theta = \theta_{H_0}) = \prod_{i=1}^T q(x_i|\theta_{H_0})\)
 and
-\(L_{H_1} = L(x|\theta = \theta_{H_1}) = \prod_{i=1}^T q(x_i|\theta_{H_1})\).
+\(L_{H_1} = L(x|\theta = \theta_{H_1}) = \prod_{s=1}^T q(x_s|\theta_{H_1})\).
 The likelihood ratio test statistic is then given as
 
 \[
-LR(\theta_{H_0}|| \theta_{H_1}) = \frac{L_{H_0}}{L_{H_1}} = \prod_{i=1}^T\frac{q(x_i|\theta_{H_0})}{ q(x_i|\theta_{H_1})}.
-\] The intuition behind the test of course being that, if the true
-parameterization is \(H_1\) and not \(H_0\), then the likelihood
-\(L_{H_1}\) should be larger than \(L_{H_0}\). A small enough likelihood
-ratio would thus lead us to a rejection of the null hypothesis, while a
-large likelihood ratio is evidence in favor of the null hypothesis.
-
-By considering \(lr = -2\log(LR(\theta_{H_0}|| \theta_{H_1}))\), one has
-a statistic that is \(\chi^2\) distributed with degrees of freedom that
-depend on the null and alternative hypothesis. Assessing whether the
-null hypothesis can be rejected with large confidence thus becomes
-straightforward.
-
-\subsubsection{Likelihood Ratio-based Thresholding
-Bandit}\label{likelihood-ratio-based-thresholding-bandit}
-
-The simple concept of the likelihood-ratio test serves as foundation for
-a new sampling strategy that can be applied to the thresholding bandit
-problem. In contrast to the cumulative regret problem, or even the best
-arm identification problem, we have some sort of null hypothesis for the
-distributions in the thresholding bandit problem. In case of no
-information and no observed samples, the null hypothesis might simply be
-that all distributions have a mean that equals the threshold. By
-observing samples, we then want to test whether the mean of the
-distributions is different from the threshold \(\tau\) in either
-direction. Once we are sure that there is a difference, we do not want
-to continue to test. Instead, we would like to focus our sampling effort
-on a different arm where we are not as sure. The likelihood ratio
-quantifies how ``significant''" of a difference there is between the
-threshold \(\tau\) and the current sample mean \(\hat{\mu}_i(t)\) of an
-arm. Given that we plug in the sample mean, that is, the maximum
-likelihood estimator for the true mean for many distributions, the
-likelihood ratio will be smaller than 1 and decrease in sample size even
-if the threshold and sample mean are constant.
-
-Due to these characteristics, the likelihood ratio can serve as a
-natural index for sampling strategies. Thus write as index
-
-\[
-B_i(t) = LR(\tau|| \hat{\mu}_i(t)) = \prod_{i=1}^T\frac{q(x_i|\tau)}{ q(x_i|\hat{\mu}_i(t))}
+LR_T(\theta_{H_0}|| \theta_{H_1}) = \frac{L_{H_0}}{L_{H_1}} = \prod_{s=1}^T\frac{q(x_s|\theta_{H_0})}{ q(x_s|\theta_{H_1})}.
 \]
 
-and pull at round \(t\) the arm \(i^* = \arg \max_i B_i(t)\). As we
-described in the previous paragraph, we have \(B_i(t) \leq 1\),
-\(t \uparrow \rightarrow B_i(t) \downarrow\), and
-\(|\hat{\mu}_i(t) - \tau| \uparrow \rightarrow B_i(t) \downarrow\).
+and is used in the optimal test of two hypotheses as shown by the
+Neyman-Pearson lemma (see chapter 11, Theorem 11.7.1 in Cover and
+Thomas, 2006).
+
+The intuition behind the test of course being that, if the true
+parameterization is \(H_1\) and not \(H_0\), then the likelihood
+\(L_{T,H_1}\) should be larger than \(L_{T,H_0}\). A small enough
+likelihood ratio would thus lead us to a rejection of the null
+hypothesis, while a large likelihood ratio is evidence in favor of the
+null hypothesis.
+
+Furthermore, the likelihood ratio is inherently linked to information
+theoretic quantities and divergence measures. Assuming that \(Q\) is a
+discrete distribution with support \(\chi\), one can write the negative
+log-likelihood ratio as (compare Cover and Thomas, 2006)
+
+\begin{align*}
+-\log(LR_T(\theta_{H_0}|| \theta_{H_1}) & = & \sum_{i=1}^T \log(\frac{q(x_s|\theta_{H_0})}{ q(x_s|\theta_{H_1})}) \\
+& = & \sum_{a \in \chi} T q(a|\hat{\theta}) \log(\frac{q(a|\theta_{H_0})}{ q(a|\theta_{H_1})}) \\
+& = & \sum_{a \in \chi} T q(a|\hat{\theta}) \log(\frac{q(a|\theta_{H_0})}{ q(a|\theta_{H_1})}\frac{q(a|\hat{\theta})}{ q(a|\hat{\theta})}) \\
+& = & T \KL(q(\hat{\theta})||q(\theta_{H_0})) - T \KL(q(\hat{\theta})||q(\theta_{H_1})),
+\end{align*}
+
+where \(\hat{\theta}\) is the maximum likelihood estimate of the
+parameter \(\theta\) given the sample \(x\). If we hold the \(H_0\)
+hypothesis fixed and set \(\theta_{H_1} = \hat{\theta}\) as often done
+in praxis, then with \(\KL(Q(\hat{\theta})||Q(\hat{\theta})) = 0\):
+
+\[
+-\log(LR_T(\theta_{H_0}|| \theta_{H_1})) = -\log(LR_T(\theta_{H_0}|| \hat{\theta})) = \KL(Q(\hat{\theta}||Q(\theta_{H_0}))
+\]
+
+Furthermore, we have for any distributions \(Q_{H_0}\) and \(Q_{H_1}\)
+for a sample \(x\) sampled from the \(H_0\) distribution, that
+
+\[
+\frac{1}{n} \log(LR_T(\theta_{H_0}||\theta_{H_1})) \rightarrow \KL(Q(\theta_{H_0})||Q(\theta_{H_1})) \quad \text{in probability},
+\]
+
+by the law of large numbers (or asymptotic equipartition property) for
+the Kullback-Leibler divergence as in Theorem 11.8.1 in Cover and Thomas
+(2006). Lastly, based on the characteristics shown before, for
+frequentist tests the Kullback-Leibler divergence between
+\(Q(\theta_{H_0})\) and \(Q(\theta_{H_1})\) gives the best possible
+exponent for the error of the second type given a fixed error of the
+first type. This is the result of the Chernoff-Stein Lemma (Theorem
+11.8.3, Cover and Thomas, 2006), which is reminiscient of the complexity
+\(\kappa_B\) derived by Kaufmann et al. (2016) and as described in
+\autoref{chap:KullbackLeiblerPureExploration}:
+
+\begin{theorem}[Chernoff-Stein Lemma] \label{theorem:ChernoffStein}
+Let $X_1, X_2, ..., X_n$ be i.i.d. distributed according to $Q$. Consider the hypothesis test between two alternatives, $Q=P_1$ and $Q=P_2$, where $\KL(P_1||P_2) < \infty$. Let $A_n \subseteq \chi^n$ be an acceptance region for hypothesis $H_1$. Let the probabilities of error be $\alpha_n = P_1^n(A_n^C)$, and $\beta_n = P_2^n(A_n)$, and for $0< \epsilon <1/2$, define $\beta_n^{\epsilon} = \min_{A_n \subseteq \chi^n, \alpha_n < \epsilon} \beta_n$. Then
+
+$$
+\text{lim}_{n\rightarrow \infty} \frac{1}{n} \log \beta_n^{\epsilon} = - \KL(P_1||P_2)
+$$
+\end{theorem}
+
+\subsubsection{Likelihood Ratio as Index in Sequential
+Sampling}\label{likelihood-ratio-as-index-in-sequential-sampling}
+
+We now employ the concept of the likelihood-ratio test for a new
+sequential sampling strategy for the thresholding bandit problem. In
+contrast to the cumulative regret problem or the best arm identification
+problem, the thresholding bandit problem offers a natural \(H_0\)
+hypothesis for the arms' distributions: the threshold \(\tau\). Given
+that we want to classify the arms against the threshold, and given that
+\(\tau\) is known and fixed, we can set a null hypothesis that is a
+function of \(\tau\). In the simplest case, the distributions are
+parameterized by their mean \(\theta_i = \mu_i\), and we set
+\(\theta_{i,H_0} = \tau\) for all arms. The likelihood ratio then
+quantifies how ``significant'' of a difference there is between the
+threshold \(\tau\) and the current sample mean \(\hat{\mu}_i(t)\) of an
+arm, assuming distributions for which the maximum likelihood estimate of
+the mean is given by the empirical mean. In these cases, the likelihood
+ratio will be smaller than 1 and decrease in sample size even if the
+threshold and sample mean are constant.
+
+Due to these characteristics, the likelihood ratio can serve as a
+natural index for sampling strategies. Consider the setting described in
+\autoref{sec:Setup} and \autoref{sec:TheAPTAlgorithm} though without
+assuming \(R\)-sub-Gaussian distributions. Consider \(B_i^{APT}\) and
+compare it to
+
+\[
+B_i^{LR}(t+1) = LR(\tau|| \hat{\mu}_i(t)) = \prod_{i=1}^T\frac{q(x_i|\tau)}{ q(x_i|\hat{\mu}_i(t))}.
+\]
+
+We have \(B_i(t) \leq 1\), \(t \uparrow \rightarrow B_i(t) \downarrow\),
+and \(|\hat{\mu}_i(t) - \tau| \uparrow \rightarrow B_i(t) \downarrow\).
 Consequently, by choosing the arm that maximizes \(B_i(t)\), we choose
-an arm for which we either have not collected many samples, or where the
-sample mean is close to the threshold \(\tau\). In this sense, a
-strategy based on the likelihood ratio is of course very reminiscient of
-the index employed by the APT algorithm. Indeed, assuming the samples
-are normally distributed with the same variance for the distribution
-\(\nu_i\) under both \(H_0\) and \(H_1\), then
-\(-\log(LR(\tau||\hat{\mu}_i(t)))\) equals the index in APT. Why then
-would one use the likelihood based strategy?
+an arm for which we either have not collected many samples, or for which
+the sample mean is close to the threshold \(\tau\). In this sense, a
+strategy based on the likelihood ratio is reminiscient of the index
+employed by the APT algorithm. Indeed, assuming the samples are normally
+distributed with the same variance for the distribution \(\nu_i\) under
+both \(H_0\) and \(H_1\), then \(-\log(LR(\tau||\hat{\mu}_i(t)))\)
+equals the index in APT. Why then would one use the likelihood based
+strategy?
 
 Given that the APT index and the likelihood-ratio based index are only
 equivalent for normally distributed random variables with fixed standard
 deviation, the new strategy promises efficiency improvements whenever
 the true distribution is known and different from the normal
 distribution. The most important example are Bernoulli arms with small
-means as discussed before. Here, it is also easy to assume that the true
-distribution is known upfront. Similarly, the likelihood ratio statistic
-can be used for other univariate distributions of the exponential
-family. But we also propose a version for the Normal distribution with
-unknown mean.
+means as motivated. While the likelihood ratio can in theory be used for
+any distributions, and arms could even have different classes of
+distributions, the class of distribution has to be known upfront for
+every arm. Given the role of the threshold \(\tau\) and the goal of
+classification of the mean against \(\tau\), the likelihood ratio
+strategy is arguably most naturally employed on distributions
+parameterized by their mean. In the following descriptions, we thus
+focus on univariate distributions of the exponential family.
+Additionally, we also propose a version for the Normal distribution with
+unknown mean. Before we describe the algorithm, we show that the
+likelihood ratio has a very convenient form for this family of
+distributions.
 
-We now focus on the case where the distributions
-\(\nu_{\theta_1}, ..., \nu_{\theta_K}\) are all the same canonical
-exponential family of distributions with scalar parameter
-\(\theta_i \in \Theta\). The probability density function of the
-absolutely continuous distribution \(\nu_{\theta_i}\) with regard to a
-dominating measure \(\rho\) on \(\mathbb{R}\) is given by
-\(q(x|\theta) = h(x) \exp(T(x)\theta - b(\theta))\). As described in
+\subsubsection{Likelihood Ratio for Univariate Exponential Family of
+Distributions}\label{likelihood-ratio-for-univariate-exponential-family-of-distributions}
+
+We now focus on a thresholding bandit problem where the arms are
+distributed according to \(\nu_{\theta_1}, ..., \nu_{\theta_K}\), which
+are all from the same canonical exponential family of distributions with
+scalar parameter \(\theta_i \in \Theta\). The probability density
+function of the absolutely continuous distribution \(\nu_{\theta_i}\)
+with regard to a dominating measure \(\rho\) on \(\mathbb{R}\) is given
+by \(q(x|\theta) = h(x) \exp(T(x)\theta - b(\theta))\). As described in
 Cappé et al. (2013), citing Lehmann and Casella (1998), the derivative
 \(b'(\theta)\) of \(b(\theta)\) is an increasing continuous function
 such that the expected value \(\mathbb{E}(\nu_{\theta}) = b'(\theta)\)
@@ -2621,7 +2680,8 @@ we have a one-to-one relation between \(b'(\theta)\) and
 \(\mathbb{E}(\nu_{\theta})\) through the continuous inverse
 \(b'^{-1}(\theta)\). Consequently, one can just as well parameterize the
 distribution its mean \(\mu = \mathbb{\nu_{\theta}}\) and write
-\(\nu_{b'^{-1}(\mu)}\) with the probability density function
+\(\nu_{b'^{-1}(\mu)}\) with the probability density function (compare
+Cappé et al., 2013)
 
 \[
 q(x|b'^{-1}(\mu)) = h(x) \exp(T(x) b'^{-1}(\mu) - b(b'^{-1}(\mu))).
@@ -2640,29 +2700,28 @@ or if we write it as negative log-likelihood ratio:
 -\log(LR) = n\Big(b\big(b'^{-1}(\mu_0)) - b(b'^{-1}(\mu_1)\big)\Big) - \Big(b'^{-1}(\mu_0)-b'^{-1}(\mu_1)\Big)\sum_{i=1}^nT(x_i)
 \]
 
-As we will see now, this statistic is easily derived for many specific
-distributions.
+As we will see now, this statistic takes a very convenient closed form
+for many common distributions.
 
-\paragraph{Example 1: Bernoulli
-Distribution}\label{example-1-bernoulli-distribution}
+\textbf{Example 1: Bernoulli Distribution}
 
 We have \(T(x_i) = x_i\), \(\theta = \log(\mu/(1-\mu))\),
 \(\Theta = (0,1)\), \(b(\theta) = \log(1+\exp(\theta))\), and
 \(\mu \in (0,1)\). Then \(b'(\theta) = \mu\), and we can write
 
-\[
--\log(LR(\mu_0||\mu_1)) = n(\log\Big(\frac{1-\mu_0}{1-\mu_1}\Big)) - \Big(\log(\frac{\mu_0}{1-\mu_0}) - \log(\frac{\mu_1}{1-\mu_1})\Big)\sum_{i=1}^{n}x_i = n \Big( (1-\hat{\mu})\log\Big(\frac{1-\mu_1}{1-\mu_0}\Big) + \hat{\mu}\log\Big(\frac{\mu_1}{\mu_0}) \Big)
-\]
+\begin{align*}
+-\log(LR(\mu_0||\mu_1)) & = & n(\log\Big(\frac{1-\mu_0}{1-\mu_1}\Big)) - \Big(\log(\frac{\mu_0}{1-\mu_0}) - \log(\frac{\mu_1}{1-\mu_1})\Big)\sum_{i=1}^{n}x_i \\
+& = & n \Big( (1-\hat{\mu})\log\Big(\frac{1-\mu_1}{1-\mu_0}\Big) + \hat{\mu}\log\Big(\frac{\mu_1}{\mu_0}) \Big)
+\end{align*}
 
-We observe that, if we let \(\mu_0 = \tau\) and \(\mu_1 = \hat{\mu}\),
-then
+We observe that, if we let \(\mu_0 = \tau\) and \(\mu_1 = \hat{\mu}\)
+(compare \autoref{sec:LRTests}), then
 
 \[
 -\log(LR(\tau||\hat{\mu})) = nKL(\nu_{b'^{-1}(\hat{\mu})}||\nu_{b'^{-1}(\tau)}) = nd(\hat{\mu},\tau) = n \Big(\hat{\mu}\log\big(\frac{\hat{\mu}}{\tau}\big) + (1-\hat{\mu})\log\big(\frac{1-\hat{\mu}}{1-\tau}\big)\Big)
 \]
 
-\paragraph{Example 2: Poisson
-Distribution}\label{example-2-poisson-distribution}
+\textbf{Example 2: Poisson Distribution}
 
 We have \(T(x_i) = x_i\), \(\theta = \log(\mu)\),
 \(\Theta = \mathbb{R}\), \(b(\theta) = \exp(\theta)\), and
@@ -2672,16 +2731,15 @@ We have \(T(x_i) = x_i\), \(\theta = \log(\mu)\),
 -\log(LR(\mu_0||\mu_1)) = n(\mu_0 - \mu_1) - (\log(\mu_0) - \log(\mu_1))\sum_{i=1}^n x_i = n\Big((\mu_0 - \mu_1) + \hat{\mu}\log\Big(\frac{\mu_1}{\mu_0}\Big)\Big)
 \]
 
-We observe that, if we let \(\mu_0 = \tau\) and \(\mu_1 = \hat{\mu}\),
-then
+We observe that, if we let \(\mu_0 = \tau\) and \(\mu_1 = \hat{\mu}\)
+(compare \autoref{sec:LRTests}), then
 
 \[
 -\log(LR(\tau||\hat{\mu})) = nKL(\nu_{b'^{-1}(\hat{\mu})}||\nu_{b'^{-1}(\tau)}) = nd(\hat{\mu},\tau) = n\Big((\tau - \hat{\mu}) + \hat{\mu}\log\Big(\frac{\hat{\mu}}{\tau}\Big)\Big)
 \]
 
-\paragraph{\texorpdfstring{Example 3: Normal distributions with known
-variance
-\(\sigma^2\)}{Example 3: Normal distributions with known variance \textbackslash{}sigma\^{}2}}\label{example-3-normal-distributions-with-known-variance-sigma2}
+\textbf{Example 3: Normal distributions with known variance
+\(\sigma^2\)}
 
 We have \(T(x_i) = x_i\), \(\theta = \mu/\sigma^2\),
 \(\Theta = \mathbb{R}\), \(b(\theta) = \sigma^2\theta^2/2\),
@@ -2691,15 +2749,16 @@ We have \(T(x_i) = x_i\), \(\theta = \mu/\sigma^2\),
 -\log(LR(\mu_0||\mu_1)) = n (\frac{\mu_0^2}{2\sigma^2} - \frac{\mu_1^2}{2\sigma^2}) - (\frac{\mu_0}{\sigma^2} - \frac{\mu_1}{\sigma^2})\sum_{i=1}^nx_i = n\frac{1}{2\sigma^2}\Big(\mu_0^2-\mu_1^2 - 2\mu_0\hat{\mu} + 2\mu_1\hat{\mu}\Big)
 \]
 
-And again, if we let \(\mu_1 = \hat{\mu}\) and \(\mu_0 = \tau\), then
+And again, even though the distribution is continuous (compare
+\autoref{sec:LRTests}), if we let \(\mu_1 = \hat{\mu}\) and
+\(\mu_0 = \tau\), then
 
 \[
 -\log(LR(\tau||\hat{\mu})) = nKL(\nu_{b'^{-1}(\hat{\mu})}||\nu_{b'^{-1}(\tau)}) = nd(\hat{\mu},\tau) = n\frac{(\hat{\mu} - \tau)^2}{2\sigma^2}.
 \]
 
-\paragraph{\texorpdfstring{Example 4: Gamma distributions with known
-shape parameter
-\(\alpha\)}{Example 4: Gamma distributions with known shape parameter \textbackslash{}alpha}}\label{example-4-gamma-distributions-with-known-shape-parameter-alpha}
+\textbf{Example 4: Gamma distributions with known shape parameter
+\(\alpha\)}
 
 We have \(T(x_i) = x_i\), \(\theta = -\alpha/\mu\),
 \(\Theta = (-\infty, 0)\), \(b(\theta) = -\alpha \log(-\theta)\),
@@ -2707,7 +2766,11 @@ We have \(T(x_i) = x_i\), \(\theta = -\alpha/\mu\),
 
 \[
 -\log(LR(\mu_0||\mu_1)) = n\alpha(-\log(\frac{\alpha}{\mu_0}) - \log(\frac{\mu_1}{\alpha})) - (-\frac{\alpha}{\mu_0} + \frac{\alpha}{\mu_1})\sum_{i=1}^{n}x_i = n\alpha \Big(\log\big(\frac{\mu_0}{\mu_1}\big) - \frac{\hat{\mu}}{\mu_1} + \frac{\hat{\mu}}{\mu_0}\Big).
-\] And again, if we let \(\mu_1 = \hat{\mu}\) and \(\mu_0 = \tau\), then
+\]
+
+And again, even though the distribution is continuous (compare
+\autoref{sec:LRTests}), if we let \(\mu_1 = \hat{\mu}\) and
+\(\mu_0 = \tau\), then
 
 \[
 -\log(LR(\tau||\hat{\mu})) = nKL(\nu_{b'^{-1}(\hat{\mu})}||\nu_{b'^{-1}(\tau)}) = nd(\hat{\mu},\tau) = n\alpha \Big(\frac{\hat{\mu}}{\tau} - 1 - \log\big(\frac{\hat{\mu}}{\tau}\big)\Big).
@@ -2717,52 +2780,56 @@ For \(\alpha = 1\), the Gamma distribution is equal to the Exponential
 distribution.
 
 Given these results for the exponential family of distributions, we can
-now define the SLR (Simple Likelihood Ratio) algorithm.
+now define the Simple Likelihood Ratio algorithm.
 
-\subsubsection{1D-SLR Algorithm for One-Dimensional Exponential Family
-of
-Distributions}\label{d-slr-algorithm-for-one-dimensional-exponential-family-of-distributions}
+\subsection{\texorpdfstring{1D-Simple Likelihood Ratio Algorithm
+\label{sec:1DSLR}}{1D-Simple Likelihood Ratio Algorithm }}\label{d-simple-likelihood-ratio-algorithm}
 
-Very similar to the APT algorithm, the SLR algorithm receives as input
-the definition of the problem \((\tau, \epsilon)\) (compare Locatelli et
-al., 2016). Additionally, the algorithm receives as input the name of
-the distribution that the arms follow, as well as potential additional
-parameters (\(\sigma_1, ..., \sigma_K\) for Normal distributions,
-\(\alpha_1, ..., \alpha_K\) for Gamma distributions). We assume that
-each arm follows the same kind of distribution, with potentially
-different parameters \(\theta_1, ..., \theta_K\). The algorithm pulls
-each arm once. At time \(t>K\), the algorithm updates the number of
-pulls for arm \(i\) at time \(t\), \(T_i(t)\), for each arm, as well as
-the empirical mean \(\hat{\mu}_i(t)\) of arm \(i\) after \(T_i(t)\)
-pulls. The empirical mean is calculated for each arm
-\(k\in \{1,...,K\}\) as
+Consider again the setting in \autoref{sec:Setup} though without the
+assumption of \(R\)-sub-Gaussian distributions. Instead, assume that the
+class of distributions that the arms \(i \in \mathbb{A}\) follow is
+known upfront. For the 1D-SLR algorithm, we restrict the potential
+classes to the univariate exponential family of distributions and write
+the class generally as \(\nu(\mu, \theta)\). Here, \(\theta\) describes
+additional parameters known upfront, as for example
+\(\sigma_1, ..., \sigma_K\) for Normal distributions, or
+\(\alpha_1, ..., \alpha_K\) for Gamma distributions. Additionally to
+\(\nu(\mu)\), the 1D-SLR algorithm receives as input the definition of
+the problem \((\tau, \epsilon)\) (compare Locatelli et al., 2016). As
+initialization, the algorithm pulls each arm once. At time \(t>K\), the
+algorithm updates the number of pulls for arm \(i\) at time \(t\),
+\(T_i(t)\), for each arm, as well as the empirical mean
+\(\hat{\mu}_i(t)\) of arm \(i\) after \(T_i(t)\) pulls. The empirical
+mean is calculated for each arm \(k\in \{1,...,K\}\) as
 \(\hat{\mu}_i(t) = \frac{1}{T_i(t)}\sum_{s=1}^{T_i(t)} x_{i,s}\), with
-\(T_i(t) = \sum_{s=1}^{t}\mathbb{I}(I_s = i)\). As in Locatelli et al.
-(2016), the \(X_{i,s}\) is the sample received when pulling arm \(i\)
-for the \(s\)-th time. Depending on the distribution, the algorithm then
+\(T_i(t) = \sum_{s=1}^{t}\mathbb{I}(I_s = i)\). It serves as maximum
+likelihood estimate of the arm's mean. As in Locatelli et al. (2016),
+the \(X_{i,s}\) is the sample received when pulling arm \(i\) for the
+\(s\)-th time. Depending on the distribution, the algorithm then
 computes the index
 
-\[
-B_i^{SLR}(t+1) = \mathbb{I}(\hat{\mu}\geq \tau)(-\log\big(LR(\tau-\epsilon||\hat{\mu}_i(t))\big) + \mathbb{I}(\hat{\mu}< \tau)(-\log\big(LR(\tau+\epsilon||\hat{\mu}_i(t))\big) = T_i(t) \Big( \mathbb{I}(\hat{\mu}\geq \tau)\cdot KL(\nu_{b'^{-1}(\hat{\mu}(t))}||\nu_{b'^{-1}(\tau-\epsilon)}) + \mathbb{I}(\hat{\mu} < \tau)\cdot KL(\nu_{b'^{-1}(\hat{\mu}(t))}||\nu_{b'^{-1}(\tau+\epsilon)}) \Big).
-\]
+\begin{align*}
+B_i^{SLR}(t+1) & = \mathbb{I}(\hat{\mu}\geq \tau)(-\log\big(LR(\tau-\epsilon||\hat{\mu}_i(t))\big) \\
+& \quad +\: \mathbb{I}(\hat{\mu} <\tau)(-\log\big(LR(\tau+\epsilon||\hat{\mu}_i(t))\big) \\
+& = T_i(t) \Big( \mathbb{I}(\hat{\mu}\geq \tau)\cdot KL(\nu_{b'^{-1}(\hat{\mu}(t))}||\nu_{b'^{-1}(\tau-\epsilon)}) \\
+& \quad +\: \mathbb{I}(\hat{\mu} < \tau)\cdot KL(\nu_{b'^{-1}(\hat{\mu}(t))}||\nu_{b'^{-1}(\tau+\epsilon)}) \Big) \Alignyesnumber\label{eqn:SLRIndex}.
+\end{align*}
 
 The next arm to be pulled is the minimizer of the index
 \(B_i^{SLR}(t+1)\), \(I_{t+1} = \arg \min_{i\leq K} B_i(t+1)\). At the
 end of the horizon \(T\), the algorithm outputs the set of arms
-\(\hat{S}_\tau = \{k: \hat{\mu}_k(T) \geq \tau\}\).
+\(\hat{S}_\tau = \{i \in \mathbb{A}, \hat{\mu}_i(T) \geq \tau\}\).
 
 \IncMargin{1em}
 
 \begin{algorithm}
-\SetKwData{Left}{left}\SetKwData{This}{this}\SetKwData{Up}{up}
-\SetKwFunction{Union}{Union}\SetKwFunction{FindCompress}{FindCompress}
 \SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
-\Input{$\tau$, $\epsilon$}
-\Output{$\hat{S}_{\tau} = \{k: \hat{\mu}_k(T) \geq \tau\}$}
+\Input{$\tau$, $\epsilon$, class of distributions $\nu(\mu, \theta)$, $\theta_i \: \forall i \in \mathbb{A}$}
+\Output{$\hat{S}_\tau = \{i \in \mathbb{A},  \hat{\mu}_i(T) \geq \tau\}$}
 \BlankLine
 \emph{Pull each arm once}\;
 \For{$t = K+1$ \KwTo $T$}{
-  \emph{Pull arm $I_t = \arg \min_{k\leq K} B_k^{SLR}(t) = T_k(t) \KL(\hat{\mu}_k(t) || \tau)$}\;
+  \emph{Pull arm $I_t = \arg \min_{i\leq K} B_i^{SLR}(t)$ as in \autoref{eqn:SLRIndex}}\;
   \emph{Observe reward $X \sim \nu_{I_t}$}\;
 }
 \caption{SLR algorithm for univariate exponential family of distributions}\label{algo_slr_1d}
@@ -2770,9 +2837,8 @@ end of the horizon \(T\), the algorithm outputs the set of arms
 
 \DecMargin{1em}
 
-\subsubsection{2D-SLR Algorithm for Normal Distributions with Unknown
-Mean and Unknown
-Variance}\label{d-slr-algorithm-for-normal-distributions-with-unknown-mean-and-unknown-variance}
+\subsection{2D-SLR Algorithm for Normal
+Distributions}\label{d-slr-algorithm-for-normal-distributions}
 
 As soon as we move away from univariate distributions parameterized by
 their mean, it becomes less clear how the likelihood ratio for
@@ -2787,18 +2853,17 @@ and the alternative hypothesis based on the maximum likelihood estimates
 In the following, we assume \(\epsilon = 0\).
 
 Now, at each round \(t\), the algorithm computes \(T_i(t)\) and
-\(\hat{\mu}_i(t)\) as before, but additionally the empirical variances
+\(\hat{\mu}_i(t)\) as before, and additionally the empirical variances
 \(\sigma_{\tau,i}^2(t) = \frac{1}{T_i(t)}\sum_{s=1}^{T_i(t)}(x_{i,s}-\tau)^2\)
 and
 \(\hat{\sigma}_{i}^2(t) = \frac{1}{T_i(t)}\sum_{s=1}^{T_i(t)}(x_{i,s}-\hat{\mu})^2\).
 The index is then given by
 
-\[
-B_i^{2DSLR}(t+1) = -\log(LR(\tau, \sigma_{\tau,i}^2(t)||\hat{\mu}_i(t),\hat{\sigma}^2_{i}(t))) = T_i(t) \log\Big(\frac{\sigma_{\tau,i}^2(t)}{\hat{\sigma}_i^2(t)}\Big) = T_i(t) KL(\hat{\mu}_i(t),\hat{\sigma}^2_{i}(t)||\tau, \sigma_{\tau,i}^2(t))
-\]
-
-(SHOW THAT THE NOTATION CAN BE ABUSED AND THE KL WRITTEN THIS WAY
-BECAUSE UNIQUELY DEFINED BY MEAN AND VARIANCE)
+\begin{align*}
+B_i^{SLR_{2D}}(t+1) & = -\log(LR(\tau, \sigma_{\tau,i}^2(t)||\hat{\mu}_i(t),\hat{\sigma}^2_{i}(t))) \\
+& = T_i(t) \log\Big(\frac{\sigma_{\tau,i}^2(t)}{\hat{\sigma}_i^2(t)}\Big) \\
+& = T_i(t) KL(N(\hat{\mu}_i(t),\hat{\sigma}^2_{i}(t))||N(\tau, \sigma_{\tau,i}^2(t)))
+\end{align*}
 
 Then, as for the univariate case, the next arm to be pulled is the
 minimizer of the index \(B_i^{2DSLR}(t+1)\),
