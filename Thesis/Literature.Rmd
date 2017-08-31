@@ -6,6 +6,7 @@ output: pdf_document
 Hermann Chernoff (1958). Sequential Design of Experiments. The Annals of Mathematical Statistics.
 
 Thompson, W. R. (1933). On the likelihood that one unknown probability exceeds another in view of the evidence of two samples. Biometrika 25 285–294.
+
 Thompson, W. R. (1935). On the Theory of Apportionment. Amer. J. Math. 57 450–456.
 MR1507085
 
@@ -60,5 +61,7 @@ Shouyuan Chen, Tian Lin, Irwin King, Michael R Lyu, and Wei Chen. Combinatorial 
 "Thompson Sampling: An Asymptotically Optimal Finite Time Analysis" by Kaufmann, Korda and Munos (2012)
 
 Lihong Li, Wei Chu, John Langford, Robert E. Schapire. A Contextual-Bandit Approach to Personalized News Article Recommendation. WWW 2010, April 26–30, 2010, Raleigh, North Carolina, USA. ACM 978-1-60558-799-8/10/04.
+
+Lihong Li, Wei Chu, John Langford, Xuanhui Wang. Unbiased Offline Evaluation of Contextual-bandit-based News Article Recommendation Algorithms. WSDM’11, February 9–12, 2011.
 
 Thomas M. Cover, and Joy A. Thomas (2006). Elements of Information Theory. Second Edition. John Wiley & Sons.

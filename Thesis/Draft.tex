@@ -1,4 +1,4 @@
-\documentclass[12pt,]{article}
+\documentclass[11pt,]{article}
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
@@ -258,8 +258,8 @@ examine the performance of different algorithms.
 
 \newpage
 
-\section{\texorpdfstring{Thresholding Bandit Problem
-\label{chap:ThresholdingBanditProblem}}{Thresholding Bandit Problem }}\label{thresholding-bandit-problem}
+\section{\texorpdfstring{The Thresholding Bandit Problem
+\label{chap:ThresholdingBanditProblem}}{The Thresholding Bandit Problem }}\label{the-thresholding-bandit-problem}
 
 To introduce the thresholding bandit problem, consider a game in which
 the learner is tasked to find those slot machines within a row of \(K\)
@@ -587,7 +587,7 @@ proof.
 \begin{theorem}[Theorem 2, Locatelli et al., 2016] \label{theorem:LocatelliTheorem4}
 Let $K \geq 0$, $T \geq 2K$, and consider a problem $\mathcal{B}$. Assume that all arms $\nu_i$ of the problem are R-sub-Gaussian with means $\mu_i$. Let $\tau \in \mathbb{R}, \epsilon \geq 0$. Algorithm APT's expected loss is upper bounded on this problem as 
 \begin{equation*} \mathbb{E}(\mathcal{L}(T)) \leq \exp
-(-\frac{1}{64R^2}\frac{T}{H} + 2 \log (T) + 1)K)) \end{equation*}
+\Big(-\frac{1}{64R^2}\frac{T}{H} + 2 \log((\log(T) + 1)K)\Big) \end{equation*}
 
 where we remind that $H = \sum_i (|\mu_i - \tau | + \epsilon)^{-2}$ and where
 $\mathbb{E}$ is the expectation according to the samples of the problem.
@@ -704,10 +704,10 @@ To derive the probability of event \(\tilde{\xi}\), we apply a union
 bound on \(\mathbb{P}(\cup_{i=1}^K \xi_i^C)\):
 
 \begin{align*}
-\mathbb{P}(\tilde{\xi}) & = & 1-\mathbb{P}(\xi^C) \\
-& = & 1-\mathbb{P}(\cup_{i=1}^K \xi_i^C) \\
-& \geq & 1 - \sum_{i=1}^K \mathbb{P}(\xi_i^C) \\
-& \geq & 1 - 2K\exp (-\frac{T\delta^2}{2R^2H})
+\mathbb{P}(\tilde{\xi}) & = 1-\mathbb{P}(\xi^C) \\
+& = 1-\mathbb{P}(\cup_{i=1}^K \xi_i^C) \\
+& \geq 1 - \sum_{i=1}^K \mathbb{P}(\xi_i^C) \\
+& \geq 1 - 2K\exp (-\frac{T\delta^2}{2R^2H})
 \end{align*}
 
 We could use the same union bound a second time to bound over all
@@ -843,10 +843,10 @@ As shown in Locatelli et al. (2016), one can use the reverse triangle
 inequality to get:
 
 \begin{align*}
-|\hat{\mu}_i(t) - \mu_i| & = & |(\hat{\mu}_i(t) - \tau) - (\mu_i - \tau)| \\
-& \geq & || \hat{\mu}_i(t) - \tau | - |\mu_i - \tau|| \\
-& \geq & |(|\hat{\mu}_i(t) - \tau| + \epsilon) - (|\mu_i - \tau| + \epsilon)| \\
-& \geq & |\hat{\Delta}_i(t) - \Delta_i|
+|\hat{\mu}_i(t) - \mu_i| & = |(\hat{\mu}_i(t) - \tau) - (\mu_i - \tau)| \\
+& \geq || \hat{\mu}_i(t) - \tau | - |\mu_i - \tau|| \\
+& \geq |(|\hat{\mu}_i(t) - \tau| + \epsilon) - (|\mu_i - \tau| + \epsilon)| \\
+& \geq |\hat{\Delta}_i(t) - \Delta_i|
 \end{align*}
 
 If we combine this with the favorable event, we get
@@ -859,8 +859,8 @@ and similar for \(\hat{\Delta}_i\). We can now lower bound the LHS of
 the indices as
 
 \begin{align*}
-B_k(t) & \geq & \Big(\Delta_k - \sqrt{\frac{T\delta^2}{HT_k(t)}}\Big) \sqrt{T_k(t)} \\
-& \geq & \Big(\Delta_k - \sqrt{\frac{2}{h_k}}\delta \Big)
+B_k(t) & \geq \Big(\Delta_k - \sqrt{\frac{T\delta^2}{HT_k(t)}}\Big) \sqrt{T_k(t)} \\
+& \geq \Big(\Delta_k - \sqrt{\frac{2}{h_k}}\delta \Big)
 \end{align*}
 
 At this point, it is useful to have a well chosen complexity measure. If
@@ -945,8 +945,17 @@ Gaussian distributions of variance \(1\), the largest probability of
 error on these problems that the best algorithm exhibits is still at
 least as large as the lower bound.
 
-\subsection{\texorpdfstring{Lower Bound: Theorem and Proof
-\label{sec:LowerBoundLocatelli}}{Lower Bound: Theorem and Proof }}\label{lower-bound-theorem-and-proof}
+\subsection{\texorpdfstring{Lower Bound for the Thresholding Bandit
+Problem
+\label{sec:LowerBoundLocatelli}}{Lower Bound for the Thresholding Bandit Problem }}\label{lower-bound-for-the-thresholding-bandit-problem}
+
+Locatelli et al. (2016) also provide a general lower bound on the
+probability of error in the thresholding bandit problem. The bound is
+derived for a specified set of problems through a change in distribution
+as common in the multi-armed bandit literature (compare for example
+Audibert et al., 2010, or Kaufmann et al., 2016). For any of these
+problems, the largest probability of error that the best algorithm
+incurs is still lower bounded by the bound given below.
 
 \begin{theorem}[Theorem 1, Locatelli et al., 2016] 
 \label{theorem:Locatelli2016Theorem1}
@@ -963,328 +972,17 @@ It holds that for any bandit algorithm,
 where $\mathbb{E}_{\mathcal{B}^i}$ is the expectation according to the samples of problem $\mathcal{B}^i$.
 \end{theorem}
 
-\emph{Proof of Theorem \ref{theorem:Locatelli2016Theorem1}}: In Theorem
-\ref{theorem:Locatelli2016Theorem1} of Locatelli et al. (2016), a lower
-bound for the thresholding bandit problem is shown. The basic idea is as
-follows. The problem formulation considered in the paper describes
-bandit problems for sub-Gaussian distributions. To show a lower bound,
-we show that every algorithm is expected to make a certain error even if
-we restrict ourselves to a very restricted scenario. Even then, any
-algorithm will have a certain level of risk with which it cannot
-distinguish between the actual setting and slightly changed settings
-(under which the former answer leads to regret).
+A proof of the lower bound is given in the Appendix in
+\autoref{sec:AppendixAPTLB}.
 
-To be more specific, consider a case in which we set \(\tau = 0\) and
-\(\epsilon = 0\) w.l.o.g. If we then choose all arms to have normally
-distributed feedback with means \(\mu_i\), we see that for each arm
-\(i\) the distance from the threshold is given by
-\(\Delta_i = |\mu_i - \tau| + \epsilon = \mu_i\). Thus, assuming a
-variance of 1 for every arm, we have for every arm the distribution
-\(\nu_i = \mathcal{N}(\mu_i,1) = \mathcal{N}(\Delta_i,1)\). Furthermore,
-define for each arm \(i \in \{1, \dots, K\}\) the alternative
-distribution \(\nu_i' = \mathcal{N}(-\Delta_i,1)\). It is easy to see
-that in this case, this is equivalent to a ``flip around the
-threshold''. Arms that originally have a mean larger than the threshold
-have a mean smaller than the threshold after the flip.
-
-The idea now is that every arm \(i \in \{1,\dots,K\}\) generates a
-sample for every time point \(t\in \{1, \dots, T\}\) from its
-distribution \(\nu_i\) before the algorithm starts to choose arms. Thus,
-we have a \(T \times K\) table of realized observations from the product
-distribution given by
-\(\mathcal{B}^0 = \nu_1^0 \otimes \ldots \otimes \nu_K^0 = \nu_1^0 \otimes \ldots \otimes \nu_K\).
-This is a product distribution where the \(K\) different means all lie
-above the threshold. We would hope that an algorithm classifies the
-means accordingly. However, we will show in what follows that any
-algorithm makes a certain error by not being able to distinguish
-\(\mathcal{B}^0\) from at least one of \(K\) alternative product
-distributions \(\mathcal{B}^i, i \in \{1, \dots, K\}\), of which each
-differs only slightly in one arm from the original distribution, and has
-the same overall complexity (as defined by
-\(H = \sum_{i=1}^K (\Delta_i)^{-2}\)). We require \(K\) different
-distributions so that an arm sampling arm \(i\) very often for some
-reason will not have a smaller lower bound by chance.
-
-For each of the \(K\) arms, we introduce an alternative model of the
-following kind. Before the start of the algorithm, we introduce a slight
-variation in the setup. The idea is similar to how one can switch arms
-in the pure exploration setup for multi-armed bandits (compare Audibert
-et al., 2010; Garivier \& Kaufmann, 2016) to ``confuse'' any algorithm
-without introducing additional complexity to the specified problem.
-However, since we do not compare arms directly with each other in the
-thresholding bandit problem (switching arms would still keep all means
-above the threshold), we instead need to flip an arm \(i\) with respect
-to the threshold in order to get the alternative model
-\(\mathcal{B}_i\). Since the threshold is \(\tau = 0\), we have for the
-flipped arm the new distribution \(\nu_i'\) as defined above. Indeed, we
-can define the new product distribution
-\(B^i = \nu_1^i \otimes \dots \otimes \nu_K^i\) where for
-\(k \leq K, \nu_k' := \nu_i \mathbbm{1}_{k \neq i} + \nu_i' \mathbbm{1}_{k=i}\).
-This flipping of the arm corresponds to multiplying all random variables
-\(X_{i,t}\) of arm \(i\) by \(-1\).
-
-As in Locatelli et al. (2016), we let for \(i \leq K\),
-\(\mathbb{P}_{\mathcal{B}^i}\) define the probability distribution
-describing all samples that a bandit strategy can potentially collect up
-to horizon \(T\), i.e.~according to the samples
-\((X_{k,s})_{k\leq K, s \leq T} \sim (\mathcal{B}^i)^{\otimes T}\).
-\((T_k)_{k\leq K}\) denotes the number of samples collected on arm \(k\)
-until time \(T\).
-
-\subsubsection{Reminder about the goal of the
-proof}\label{reminder-about-the-goal-of-the-proof}
-
-At this point, we have defined a finite set of problems of Gaussian
-distributions with fixed variance 1 for a given set of set of gaps
-between the means of the distributions and the threshold, \((d_k)_k\).
-We will now proof a lower bound on the worst case regret of any
-algorithm; that is, the maximum error probability that even the best
-algorithm makes on this problem.
-
-\subsubsection{Statistical Decision}\label{statistical-decision}
-
-Given our formulation of the regret, the expected regret
-\(\mathbb{E}[\mathcal{L}(T)]\) corresponds directly to the probability
-of making a wrong classification of any of the \(K\) means. In general,
-let \(g\) be a binary decision function, and define
-\(\Omega = \{g = 0\}\) and \(\Omega^C = \{g = 1\}\). Assume that the
-decision \(T\) distinguishes between two states of the world, \(H_0\)
-and \(H_1\). Then our overall error probability is given by
-\(P_{H_0}(g=1) + P_{H_1}(g = 0) = P_{H_0}(\Omega^C) + P_{H_1}(\Omega)\).
-
-In our case, \(H_0\) may correspond to the state in which we have
-\(\mathcal{B}^0\), and \(H_1\) corresponds to the case where any arm has
-been flipped, \(\mathcal{B}^i\). Furthermore, we consider the events in
-which the algorithm, making the decision, classifies arm \(i\) as being
-above the threshold: \(\mathcal{A}_i = \{i \in \hat{S}_\tau\}\). The
-event on which all arms are being classified as above the threshold is
-consequently given by \(\mathcal{A} = \bigcap \mathcal{A}_i\). However,
-Theorem 1 does not bound the overall regret, but the maximum error
-probability on the \(K+1\) different models. We can write this now as
-
-\begin{align}
-\max_{i \in \{0, \dots, K\}} \mathbb{E}_{\mathcal{B}^i} (\mathcal{L}(T)) & \geq \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}^C) \big) \\
-& = \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \big) \label{LocatelliTheorem1ExpRegret}
-\end{align}
-
-In order to give a bound on above equation, we start by considering
-\(\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\). This probability can be
-written as the expected change in the likelihood of observed data when
-moving from distribution \(P_{\mathcal{B}_0}\) to \(P_{\mathcal{B}_i}\),
-times the probability under the original state. In other words, the
-probability of event \(\mathcal{A}_i\) under state \(\mathcal{B}^i\) is
-given as the probability of \(\mathcal{A}_i\) under the (original) state
-\(\mathcal{B}^0\) multiplied by a factor. This factor describes whether
-the new distribution increases or decreases the probability of the
-event, and is given by the change in the data likelihoods due to moving
-from \(\mathcal{B}^0\) to \(\mathcal{B}^i\), expressed as the expected
-likelihood ratio under \(\mathcal{B}^0\). By definition, the latter is
-equal to the empirical Kullback-Leibler divergence of the two
-distributions.
-
-We will define the change of distribution in terms of the empirical
-log-likelihood for our case. Then, we will show how to replace the
-log-likelihood by the empirical Kullback-Leibler divergence. So let us
-first introduce the empirical Kullback-Leibler divergence.
-
-Let every \(\nu_i, \nu_i'\) be dominated by the Lebesgue measure
-\(\lambda\). Then their density functions are given by
-\(f_i = \frac{\der \nu_i}{\der \lambda}\) and
-\(f_i' = \frac{\der \nu_i'}{\der \lambda}\) respectively. For
-\(T \geq t \geq 0\), define the empirical Kullback-Leibler divergence as
-
-\begin{align*}
-\hat{\KL}_{k,t} & = \frac{1}{t} \sum_{s=1}^{t} \log(\frac{\der \nu_k'}{\der \nu_k}(X_{k,s})) \\
-& = \frac{1}{t} \sum_{s=1}^{t} \log \big(\frac{f_k'(X_{k,s})}{f_k(X_{k,s})} \big) \\
-& = \frac{1}{t} \log \big( \prod_{s=1}^{t} \frac{f_k'(X_{k,s})}{f_k(X_{k,s})} \big) \\
-& \stackrel{\text{iid}}{=} \frac{1}{t} \log \big( \frac{f_k'(X_{k,1}, \dots,X_{k,t})}{f_k(X_{k,1}, \dots,X_{k,t})} \big) \\
-& = \frac{1}{t} \log \big( \text{LR}((X_{k,1}, \dots,X_{k,t}), \nu_k', \nu_k) \big)
-\end{align*}
-
-Since we consider Gaussian distributions with variance 1, we have
-density functions
-\(f_i(x) \propto \exp \big(-\frac{1}{2} (x-\Delta_i)^2\big)\) and
-\(f_i'(x) \propto \exp \big(-\frac{1}{2} (x+\Delta_i)^2\big)\). Plugging
-this into the above definition of the empirical Kullback-Leibler
-divergence, we easily see
-
-\begin{align*}
-\hat{\KL}_{k,t} & = \frac{1}{t} \sum_{s=1}^{t} \log \big(\frac{\exp \big(-\frac{1}{2} (X_{k,s}+\Delta_k)^2\big)}{\exp \big(-\frac{1}{2} (X_{k,s}-\Delta_k)^2\big)} \big) \\
-& = \frac{1}{t} \sum_{s=1}^{t} \log \big( \exp(-\frac{1}{2} (X_{k,s}+\Delta_k)^2 + \frac{1}{2} (X_{k,s}-\Delta_k)^2) \big) \\
-& = - \frac{1}{t} \sum_{s=1}^{t} 2 X_{k,s} \Delta_k
-\end{align*}
-
-\subsubsection{Change of Distribution}\label{change-of-distribution}
-
-We are now ready to state the change of distribution. As alluded to
-above, we consider how the probability changes for the event
-\(\mathcal{A}_i\) when we move from \(\mathcal{B}^0\) to
-\(\mathcal{B}^i\). When flipping arm \(i\), we only changed the samples
-of this arm, that is, the first \(T_i\) observations we got from arm
-\(i\) the algorithm took. The change of distribution is then defined as:
-
-\begin{align*}
-\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i} \text{LR}((X_{i,1}, \dots,X_{i,T_i}), \nu_i', \nu_i) ] \\
-& = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i} \exp (- T_i \hat{\KL}_{i,T_i}) ]
-\end{align*}
-
-Obviously, \(\hat{\KL}_{i,T_i}\) depends on the realized samples
-\(X_{i,1}, \dots,X_{i,T_i}\). Consequently, we need to find a bound on
-\(\hat{\KL}_{i,T_i}\) itself to incorporate the uncertainty involved in
-this metric.
-
-\subsubsection{Concentration of the Empirical Kullback-Leibler
-Divergence}\label{concentration-of-the-empirical-kullback-leibler-divergence}
-
-For our problem, the Kullback-Leibler divergence of \(\nu_k'\) from
-\(\nu_k\) is given by \(\KL_k := KL(\nu_k', \nu_k) = 2\Delta_k^2\).
-
-It is easy to see that
-
-\begin{equation*}
-|\hat{\KL}_{k,t} - \KL_{k,t}| = |-\frac{2}{t} \Delta_k \sum_{s=1}^{t}(X_{k,s} - \Delta_k)|
-\end{equation*}
-
-itself is a normally distributed random variable with mean zero and a
-variance decreasing in \(t\). Thus, one can show as in Locatelli et al.
-(2016) that \(\mathbb{P}_{\mathcal{B}^i}(\xi) \geq 3/4\) for the event
-
-\begin{equation}
-\xi = \{ \forall k \leq K, \forall t \leq T, |\hat{\KL}_{k,t} - \KL_{k,t}| \leq 4 \Delta_k \sqrt{\frac{\log(4(\log(T)+1)K)}{t}}\}. \label{LocatelliTheorem1EventXi}
-\end{equation}
-
-Thus, in order to bound the empirical Kullback-Leibler divergence in our
-change of measure, we can consider the intersection of \(\mathcal{A}_i\)
-and \(\xi\) as follows and plug in the bound on event \(\xi\):
-
-\begin{align*}
-\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i} \exp (- T_i \hat{\KL}_{i,T_i}) ] \\
-& \geq \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- T_i \hat{\KL}_{i,T_i}) ] \\
-& \geq \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- 2 \Delta_i^2 T_i - 4 \Delta_i \sqrt{T_i} \sqrt{\log(4(\log(T)+1)K)}) ]
-\end{align*}
-
-Two things are left to do: With \(T_i\), we still have one random
-variable left which we cannot leave in our bound. Second, we are
-actually not interested in \(\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\)
-but in
-\(\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\).
-
-\subsubsection{\texorpdfstring{Bounding \(T_i\) for
-\(\max_{i \in \{1,\dots,K\}}\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\)}{Bounding T\_i for \textbackslash{}max\_\{i \textbackslash{}in \textbackslash{}\{1,\textbackslash{}dots,K\textbackslash{}\}\}\textbackslash{}mathbb\{P\}\_\{\textbackslash{}mathcal\{B\}\^{}i\}(\textbackslash{}mathcal\{A\}\_i)}}\label{bounding-t_i-for-max_i-in-1dotskmathbbp_mathcalbimathcala_i}
-
-Part of our bound is
-\(\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\),
-so let's continue with that. In general it holds that
-\(\max_{1 \leq i \leq K} (X_1, \dots, X_K) \geq \frac{1}{K}\sum_{i=1}^K X_i\).
-Thus we can write:
-
-\begin{align*}
-\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & \geq \frac{1}{K} \sum_{i=1}^{K} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) \\
-& \geq \frac{1}{K} \sum_{i=1}^{K} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i \cap \xi) \\
-& \geq \frac{1}{K} \sum_{i=1}^{K} \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- 2 \Delta_i^2 T_i - 4 \Delta_i \sqrt{T_i} \sqrt{\log(4(\log(T)+1)K)}) ]
-\end{align*}
-
-where the second line is again the intersection of \(\mathcal{A}_i\) and
-\(\xi\) as before in order to apply the change of distribution in the
-third line.
-
-What is left to show before we have our final bound is a bound on
-\(T_i\). To show that any algorithm has a certain bound on its error, it
-only makes sense that every arm has to pulled at least a certain amount
-of times. Consequently, no arm should be pulled exclusively.
-
-First, let \(a = \Delta_i \sqrt{T_i}\) and
-\(b = 4\sqrt{\log((4\log(T)+1)K)}\). Then use \(ab \leq a^2 + b^2\) to
-write \(ab \leq \Delta_i^2 T_i + 16\log((4\log(T)+1)K)\). And so:
-
-\begin{align*}
-\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & \geq \frac{1}{K} \sum_{i=1}{K} \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- 3 \Delta_i^2 T_i - 16 \log(4(\log(T)+1)K)) ]
-\end{align*}
-
-Furthermore, we know that the sum of the individual arm pulls has to be
-equal to the overall number of pulls (equal to the budget in the fixed
-budget sense), \(\sum_i T_i = T\), and furthermore we know that
-\(T_i>0\). The latter holds since any reasonable algorithm has to check
-each arm at least once in our setup. This is because we need to check
-each arm's performance in comparison to the threshold. Thus it is easy
-to show that
-\(\exists i: T_i \leq \frac{T}{H \Delta_i^2} = \frac{T}{(\sum_{i=1}^{K} \Delta_i^{-2}) \Delta_i^2}\).
-To see this, assume the opposite:
-\(\forall i: T_i > T \frac{\sum_{i=1}^K \Delta_i^2}{\Delta_i^2}\). This
-implies however
-\(\sum_{i=1}^K T_i > \sum_{i=1}^K T \frac{\sum_{i=1}^K \Delta_i^2}{\Delta_i^2} = T \cdot 1 = T\)
-which is a contradiction.
-
-So we can write \((\Delta_i \sqrt{T_i})^2 \leq \frac{T}{H}\). We use
-\(\mathcal{A} = \cap_{i=1}^K \mathcal{A}_i\) to write:
-
-\begin{align*}
-\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & \geq \frac{1}{K} \sum_{i=1}^{K} \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- 3 \Delta_i^2 T_i - 16 \log(4(\log(T)+1)K)) \big] \\
-& = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A} \cap \xi} \frac{1}{K} \sum_{i=1}{K} \exp (- 3 \Delta_i^2 T_i - 16 \log(4(\log(T)+1)K)) \big]
-\end{align*}
-
-We write
-\(\frac{1}{K} \sum_{i=1}^K \exp(-3T_i \Delta_i^2) \geq \frac{1}{K} \sum_{i=1}^K \exp(-3 T/H) = \exp(-3 T/H)\).
-Thus:
-
-\begin{align*}
-\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A} \cap \xi} \frac{1}{K} \sum_{i=1}^{K} \exp (- 3 \Delta_i^2 T_i) \exp(-16 \log(4(\log(T)+1)K)) ] \\
-& \geq \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A} \cap \xi} \frac{1}{K} \sum_{i=1}^{K} \exp (- 3 \frac{T}{H}) \exp(-16 \log(4(\log(T)+1)K)) ] \\
-& = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A} \cap \xi} \exp (- 3 \frac{T}{H}) \exp(-16 \log(4(\log(T)+1)K)) ] \\
-& = \mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp (- 3 \frac{T}{H} -16 \log(4(\log(T)+1)K))
-\end{align*}
-
-\subsubsection{Bringing everything
-together}\label{bringing-everything-together}
-
-Consider again the risk which we need to bound from equation
-\eqref{LocatelliTheorem1ExpRegret}. We bound the maximum expected loss
-over all \(\mathcal{B}_i\). By again using the fact that in general
-\(\max_{1 \leq i \leq K} (X_1, \dots, X_K) \geq \frac{1}{K} \sum_{i = 1}^K X_i\),
-we plug in our previous calculations:
-
-\begin{align}
-\max_{i \in \{0, \dots, K\}} \mathbb{E}_{\mathcal{B}^i} (\mathcal{L}(T)) & \geq \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \big) \\
-& \geq \frac{1}{2}\mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp (- 3 \frac{T}{H} -16 \log(4(\log(T)+1)K)) + \frac{1}{2}(1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A})) \label{LocatelliTheorem1DefinitionOfRisk}
-\end{align}
-
-From \eqref{LocatelliTheorem1EventXi} we know that for any
-\(i \in \{0, \dots, K\}\), \(\mathbb{P}_{\mathcal{B}^i}(\xi) \geq 3/4\).
-Following the argument in Locatelli et al. (2016), we now consider two
-cases: \(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \geq 1/2\) and
-\(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \leq 1/2\). In the former
-case, we can plug in the two probabilities into
-\eqref{LocatelliTheorem1DefinitionOfRisk}. If
-\(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \geq 1/2\) and
-\(\mathbb{P}_{\mathcal{B}^0}(\xi) \geq 3/4\), then
-\(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A} \cap \xi) \geq 1/4\). Thus:
-
-\begin{align*}
-\max_{i \in \{0, \dots, K\}} \mathbb{E}_{\mathcal{B}^i} (\mathcal{L}(T)) & \geq \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \big) \\
-& \geq \frac{1}{2}\mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp (- 3 \frac{T}{H} -16 \log(4(\log(T)+1)K)) + \frac{1}{2}(1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A})) \\
-& \geq \frac{1}{8} \exp (- 3 \frac{T}{H} -16 \log(4(\log(T)+1)K))
-\end{align*}
-
-where we drop the second summand of the second line so that the
-inequality holds.
-
-On the other hand, when
-\(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \leq 1/2\), then we know that
-\(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A} \cap \xi) \leq 1/2\) for any
-\(\mathbb{P}_{\mathcal{B}^0}(\xi)\). At the same time
-\(1-\mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) = \mathbb{P}_{\mathcal{B}^0}(\mathcal{A^C}) \geq 1/2\).
-Consequently,
-\(1/4 \leq \frac{1}{2}(1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A})) \leq 1/2\),
-while
-\(\frac{1}{2}\mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp (- 3 \frac{T}{H} -16 \log(4(\log(T)+1)K)) \geq 0\).
-And so the stronger lower bound in that case is, as noticed by Locatelli
-et al. (2016), given simply by
-
-\begin{align*}
-\max_{i \in \{0, \dots, K\}} \mathbb{E}_{\mathcal{B}^i} (\mathcal{L}(T)) & \geq \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \big) \\
-& \geq 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) = \mathbb{P}_{\mathcal{B}^0}(\mathcal{A^C}) \\
-& \geq \frac{1}{2}
-\end{align*}
+If we write the lower bound as
+\(LB = 12(\log(T)+1)K)\exp(-3T/H)\exp(-4) = C_{LB}(\log(T)+1)K\exp(-T/H)\)
+and the upper bound as
+\(UB = (\log(T)+1)K \exp(2) \exp(-\frac{1}{64R^2}\frac{T}{H}) = C_{UB}(\log(T)+1)K\exp(-T/H)\),
+we see that \(LB\) and \(UB\) match up to multiplicative constants and
+the \((\log(T)+1)K\) term which is negligiable in comparison with the
+exponent for large \(T\) as shown in Locatelli et al. (2016), which
+makes the APT algorithm order optimal.
 
 \subsection{\texorpdfstring{Discussion
 \label{sec:DiscussionLocatelli}}{Discussion }}\label{discussion}
@@ -1406,7 +1104,7 @@ problem as detailed in Kaufmann and Garivier (2016) and Kaufmann et al.
 (2016). Before introducing a new algorithm for the thresholding bandit
 problem based on Kullback-Leibler divergences in
 \autoref{sec:LikelihoodRatioForExponentialFamily}, we first describe the
-variance-based approaches in \autoref{chap:VarianceBasedAlgorithms}.
+variance-based approaches in \autoref{sec:VarianceBasedAlgorithms}.
 
 \begin{figure}
 
@@ -1417,65 +1115,105 @@ variance-based approaches in \autoref{chap:VarianceBasedAlgorithms}.
 \caption{The approximation of the Bernoulli KL-divergence by the Gaussian KL-divergence works well if the second argument is equal to 0.5. Else we observe poor approximation in both value and symmetry. This becomes more obvious as the arguments move away from 0.5.}\label{fig:KLApproximationComparison}
 \end{figure}
 
-\section{\texorpdfstring{Kullback-Leibler Complexity of Pure Exploration
-\label{chap:KullbackLeiblerPureExploration}}{Kullback-Leibler Complexity of Pure Exploration }}\label{kullback-leibler-complexity-of-pure-exploration}
+\section{\texorpdfstring{Information Theoretic Complexity of Pure
+Exploration Bandits
+\label{chap:KullbackLeiblerPureExploration}}{Information Theoretic Complexity of Pure Exploration Bandits }}\label{information-theoretic-complexity-of-pure-exploration-bandits}
 
-In the previous chapter, we discussed the thresholding bandit problem as
-presented in Locatelli et al. (2016). Doing so, we came across the
-complexity term \(H = \sum_{i=1}^{K} \Delta_i^{-2}\). Furthermore, we
-noted the fact that an algorithm and bounds based on \emph{only} the gap
-between the respective mean and the threshold are useful in the case of
-sub-Gaussian problems. Furthermore, even for the case of Bernoulli arms,
-which are sub-Gaussian since their feedback is bounded on \([0,1]\), the
-gap \(\Delta\) becomes less and less appropriate in situations in which
-both \(\mu\) of the Bernoulli, and \(\tau\) are very close to 0 or 1.
+The previous chapter introduces the thresholding bandit problem as
+described in Locatelli et al. (2016), and with the APT strategy a first
+algorithm that is simple, yet order-optimal for large budgets. However,
+we end with the conclusion that a distance measure between the
+distributions and the threshold based on the Kullback-Leibler divergence
+might be more useful than the simple gap
+\(\Delta^2_i = (\mu_i - \tau_i)^2\) employed so far. Indeed, citing
+Kaufmann et al. (2016), we note that the complexity \(H\) used so far
+can be considered a sub-Gaussian approximation of a better complexity
+measure based on information theoretic measures like the
+Kullback-Leibler divergence.
 
-Even though the complexity \(H\) enjoys popularity in the literature of
-the best \(m\) arm identification problem, \(m \geq 1\), Kaufmann et al.
-(2016) show explicitly that \(H\) is mainly useful for problems of
-Gaussian distributions. Indeed, they go so far as to define new measures
-of complexity that are based on information theoretic measures. Using
-these, they then frame \(H\) as an approximation to their measures in
-the case of Gaussian distributions. This underlines the fact that
-Bernoulli distributions with small means have to be treated differently
-than Gaussian distributions.
+In order to give more intuition to why that is the case, and in what
+ways information theoretic measures can be introduced to measure the
+complexity of bandit problems, we now turn to Kaufmann et al. (2016) and
+Garivier and Kaufmann (2016). The latter describes a strategy based on
+Kullback-Leibler divergences for the best-arm identification problem,
+while the first derives complexity measures based on the divergence.
+Ideally, their work offers methods that can inform our work of extending
+the thresholding bandit problem. In what follows, we adopt the notation
+of Kaufmann et al. (2016) to ease a comparison with their arguments.
 
-For the current chapter, we adopt the notation of Kaufmann et al. (2016)
-to ease a comparison with their arguments.
+\subsection{\texorpdfstring{Complexity Measures for Best-Arm and
+Top-\emph{m} Identification
+\label{sec:KaufmannEtAl2016}}{Complexity Measures for Best-Arm and Top-m Identification }}\label{complexity-measures-for-best-arm-and-top-m-identification}
 
-\subsection{\texorpdfstring{Complexity of Best-Arm and Top-\emph{m}
-Identification}{Complexity of Best-Arm and Top-m Identification}}\label{complexity-of-best-arm-and-top-m-identification}
+Instead of the thresholding bandit problem, Kaufmann et al. (2016)
+consider the problem of identifying the best \(m\) out of \(K\) arms,
+that is, the Top-\(m\) problem. They describe their a bandit model
+\(\nu\) also by \(K\) arms characterized by probability distributions
+\(\nu_a\), \(a \in \{1,...,K\}\) with mean \(\mu_a\). As before, a
+learner decides at any time step \(t=1,2,...,\) an arm
+\(A_t \in \{1,...,K\}\) for which he observes the independent reward
+\(Z_{t} \sim \nu_{A_t}\). The learner aims to find the \(m\) out of
+\(K\) arms with the largest expected reward. This set of arm indices is
+denoted by \(\mathcal{S}_m^*\). Kaufmann et al. write the in decreasing
+order sorted means \((\mu_{1}, ..., \mu_{K})\) as the K-tuple
+\((\mu_{[1]}, ..., \mu_{[K]})\). Based on this, they require that
+\(\mu_{[m]} > \mu_{[m+1]}\) such that the solution \(\mathcal{S}_m^*\)
+is unique. The class of bandit problems \(\nu\) for which the latter
+condition holds is called \(\mathcal{M}_m\) by Kaufmann et al. At the
+end of the sampling procedure, after \(T\) samples (denoted by \(\tau\)
+in Kaufmann et al.) the learner is required to return a classification
+\(\hat{\mathcal{S}}_m\). This classification is then evaluated by the
+loss function
+\(\mathcal{L}(T) = \mathbb{I}(\mathcal{S}^*_m \neq \hat{\mathcal{S}}_m)\).
+This binary loss is of course very similar to the loss in the
+thresholding bandit problem. We can now define a strategy of the learner
+as \(\mathcal{A} = ((A_t), T, \hat{\mathcal{S}}_m)\): The strategy
+defines how he chooses an arm, how many samples are observed, and how
+the arms are classified in the end.
 
-Instead of the thresholding bandit problem, we now consider the problem
-of identifying the best \(m\) out of \(K\) arms, that is, the Top-\(m\)
-problem. While we previously looked at a fixed budget formulation, we
-now mainly focus on a fixed confidence problem: We hold the confidence
-\(1-\delta\) fixed at which a strategy returns the correct \(m\) arms
-while trying to reach this confidence in a way that minimizes the sample
-complexity \(\mathbb{E}_{\nu}[\tau]\), that is, the expected number of
-overall draws of the arms. \(\tau\) is also called the stopping time of
-the algorithm. The goal of algorithms is to identify
-\(\mathcal{S}_m^*\), the set of the \(m\) arms with the largest means.
-If we let \((\mu_1, \dots, \mu_K)\) be the vector of the means of the
-arms, then let \((\mu_{[1]}, \dots, \mu_{[K]})\) be the tuple in which
-the means are arranged in decreasing order. For the rest of this
-chapter, we consider only settings with arms for which
-\(\mu_{[m]} > \mu_{[m+1]}\); we demand the set of the top \(m\) arms,
-\(\mathcal{S}_m^*\), to be unique. After the sampling phase, we require
-any algorithm to return the set \(\hat{S}_m \subset \{1,\dots,K\}\) of
-\(m\) arms that the algorithm believes to have the largest means. In the
-case of fixed confidence, we fix \(\delta\) at the beginning, such that
-the algorithm only stops sampling when
-\(\mathbb{P}_{\nu}(\hat{S}_m = \mathcal{S}_m^*) \geq 1-\delta\). We try
-to find algorithms who fulfill this condition as quickly as possible.
-Algorithms which minimize the expected stopping time (or number of
-draws), \(\mathbb{E}_{\nu}[\tau]\).
+When introducing the thresholding bandit setting, we did not mention the
+fact that the budget \(T\) does not need to be fixed upfront. Indeed,
+the setting in which the budget is \emph{not} fixed upfront might be
+more popular among the best arm identification and top-\(m\) literature.
+This setting is called \emph{fixed-confidence}, while the setting we
+considered so far is called \emph{fixed-budget}. In the fixed-budget
+setting, we run algorithms for \(T\) samples and then compare them based
+on their expected loss,
+\(\mathbb{E}[\mathcal{L}(T)] = \mathbb{P}(\mathcal{S}^*_m \neq \hat{\mathcal{S}}_m) =: p_t(\nu)\)
+as we have seen in \(\autoref{sec:Setup}\). Alternatively, consider a
+\(\delta\)-PAC strategy \(\mathcal{A}(\delta)\)for which holds for every
+problem \(\nu \in \mathcal{M}_m\) that the classification holds at least
+with confidence level \(1-\delta\), that is,
+\(\mathbb{P}(\mathcal{S}^*_m = \hat{\mathcal{S}}_m) \geq 1-\delta\). The
+strategy has to achieve this level of confidence in its prediction
+before it is allowed to stop sampling. This is the fixed-confidence
+case, in which the budget \(T\) is no longer fixed upfront, but becomes
+a random variable. We compare algorithms by their expected number of
+draws \(\mathbb{E}_{\nu}[T_{\delta}]\) and prefer those which arrive at
+the confidence level \(1-\delta\) with a smaller expected budget.
 
-To arrive at the new measure of complexity proposed by Kaufmann et al.
-(2016), it will actually make sense to first follow their arguments to a
-general lower bound on the sample complexity \(\mathbb{E}_{\nu}[\tau]\)
-in the case of fixed confidence problems. This bound is given in their
-Theorem 4 (for common confidence levels of \(\delta \leq 0.15\)).
+Following Kaufmann et al. (2016), in the fixed confidence setting, a
+family of strategies \(A = (\mathcal{A}(\delta))_{\delta \in (0,1)}\) is
+called PAC if for every \(\delta\), \(\mathcal{A}(\delta)\) is
+\(\delta\)-PAC. On the other hand, in the fixed budget setting, a family
+of strategies \(A = (\mathcal{A}(t))_{t \in \mathbb{N}}\) is called
+consistent if \(p_t(\nu) \rightarrow 0\) as \(t \rightarrow \infty\) for
+every problem \(\nu \in \mathcal{M}_m\).
+
+Given this setup, we can now follow the arguments of Kaufmann et al.
+(2016) to deduce complexity measures for the top-\(m\) problem. As
+alluded to earlier, these complexity measures will rely on the
+Kullback-Leibler divergence in contrast to the complexity \(H\) used by
+Locatelli et al. (2016). Also, when discussing \(H\), we so far
+described it as complexity as it measures the difficulty of the problem
+by measuring the distance between arms and the threshold. Kaufmann et
+al. approach complexity instead from how many samples (what error
+probability) one can expect to need in the fixed confidence (fixed
+budget) setting. Thus, in order to arrive at their new measure of
+complexity, it makes sense to first follow their arguments to a general
+lower bound on the sample complexity \(\mathbb{E}_{\nu}[\tau]\) in the
+case of fixed confidence top-\(m\) problems. This bound is given in
+their Theorem 4 (for common confidence levels of \(\delta \leq 0.15\)).
 
 \begin{theorem}[Theorem 4, Kaufmann et al., 2016] \label{theorem:KaufmannEtAlTheorem4}
 Let $\nu \in \mathcal{M}_m$, where $\mathcal{M}_m$ is the set of uniquely identifiable bandit models described above. Assume that $\mathcal{P}$ satisfies the continuity conditions in Assumption 3. Any $\delta$-PAC algorithm on $\mathcal{M}_m$ satisfies, for $\delta \leq 0.15$:
@@ -1758,12 +1496,11 @@ divergence becomes symmetric, and the feedback can take values on all
 \(\mathbb{R}\). And by using the complexity measure \(H(\nu)\), it is
 also clear that there exists an arm that is undersampled with respect to
 its contribution to the overall complexity of the problem (or sampled
-exactly according to its contribution), which leads to leads to a
-convenient upper bound on this arms number of draws which is again
-employed in both the proof of Theorem
-\ref{theorem:KaufmannEtAlTheorem17} and in Locatelli et al. (2016). It
-is not clear yet, whether the same can also be done with other
-complexity measures.
+exactly according to its contribution), which leads to a convenient
+upper bound on this arms number of draws which is again employed in both
+the proof of Theorem \ref{theorem:KaufmannEtAlTheorem17} and in
+Locatelli et al. (2016). It is not clear yet, whether the same can also
+be done with other complexity measures.
 
 We do not repeat the proof here for now.
 
@@ -2475,7 +2212,7 @@ their proof.
 
 Given a lower bound adapted to the new complexity
 \(H^{\text{EVT}_{pf}}\), the Zhong et al. (2017) show that the
-EVT\(_pf\) algorithm is optimal in that its upper bound matches the
+EVT\(_{pf}\) algorithm is optimal in that its upper bound matches the
 lower bound. Furthermore, they compare their algorithm in experiments
 against the APT algorithm. The experiments use data generated from
 uniform distributions. Each experiment compares 100 arms with variances
@@ -2487,7 +2224,7 @@ report the largest advantage of their variance based algorithms in
 comparison to APT when the variances are very small; given they only
 consider problems bounded on a support of \([0,1]\), \(\sigma_i \ll 1\).
 In this case the problem complexity \(H^{\text{EVT}_{pf}}\) can be much
-smaller than \(H^{APT}\) -- the EVT algorithm profits more from
+smaller than \(H^{APT}\) -- the EVT\(_{pf}\) algorithm profits more from
 distributions that are simple to estimate in terms of their variance
 than the APT algorithm does.
 
@@ -2561,10 +2298,10 @@ discrete distribution with support \(\chi\), one can write the negative
 log-likelihood ratio as (compare Cover and Thomas, 2006)
 
 \begin{align*}
--\log(LR_T(\theta_{H_0}|| \theta_{H_1}) & = & \sum_{i=1}^T \log(\frac{q(x_s|\theta_{H_0})}{ q(x_s|\theta_{H_1})}) \\
-& = & \sum_{a \in \chi} T q(a|\hat{\theta}) \log(\frac{q(a|\theta_{H_0})}{ q(a|\theta_{H_1})}) \\
-& = & \sum_{a \in \chi} T q(a|\hat{\theta}) \log(\frac{q(a|\theta_{H_0})}{ q(a|\theta_{H_1})}\frac{q(a|\hat{\theta})}{ q(a|\hat{\theta})}) \\
-& = & T \KL(q(\hat{\theta})||q(\theta_{H_0})) - T \KL(q(\hat{\theta})||q(\theta_{H_1})),
+-\log(LR_T(\theta_{H_0}|| \theta_{H_1}) & = \sum_{i=1}^T \log(\frac{q(x_s|\theta_{H_0})}{ q(x_s|\theta_{H_1})}) \\
+& = \sum_{a \in \chi} T q(a|\hat{\theta}) \log(\frac{q(a|\theta_{H_0})}{ q(a|\theta_{H_1})}) \\
+& = \sum_{a \in \chi} T q(a|\hat{\theta}) \log(\frac{q(a|\theta_{H_0})}{ q(a|\theta_{H_1})}\frac{q(a|\hat{\theta})}{ q(a|\hat{\theta})}) \\
+& = T \KL(q(\hat{\theta})||q(\theta_{H_0})) - T \KL(q(\hat{\theta})||q(\theta_{H_1})),
 \end{align*}
 
 where \(\hat{\theta}\) is the maximum likelihood estimate of the
@@ -2662,8 +2399,9 @@ unknown mean. Before we describe the algorithm, we show that the
 likelihood ratio has a very convenient form for this family of
 distributions.
 
-\subsubsection{Likelihood Ratio for Univariate Exponential Family of
-Distributions}\label{likelihood-ratio-for-univariate-exponential-family-of-distributions}
+\subsubsection{\texorpdfstring{Likelihood Ratio for Univariate
+Exponential Family of Distributions
+\label{sec:LRforUnivariateExponentialFamily}}{Likelihood Ratio for Univariate Exponential Family of Distributions }}\label{likelihood-ratio-for-univariate-exponential-family-of-distributions}
 
 We now focus on a thresholding bandit problem where the arms are
 distributed according to \(\nu_{\theta_1}, ..., \nu_{\theta_K}\), which
@@ -2710,8 +2448,8 @@ We have \(T(x_i) = x_i\), \(\theta = \log(\mu/(1-\mu))\),
 \(\mu \in (0,1)\). Then \(b'(\theta) = \mu\), and we can write
 
 \begin{align*}
--\log(LR(\mu_0||\mu_1)) & = & n(\log\Big(\frac{1-\mu_0}{1-\mu_1}\Big)) - \Big(\log(\frac{\mu_0}{1-\mu_0}) - \log(\frac{\mu_1}{1-\mu_1})\Big)\sum_{i=1}^{n}x_i \\
-& = & n \Big( (1-\hat{\mu})\log\Big(\frac{1-\mu_1}{1-\mu_0}\Big) + \hat{\mu}\log\Big(\frac{\mu_1}{\mu_0}) \Big)
+-\log(LR(\mu_0||\mu_1)) & = n(\log\Big(\frac{1-\mu_0}{1-\mu_1}\Big)) - \Big(\log(\frac{\mu_0}{1-\mu_0}) - \log(\frac{\mu_1}{1-\mu_1})\Big)\sum_{i=1}^{n}x_i \\
+& = n \Big( (1-\hat{\mu})\log\Big(\frac{1-\mu_1}{1-\mu_0}\Big) + \hat{\mu}\log\Big(\frac{\mu_1}{\mu_0}) \Big)
 \end{align*}
 
 We observe that, if we let \(\mu_0 = \tau\) and \(\mu_1 = \hat{\mu}\)
@@ -2812,7 +2550,7 @@ computes the index
 B_i^{SLR}(t+1) & = \mathbb{I}(\hat{\mu}\geq \tau)(-\log\big(LR(\tau-\epsilon||\hat{\mu}_i(t))\big) \\
 & \quad +\: \mathbb{I}(\hat{\mu} <\tau)(-\log\big(LR(\tau+\epsilon||\hat{\mu}_i(t))\big) \\
 & = T_i(t) \Big( \mathbb{I}(\hat{\mu}\geq \tau)\cdot KL(\nu_{b'^{-1}(\hat{\mu}(t))}||\nu_{b'^{-1}(\tau-\epsilon)}) \\
-& \quad +\: \mathbb{I}(\hat{\mu} < \tau)\cdot KL(\nu_{b'^{-1}(\hat{\mu}(t))}||\nu_{b'^{-1}(\tau+\epsilon)}) \Big) \Alignyesnumber\label{eqn:SLRIndex}.
+& \quad \quad +\: \mathbb{I}(\hat{\mu} < \tau)\cdot KL(\nu_{b'^{-1}(\hat{\mu}(t))}||\nu_{b'^{-1}(\tau+\epsilon)}) \Big) \Alignyesnumber\label{eqn:SLRIndex}.
 \end{align*}
 
 The next arm to be pulled is the minimizer of the index
@@ -2849,160 +2587,179 @@ use
 \(H_0: \mu = \tau \land \sigma^2 = \sigma^2_{\tau} = \frac{1}{n}\sum_{i=1}^{n}(x_i-\tau)^2\)
 and the alternative hypothesis based on the maximum likelihood estimates
 \(H_1: \mu = \hat{\mu} \land \sigma^2 = \hat{\sigma}^2 = \frac{1}{n}\sum_{i=1}^{n}(x_i-\hat{\mu})^2\).
+In the following, we assume \(\epsilon = 0\) for simplicity.
 
-In the following, we assume \(\epsilon = 0\).
-
-Now, at each round \(t\), the algorithm computes \(T_i(t)\) and
+At each round \(t\), the algorithm computes \(T_i(t)\) and
 \(\hat{\mu}_i(t)\) as before, and additionally the empirical variances
 \(\sigma_{\tau,i}^2(t) = \frac{1}{T_i(t)}\sum_{s=1}^{T_i(t)}(x_{i,s}-\tau)^2\)
 and
-\(\hat{\sigma}_{i}^2(t) = \frac{1}{T_i(t)}\sum_{s=1}^{T_i(t)}(x_{i,s}-\hat{\mu})^2\).
-The index is then given by
+\(\hat{\sigma}_{i}^2(t) = \frac{1}{T_i(t)}\sum_{s=1}^{T_i(t)}(x_{i,s}-\hat{\mu})^2\),
+where \(\hat{\sigma}_{i}^2(t) < \sigma_{\tau,i}^2(t)\) if
+\(\hat{\mu} \neq \tau\) since \(\hat{\mu}\) is the maximum likelihood
+estimate. The index is then
 
 \begin{align*}
-B_i^{SLR_{2D}}(t+1) & = -\log(LR(\tau, \sigma_{\tau,i}^2(t)||\hat{\mu}_i(t),\hat{\sigma}^2_{i}(t))) \\
+B_i^{SLR_{2D}}(t+1) & = -\log\big(LR(\tau, \sigma_{\tau,i}^2(t)||\hat{\mu}_i(t),\hat{\sigma}^2_{i}(t))\big) \\
 & = T_i(t) \log\Big(\frac{\sigma_{\tau,i}^2(t)}{\hat{\sigma}_i^2(t)}\Big) \\
-& = T_i(t) KL(N(\hat{\mu}_i(t),\hat{\sigma}^2_{i}(t))||N(\tau, \sigma_{\tau,i}^2(t)))
+& = T_i(t) \KL\big(N(\hat{\mu}_i(t),\hat{\sigma}^2_{i}(t))||N(\tau, \sigma_{\tau,i}^2(t))\big) \Alignyesnumber\label{eqn:SLR2DIndex}
 \end{align*}
 
 Then, as for the univariate case, the next arm to be pulled is the
-minimizer of the index \(B_i^{2DSLR}(t+1)\),
-\(I_{t+1} = \arg \min_{i\leq K} B_i(t+1)\). At the end of the horizon
+minimizer of the index \(B_i^{SLR_{2D}}(t+1)\),
+\(I_{t+1} = \arg \min_{i \leq K} B_i(t+1)\). At the end of the horizon
 \(T\), the algorithm outputs the set of arms
-\(\hat{S}_\tau = \{k: \hat{\mu}_k(T) \geq \tau\}\).
+\(\hat{S}_\tau = \{i \in \mathbb{A}, \hat{\mu}_i(T) \geq \tau\}\).
 
-\subsubsection{Discussion}\label{discussion-1}
+\IncMargin{1em}
+
+\begin{algorithm}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+\Input{\emph{$\tau$, $\epsilon$, $\nu(\mu, \theta) = N(\mu,\sigma^2) \, \forall i \in \mathbb{A}$, where $\mu$ and $\sigma^2$ are unknown}}
+\Output{$\hat{S}_\tau = \{i \in \mathbb{A},  \hat{\mu}_i(T) \geq \tau\}$}
+\BlankLine
+\emph{Pull each arm twice}\;
+\For{$t = 2K+1$ \KwTo $T$}{
+\For{$i = 1$ \KwTo $K$}{
+  \emph{Compute $\hat{\sigma}^2_{i}(t)$}\;
+  \If{$\hat{\sigma}^2_{i}(t) = 0$}{\emph{Set $\hat{\sigma}^2_{i}(t) = 1/T$}}
+}
+  \emph{Pull arm $I_t = \arg \min_{i\leq K} B_i^{SLR_{2D}}(t)$ as in \autoref{eqn:SLR2DIndex}}\;
+  \emph{Observe reward $X \sim \nu_{I_t}$}\;
+}
+\caption{2D-SLR algorithm for Normal distributions with unknown mean and unknown variance}\label{algo_slr_2d}
+\end{algorithm}
+
+\DecMargin{1em}
+
+\subsection{Discussion}\label{discussion-1}
 
 At the beginning of this thesis, we set out to find an algorithm that
 improves upon the Anytime Parameter Free algorithm introduced in
 Locatelli et al. (2016) for the thresholding bandit problem in two
-directions. First, we wanted to make the algorithm perform better in
-problems that are not well approximated as sub-Gaussian; that is, in
-particular a problem with Bernoulli arms with small means and low
-threshold. Unsurprisingly, this meant that we need to find a solution
-that takes more into account than just the sample mean. With the Simple
-Likelihood Ratio strategy, we propose an algorithm that fulfills that
-goal at the cost of being distribution specific.
+points. First, we wanted to make the algorithm perform better in
+problems with arms that are not well approximated as sub-Gaussian; in
+particular a problem with Bernoulli arms of small means, and with a
+threshold close to 0. We thus tried to find a strategy that takes more
+information about the arms into account than purely the sample mean.
+With the Simple Likelihood Ratio strategy, we propose an algorithm that
+fulfills this goal at the cost of being distribution specific.
 
-The Simple Likelihood Ratio strategy requires the knowledge of the class
-of distribution upfront, just as other algorithms require parameters.
-While this is likely to be a negligiable problem in the case of
-\(\{0,1\}\) observations which can be modeled reasonably by Bernoulli
-distributions if we are only interested in estimating the mean, it can
-be more difficult to know the true class of distribution upfront when
-the random variables can take values in \(\mathbb{R}\). We have shown
-however, that the SLR strategy can be adapted to all univariate
-distributions in the exponential family of distributions. The algorithm
-even offers a natural adaptation to the problem of normal distributions
-with unknown mean and unknown variance.
+The SLR strategy requires the knowledge of the class of distribution
+upfront, just as other algorithms require parameters. While this is
+likely to be a negligiable problem in the case of \(\{0,1\}\)
+observations whose mean can be modeled reasonably by Bernoulli
+distributions, it can be more difficult to know the true class of
+distributions upfront when \(\nu_i\) are continuous distributions. We
+have shown however, that the SLR strategy can be adapted to all
+univariate distributions in the exponential family of distributions. The
+algorithm even offers a natural adaptation to the problem of normal
+distributions with unknown mean and unknown variance.
 
-Furthermore, the Simple Likelihood Ratio strategy reduces to the Anytime
-Parameter Free strategy in the case where arms are normally distributed
-with equal variance that is known upfront. In that case we have as index
-(compare example 3 above):
-
-\[
+Furthermore, the SLR strategy reduces to the APT strategy in the case
+where arms are normally distributed with equal variance that is known
+upfront. In that case we have as index (compare example 3 above): \[
 B_i^{SLR}(t) = T_i(t)\frac{(\hat{\mu}_i(t) - \tau)^2}{2\sigma^2}.
 \] In order to decide at time \(t\) which arm to draw next, we
 necessarily compare the indices of arm \(i\) and arm \(j\). Assume
 w.l.o.g. that \(B_i^{SLR}(t) < B_j^{SLR}(t)\). Then:
 
-\[
-B_i^{SLR}(t) < B_j^{SLR}(t) \Leftrightarrow 
-T_i(t)\frac{(\hat{\mu}_i(t) - \tau)^2}{2\sigma^2} < T_j(t)\frac{(\hat{\mu}_j(t) - \tau)^2}{2\sigma^2} 
-\Leftrightarrow 
-\sqrt{T_i(t)}\sqrt{(\hat{\mu}_i(t) - \tau)^2} < \sqrt{T_j(t)}\sqrt{(\hat{\mu}_j(t) - \tau)^2}
-\Leftrightarrow 
+\begin{align*}
+B_i^{SLR}(t) < B_j^{SLR}(t) & \Leftrightarrow 
+T_i(t)\frac{(\hat{\mu}_i(t) - \tau)^2}{2\sigma^2} < T_j(t)\frac{(\hat{\mu}_j(t) - \tau)^2}{2\sigma^2} \Alignyesnumber\label{eqn:SLRWithKnownVar}\\
+& \Leftrightarrow 
+\sqrt{T_i(t)}\sqrt{(\hat{\mu}_i(t) - \tau)^2} < \sqrt{T_j(t)}\sqrt{(\hat{\mu}_j(t) - \tau)^2} \\
+& \Leftrightarrow 
 B_i^{APT}(t) < B_j^{APT}(t)
-\]
+\end{align*}
 
-Given that in all other cases the Simple Likelihood Strategy is able to
-take more information about the distributions into account through the
-Kullback-Leibler divergence (in the case of the exponential family of
-distributions), the algorithm is expected to improve upon the Anytime
-Parameter Free strategy.
+Given that in all other cases the SLR is able to take more information
+about the distributions into account through the Kullback-Leibler
+divergence (in the case of the exponential family of distributions), the
+algorithm is expected to improve upon the APT strategy. Just consider a
+situation of known, but different variances for Normal distributions.
+Then we had in \autoref{eqn:SLRWithKnownVar} \(\sigma_i^2\) and
+\(\sigma_j^2\) instead of \(\sigma^2\), which should lead to more pulls
+of the arm with larger variance. This is not taken into account by APT.
 
 As mentioned before, this improvement comes only at the cost of knowing
-the correct distribution upfront. In particular, as for the Anytime
-Parameter Free algorithm, there are no parameters which would need to be
-tuned upfront as is usually the case for upper-confidence bound based
-algorithms.
+the correct distribution upfront. In particular, as for the APT
+algorithm, there are no parameters which need to be tuned upfront as is
+usually the case for upper-confidence bound based algorithms (see for
+example UCB-E in Audibert et al., 2010).
 
-Additionally, the Simple Likelihood Strategy offers an intuitive
-interpretation if we consider the index written in the form proposed by
-Zhang et al. (2017). Write the index again as
-
-\[
+Additionally, the index used in the SLR algorithm offers the same
+interpretation considered in \autoref{sec:EVTAlgorithm}. Write the index
+again as \[
 B_i(t) = S_i(t) D_i(t),
-\]
-
-where \(S_i(t)\) is a confidence term of the estimate of the arm \(i\)
-at time \(t\), and \(D_i(t)\) is a measure of distance between the
+\] where \(S_i(t)\) is a confidence term of the estimate of the arm
+\(i\) at time \(t\), and \(D_i(t)\) is a measure of distance between the
 distribution of arm \(i\) and the threshold \(\tau\). The index of the
 Simple Likelihood Ratio strategy for univariate exponential family
-distributions can then be written with
-
-\[
-S_i(t) = T_i(t)
-\]
-
-and
-
-\[
+distributions can then be written with \[
+S_i(t) = T_i(t) \quad \text{and} \quad
 D_i(t) = \KL(\hat{\mu}_i(t)||\tau),
 \] where we employ the number of pulls so far for a given arm as the
 confidence measure, while the Kullback-Leibler divergence fulfills its
-role as distance between distributions. The larger the KL-divergence,
-the less inclined we are to draw the arm; the same holds, if we have
-pulled an arm many times. Since the KL-divergence reduces to the squared
-distance between means for Normal distributions of known variance, the
-SLR and APT algorithms are identical in this case.
+role as distance measure between distributions (see also Figure 2). The
+larger the Kullback-Leibler divergence, the less inclined we are to draw
+the arm; the same holds, if we have pulled an arm many times. Since the
+KL-divergence reduces to the squared distance between means for Normal
+distributions of known variance, the SLR and APT algorithms are
+identical in this case.
 
-As we see in the experiments that follow, the Simple Likelihood Strategy
-is able to improve significantly upon the Anytime Parameter Free
-strategy in many cases.
+As we see in the experiments that follow, the SLR strategy is able to
+improve significantly upon the APT strategy in many cases.
 
 \section{\texorpdfstring{Experiments
 \label{chap:Experiments}}{Experiments }}\label{experiments}
 
+We now compare the algorithms introduced in the previous chapters in
+simulations and experiments against each other to evaluate their
+performance. We first perform experiments on synthetic data in
+\autoref{sec:SyntheticData}. We then use Bernoulli time series data
+collected by the online shop Amorelie to evaluate the algorithms on real
+world data in \autoref{sec:RealData}.
+
+We compare the empirical performance of the SLR algorithm not only
+against the APT algorithm, but also against the variance-based
+algorithms. Thus we also compare the variance-based algorithms for the
+first time directly against each other. As benchmark, the uniform
+sampling strategy is included. Additionally, we include the Bayes-UCB
+algorithm introduced in Kaufmann et al. (2012) for the cumulative regret
+setting. See \autoref{sec:AppendixBUCB} in the appendix for how their
+Algorithm 1 is adapted to the thresholding bandit problem.
+
 \subsection{\texorpdfstring{Synthetic Data
 \label{sec:SyntheticData}}{Synthetic Data }}\label{synthetic-data}
 
-In order to evaluate the empirical performance of the proposed
-algorithms, we run the algorithm on synthetic data as is usual. We
-compare its performance on this data not only against the APT algorithm,
-but also against the variance-based algorithms. Thus we also compare the
-variance-based algorithms for the first time directly against each other
-instead of just relative to the APT algorithm.
+Every experiment presented is repeated for 5000 iterations. Depending on
+the experiment, the observations are generated randomly by a given
+exponential family of distributions. As we are primarily concerned with
+improving upon APT with respect to non-sub-Gaussian distributions, the
+first three experiments focus on Bernoulli distributions, especially
+those with small means. We then go on to show with experiments on data
+from the Exponential distribution and Poisson distribution that the SLR
+algorithm is able to improve upon APT given that we know the true kind
+of distribution.
 
-Each of the experiments is repeated for 5000 iterations. Depending on
-the experiment, the observations are generated randomly by some
-distribution of the exponential family of distributions. As we were
-originally concerned with improving upon APT with respect to
-non-sub-Gaussian distributions, the first experiments focus on Bernoulli
-distributions, and especially those with small means. We then go on to
-show with experiments on Gaussian, Exponential, and Poisson data that
-the SLR algorithm is able to improve upon APT given that we know the
-true kind of distribution.
-
-\subsubsection{\texorpdfstring{Experiment 1: Bernoulli with
-\(\tau = 0.5\)}{Experiment 1: Bernoulli with \textbackslash{}tau = 0.5}}\label{experiment-1-bernoulli-with-tau-0.5}
+\subsubsection{\texorpdfstring{Simulation 1: Bernoulli with
+\(\tau = 0.5\)}{Simulation 1: Bernoulli with \textbackslash{}tau = 0.5}}\label{simulation-1-bernoulli-with-tau-0.5}
 
 The first experiment is equal to experiment 3 in Locatelli et al.
 (2016). We compare ten Bernoulli arms that move away from the threshold
 at \(\tau = 0.5\) geometrically with \(\mu_{1:4} = 0.4-0.2^{1:4}\),
 \(\mu_5 = 0.45\), \(\mu_6 = 0.55\), and
-\(\mu_{7:10} = 0.6 + 0.2^{5-1:4}\). We run the standard APT algorithm
-with \(\epsilon = 0.1\), as well as SLR with \(\epsilon = 0.1\). We
-compare those additionally to Augmented-UCB with the standard parameter
-choice of \(\rho = 1/3\) as used by its authors in Mukherjee et al.
-(2017). We run the parameter-free version of the Empirical Variance
-Guided algorithm without any feedback delay, thus making it directly
+\(\mu_{7:10} = 0.6 + 0.2^{5-1:4}\). We run the standard APT algorithm as
+well as the SLR algorithm with \(\epsilon = 0.1\). We compare them to
+the AugUCB algorithm with the parameter choice of \(\rho = 1/3\) as used
+by its authors in Mukherjee et al. (2017). We run the parameter-free
+EVT\(_pf\) algorithm without feedback delay, thus making it directly
 comparable to the other algorithms. The Bayes-UCB algorithm takes as
 prior a Beta distribution with parameters \(\alpha_0 = \tau\) and
 \(\beta_0 = 1 - \tau\), thus leading to a mean of the prior distribution
-at \(\tau\) while keeping the prior as weak as possible. Lastly, we run
-the uniform sampling strategy as the naive benchmark.
+at \(\frac{\alpha_0}{\alpha_0+\beta_0}=\tau\) while keeping the prior as
+weak as possible. Lastly, we run the uniform sampling strategy as a
+benchmark.
 
 \begin{longtable}[]{@{}rrrrrrrrrr@{}}
 \caption{Mean of arms in simulation 1.}\tabularnewline
@@ -3019,113 +2776,54 @@ V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10\tabularnewline
 \bottomrule
 \end{longtable}
 
-This first experiment gives an experiment where all algorithms should
-perform well. The problem is not very difficult, and due to the
-threshold at \(\tau = 0.5\), the Bernoulli distribution can be perfectly
+This first experiment is a problem in which all algorithms should be
+able to perform well. The problem is not very difficult, and due to the
+threshold at \(\tau = 0.5\), the Bernoulli distribution can be well
 approximated by a Gaussian. This thus is the perfect environment for the
 APT algorithm.
 
 As the next figure shows, essentially all methods converge rapidly to an
-error rate of zero. Except for the uniform method that clearly lacks
-behind. We also observe that the variance based algorithms (Augmented
-UCB and EVT) lag behind at first. Augmented UCB is able to adjust its
-sampling scheme after 1000 iterations and rapdily improves to the level
-of APT. EVT takes about 250 samples more to start a quick descend to the
-performance of the other algorithms. All of this, however, happens below
-an error rate of 0.01. While the SLR algorithm improves upon APT, the
-improvement is a slight one, and not very large in terms of budget
-difference. This underlines that the scenario at hand is the ideal one
-for the APT algorithm.
+error rate of very close to zero. That is, except for the uniform
+strategy that clearly lacks behind. We also observe that the variance
+based algorithms (AugUCB and EVT) lag behind at first. AugUCB is able to
+adjust its sampling scheme only after 1000 iterations but then rapdily
+improves to the level of APT. EVT takes about 250 samples more to start
+a quick descend to the performance of the other algorithms. All of this,
+however, happens after the algorithms are below an error rate of 0.01.
+While the SLR algorithm improves upon APT, the improvement is a slight
+one, and not very large in terms of budget difference. This underlines
+that the scenario at hand is ideal for the APT algorithm.
 
-\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/simulation1_results-1} \end{center}
+\begin{figure}
 
-\subsubsection{\texorpdfstring{Experiment 2: Bernoulli with
-\(\tau = 0.05\)}{Experiment 2: Bernoulli with \textbackslash{}tau = 0.05}}\label{experiment-2-bernoulli-with-tau-0.05}
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/simulation1_results-1} 
+
+}
+
+\caption{Performance comparison of algorithms for simulation 1.}\label{fig:simulation1_results}
+\end{figure}
+
+\subsubsection{\texorpdfstring{Simulation 2: Bernoulli with
+\(\tau = 0.05\)}{Simulation 2: Bernoulli with \textbackslash{}tau = 0.05}}\label{simulation-2-bernoulli-with-tau-0.05}
 
 In the second experiment, we compare the same algorithms as in the first
 experiment. Again, we classify 10 arms, but this time against a
 threshold of \(\tau = 0.05\) and without an epsilon interval,
-\(\epsilon = 0\). Consequently, we choose the distributions for the arms
-to be much smaller too, and arrange them symmetrically around the
-threshold. While the distributions are bounded and thus still
-sub-Gaussian, the Normal approximation should be poor in comparison to
-the previous case. We expect an improvement for the SLR algorithm
-compared to APT as it takes the Bernoulli characteristics into account.
-For example, even though the arms are symmetrically distributed around
-the threshold in terms of absolute distance, they are not symmetrically
-around the threshold in terms of their Kullback-Leibler divergence given
-the threshold is unequal 0.5. Thus we expect the SLR algorithm to not
-pull them equally. Furthermore, we expect an improvement for the
-variance-based algorithms, as the variances are now smaller than in
-experiment 1, which should at least benefit the EVT algorithm given its
-theoretical analysis.
-
-The figure below shows the performance of all algorithms. We see that
-the problem appears to be significantly more difficult in general. The
-variance based algorithms perform maybe surprisingly bad; EVT even worse
-than uniform sampling nearly until the horizon, while Augmented UCB
-takes a long time to adjust away from uniform sampling. Both algorithms
-perform worse than APT after 7000 rounds. One potential reason for this
-might be the fact that the index used by the EVT algorithm reduces to
-\(B_i^{EVT}(t) = \sqrt{T_i(t)} \cdot \sqrt{|\hat{\mu}_i(t) - \tau|}\) if
-\(\hat{\sigma}_i^2(t) = 0\), which, given Bernoulli arms with small
-means, could be the case for long runs of the algorithm. In contrast,
-the index of the APT algorithm is
-\(B_i^{APT}(t) = \sqrt{T_i(t)} \cdot |\hat{\mu}_i(t) - \tau|\).
-
-One interesting observation, that we will observe in all experiments
-with synthetic Bernoulli arms, is the superior performance of the
-Bayes-UCB algorithm adapted from Kaufmann and Kalyanakrishnan (2013)
-which was originally designed for cumulative regret problems.
-Nonetheless, the algorithm will again and again proof to be the best
-performing.
-
-While the Bayes-UCB performance is impressive, we observe that also the
-Simple Likelihood Ratio strategy improves considerably upon the
-alternative strategies. SLR reaches the average empirical error of 0.1
-within the budget, and the improvement is exponential within the entire
-budget; in contrast to APT which appears to improve linearly in the
-observations. At the end of the budget, the difference in the empirical
-error is nearly 10\% between the two strategies.
-
-In order to assess how the SLR strategy improves upon the APT algorithm,
-we can use the fact that we have run the experiment for 5000 iterations.
-We thus can look at how often each arm was pulled by a strategy at any
-given round. Across the 5000 iterations, the algorithm should pull at
-any given iteration the arm most often that it thinks is the most
-difficult to classify. In the figure below, we plot the resulting curves
-where the value at an iteration is the 10-round moving average to remove
-some unimportant variation.
-
-We see that both APT and SLR correctly single out the two arms that are
-much closer to the threshold than the remaining arms and allocate most
-of the budget to them. However, while SLR keeps the two arms constant at
-two different levels (about 1900 for arm 5 and about 2500 for arm 6),
-APT at first pulls arm 5 much more than arm 6. Then, the budget
-allocated to the two arms appears to converge to about 2000. Given that
-the two arms are symmetric around the threshold, it makes sense that APT
-would allocate the same exploration effort to both of them. And given
-that the variation of arm 5 away from the threshold is limited from
-below by zero, it is much easier for arm 6 to have an empirical mean
-larger than it's true mean, and thus to have a larger index than arm 5.
-Consequently, APT would prefer to sample arm 5. This, however, is wrong
-in terms of Kullback-Leibler divergence. Measured by the divergence, arm
-6 is closer to the threshold than arm 5, thus harder to classify, and
-consequently preferred by the SLR algorithm. Furthermore, the SLR
-algorithm appears to quickly find the correct share that it has to
-allocate to the two arms. In contrast to APT which continues to adjust
-the shares across the entire budget.
-
-Additionally, we can observe that the SLR strategy starts to drop arms
-much quicker than APT, and it drops arm 1 to 3 first, which again
-underlines the effect of the asymmetric Kullback-Leibler divergence. If
-we consider arm 3 and arm 8, we have \(d(0.01||0.05) \approx 0.025\)
-while \(d(0.09||0.05) = 0.014\). The divergence is much smaller for arm
-8. The asymmetry is even more dramatic for arm 1 and arm 10 with
-\(d(0.001||0.05) \approx 0.046\) and \(d(0.099||0.05) \approx 0.020\);
-in terms of the divergence, the distance between arm 1 and the threshold
-is twice as far as between arm 10 and the threshold. APT considers them
-to be equally distant from the threshold.
+\(\epsilon = 0\) (which generally rewards algorithms for pulling arms
+close to the threshold). We choose the means of the arms to be much
+smaller too, and arrange them symmetrically around the threshold. While
+the distributions are bounded and thus still sub-Gaussian, the Normal
+approximation should be poor in comparison to the previous case. We
+expect an improvement for the SLR algorithm compared to APT as it takes
+the Bernoulli characteristics into account. In particular, even though
+the arms are symmetrically distributed around the threshold in terms of
+absolute distance, they are not symmetrically around the threshold in
+terms of their Kullback-Leibler divergence (compare Figure 2). Thus we
+expect the SLR algorithm to not pull them symmetrically. Furthermore, we
+expect an improvement for the variance-based algorithms, as the
+variances are now smaller than in experiment 1, which should at least
+benefit the EVT algorithm given its theoretical analysis in Zhong et al.
+(2017).
 
 \begin{longtable}[]{@{}rrrrrrrrrr@{}}
 \caption{Mean of arms in simulation 2 classified against threshold of
@@ -3143,14 +2841,117 @@ V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10\tabularnewline
 \bottomrule
 \end{longtable}
 
-\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/simulation2_results-1} \end{center}
+The figure below shows the performance of all algorithms. We see that
+the problem appears to be significantly more difficult in general. The
+performance of the variance based algorithms is surprisingly poor; EVT
+performs even worse than uniform sampling nearly until the horizon,
+while Augmented UCB takes a long time to adjust away from uniform
+sampling. Both algorithms perform worse than APT after 7000 samples. One
+potential reason for this might be the fact that the index used by the
+EVT algorithm reduces to
+\(B_i^{EVT}(t) = \sqrt{T_i(t)} \cdot \sqrt{|\hat{\mu}_i(t) - \tau|}\) if
+\(\hat{\sigma}_i^2(t) = 0\), which, given Bernoulli arms with small
+means, could be the case for long runs of the algorithm. This seems
+suboptimal given the index of the APT algorithm is
+\(B_i^{APT}(t) = \sqrt{T_i(t)} \cdot |\hat{\mu}_i(t) - \tau|\).
 
-\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-2-1} \end{center}
+One interesting observation, that we will observe in all experiments
+with synthetic Bernoulli arms, is the superior performance of the
+Bayes-UCB algorithm adapted from Kaufmann et al. (2012) which was
+originally designed for cumulative regret problems. Nonetheless, the
+algorithm will again and again proof to be the best performing. Compare
+with \autoref{sec:AppendixBUCB} for more analysis on the behavior of the
+Bayes-UCB algorithm on simulation 2. In particular, consider Figures 17
+and 18 which show for individual arms, the distribution of pulls for
+that arm across simulations. These distributions highlight that both the
+APT and SLR fail in many iterations of the simulations to pull arms
+frequently enough to estimate their correct mean. The APT algorithm
+pulls the most difficult arm (Arm 6) in more than 5\% of the simulations
+only once (during initialization). Consider arm 6 returns
+\(X_{6,1} = 1\) as its first observation. Then
+\(B_6(t+1) = 1 \cdot |1-0.05| = 0.95\). It will then not be pulled for a
+long time because the index is very large. Indeed, consider some arm
+that has been pulled 4000 times with \(\mu_i(4000) = 0.03\). Then
+\(B_i(t+1) = \sqrt{2000} \cdot |0.05-0.03| \approx 0.89\). Then even
+though we have basically no evidence for the performance of arm \(6\),
+we would continue to pull arm \(i\). Similar holds for the SLR
+algorithm. For both, the distribution of pulls for arm 6 is very flat
+across the interval of \([1,6000]\) pulls. In contrast, the distribution
+of pulls looks normally distributed for the Bayes-UCB algorithm with the
+mode between 2100 and 2300 pulls. The numerical problem that can arise
+for the APT and SLR algorithms might be weakened by the combination of a
+(weak) prior that shrinks the mean estimates, and the way in which
+quantiles are based on the posterior. Similar distributions are also
+reported for arms 1 and 10 in the appendix.
 
-\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-3-1} \end{center}
+While the Bayes-UCB performance is impressive, we observe that also the
+Simple Likelihood Ratio strategy improves considerably upon the
+alternative strategies. SLR reaches the average empirical error of 0.1
+within the budget, and it improves at an exponential rate within the
+entire budget; in contrast to APT which appears to improve linearly in
+the observations. At the end of the budget, the difference in the
+empirical error is nearly 10\% between the two strategies.
 
-\subsubsection{\texorpdfstring{Experiment 3: Bernoulli with
-\(\tau = 0.01\)}{Experiment 3: Bernoulli with \textbackslash{}tau = 0.01}}\label{experiment-3-bernoulli-with-tau-0.01}
+In order to assess how the SLR strategy improves upon the APT algorithm,
+it is useful to look at how often the algorithm pulls each arm. Given
+that we run the simulation 5000 times, we can compare across simulations
+how often an algorithm pulls each arm at a given round. Across the 5000
+iterations, the algorithm should pull at any given iteration the arm
+most often that it thinks is the most difficult to classify. In the
+figure below, we plot the resulting curves where the value at an
+iteration is the 10-round moving average to remove some variation.
+
+We see that both APT and SLR correctly single out the two arms that are
+much closer to the threshold than the remaining arms, and allocate most
+of the budget to them. However, while SLR keeps the two arms constant at
+two different levels (about 1900 for arm 5 and about 2500 for arm 6),
+APT at first pulls arm 5 much more than arm 6. Then, for \emph{both}
+arms, the budget allocated to them appears to converge to about 2000.
+Given that the two arms are symmetric around the threshold, it makes
+sense that APT would allocate the same exploration effort to them. And
+given that the variation of arm 5 away from the threshold is limited
+from below by zero, it is much easier for arm 6 to have an empirical
+mean larger than its true mean, and thus to have a larger index than arm
+5. Consequently, APT would prefer to sample arm 5. This, however, is
+wrong in terms of Kullback-Leibler divergence. Measured by the
+divergence, arm 6 is closer to the threshold than arm 5, thus harder to
+classify, and consequently preferred by the SLR algorithm. Furthermore,
+the SLR algorithm appears to quickly find the correct share that it has
+to allocate to the two arms. This is in contrast to APT which continues
+to adjust the shares across the entire budget.
+
+Additionally, we can observe that the SLR strategy starts to drop arms
+much quicker than APT, and it drops arm 1 to 3 first, which again
+underlines the effect of the asymmetric Kullback-Leibler divergence. If
+we consider arm 3 and arm 8, we have \(d_3(0.01||0.05) \approx 0.025\)
+while \(d_8(0.09||0.05) = 0.014\). The divergence is much smaller for
+arm 8. The asymmetry is even more dramatic for arm 1 and arm 10 with
+\(d_1(0.001||0.05) \approx 0.046\) and
+\(d_{10}(0.099||0.05) \approx 0.020\); in terms of the divergence, the
+distance between arm 1 and the threshold is twice as far as between arm
+10 and the threshold. APT considers them to be equally distant from the
+threshold.
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/simulation2_results-1} 
+
+}
+
+\caption{Performance comparison of algorithms for simulation 2.}\label{fig:simulation2_results}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-2-1} 
+
+}
+
+\caption{Budget allocation across arms for APT and SLR algorithms in simulation 2.}\label{fig:unnamed-chunk-2}
+\end{figure}
+
+\subsubsection{\texorpdfstring{Simulation 3: Bernoulli with
+\(\tau = 0.01\)}{Simulation 3: Bernoulli with \textbackslash{}tau = 0.01}}\label{simulation-3-bernoulli-with-tau-0.01}
 
 In the third experiment, we lower the threshold further to
 \(\tau = 0.1\) and arrange the arms on a \(\log_{10}\) scale around it.
@@ -3160,22 +2961,8 @@ the experiment horizon is now \(10000\) rounds instead of \(7000\)
 rounds as in the previous experiment. We test the same algorithms used
 in the previous two experiments.
 
-If we look at the performance after 7000 rounds, we see that the problem
-appears to be slightly more difficult compared to the previous one. We
-see that up until this point the variance-based strategies cannot
-improve upon APT. Also, SLR has not yet crossed the 10\% empirical
-error. However, we observe that in the following rounds EVT decreases at
-an exponential rate and thus crosses the error of APT and continues to
-improve upon it. At the end of the budget, the improvement of SLR
-compared to the other algorithms is again very large, and likely to
-increase. However, Bayes-UCB is again the best performing algorithm and
-is improving at a faster rate than SLR. As in the previous experiment,
-Bayes-UCB and SLR show significant improvements on this Bernoulli
-problem with very small means and threshold compared to APT in
-particular.
-
 \begin{longtable}[]{@{}rrrrrrrrrrr@{}}
-\caption{Mean of arms in simulation 2 compared to a threshold of
+\caption{Mean of arms in simulation 3 compared to a threshold of
 0.01.}\tabularnewline
 \toprule
 V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10 & V11\tabularnewline
@@ -3190,120 +2977,176 @@ V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10 & V11\tabularnewline
 \bottomrule
 \end{longtable}
 
-\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/simulation3_results-1} \end{center}
+Looking at the performance after 7000 rounds, we see that the problem
+appears to be slightly more difficult compared to the previous one. We
+see that up until this point the variance-based strategies cannot
+improve upon APT. Also, SLR has not yet crossed the 10\% empirical
+error. We observe that in the following rounds EVT decreases at an
+exponential rate and thus crosses the error of APT and continues to
+improve. At the end of the budget, the improvement of SLR compared to
+the other algorithms is again large, and likely to increase. However,
+Bayes-UCB is again the best performing algorithm and is improving at a
+faster rate than SLR. As in the previous experiment, Bayes-UCB and SLR
+show significant improvements on this Bernoulli problem with very small
+means and threshold compared to APT in particular.
 
-\subsection{\texorpdfstring{Experiment 4: Exponential Distribution with
-\(\tau = 1\)}{Experiment 4: Exponential Distribution with \textbackslash{}tau = 1}}\label{experiment-4-exponential-distribution-with-tau-1}
+\begin{figure}
 
-\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/simulation4_results-1} \end{center}
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/simulation3_results-1} 
 
-\subsection{\texorpdfstring{Experiment 5: Poisson Distribution with
-\(\tau = 1\)}{Experiment 5: Poisson Distribution with \textbackslash{}tau = 1}}\label{experiment-5-poisson-distribution-with-tau-1}
+}
 
-\begin{longtable}[]{@{}rrrrrrrrrrrrrrrrrrrr@{}}
-\caption{Means of Poisson arms in simulation 5 compared to a threshold
-of 0.4.}\tabularnewline
-\toprule
-V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10 & V11 & V12 & V13 & V14
-& V15 & V16 & V17 & V18 & V19 & V20\tabularnewline
-\midrule
-\endfirsthead
-\toprule
-V1 & V2 & V3 & V4 & V5 & V6 & V7 & V8 & V9 & V10 & V11 & V12 & V13 & V14
-& V15 & V16 & V17 & V18 & V19 & V20\tabularnewline
-\midrule
-\endhead
-0.0072 & 0.0576 & 0.0613 & 0.0925 & 0.1452 & 0.1559 & 0.1869 & 0.1958 &
-0.2235 & 0.2467 & 0.2664 & 0.3008 & 0.4295 & 0.4948 & 0.5857 & 0.6904 &
-0.7609 & 0.785 & 0.8878 & 1.7114\tabularnewline
-\bottomrule
-\end{longtable}
+\caption{Performance comparison of algorithms for simulation 3.}\label{fig:simulation3_results}
+\end{figure}
 
-\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/simulation5_results-1} \end{center}
+\subsubsection{Simulations 4 and 5: Exponential and Poisson
+Distributions}\label{simulations-4-and-5-exponential-and-poisson-distributions}
 
-\subsection{Real Data}\label{real-data}
+In \autoref{sec:LRforUnivariateExponentialFamily}, we show that the
+likelihood ratio has a very useful form for the univariate exponential
+family of distributions, which allows us to use the SLR algorithm not
+only on Bernoulli arms, but also on Exponential or Poisson
+distributions, for example. In simulation 4, we consider Exponential
+distributions, in simulation 5, we test the algorithms on Poisson
+distributions.
 
-We show two experiments that were performed on real data. While most
-papers in the multi-armed bandit literature resort to synthetic data to
-assess the performance of algorithms -- just as we have done in the
-previous chapter -- we have tried to acquire real world data. This data
-is what bandit algorithms are used for in practice, and does not fulfill
-the standard independence and identical distribution assumptions as
-nicely. The real data thus can be considered a first robustness test for
-the algorithms.
+We run the same algorithms as before except for Bayes-UCB (even though
+it should certainly be possible to adapt it to these case based on a
+Gamma prior). In the case of the Exponential arms, we classify against
+\(\tau = 1\) and have sampled their mean parameters of the arms from an
+Exponential distribution with rate \(\theta = 1\). The Poisson arms are
+classified against a threshold of \(\tau = 0.4\), with the mean
+parameters being sampled from an Exponential distribution with mean
+\(\mu = 0.7\). In both cases, we classify 20 arms.
+
+For the Exponential arms, APT crosses the 0.1 error mark first, followed
+by the AugUCB algorithm. All algorithms perform better than uniform
+sampling. After more than half of the budget, the SLR algorithm jumps in
+performance and performs better than APT and AugUCB. Indeed, the AugUCB
+basically stops improving after half of the budget. This is a
+consequence of it eliminating arms it believes to know very well. This
+happens at an error rate of less than \(0.01\). On average, the AugUCB
+samples only for 2564 rounds of the budget of 4000 rounds across the
+5000 simulations.
+
+The early elimination (when compared to the Bernoulli experiments) might
+be caused by the fact that the AugUCB assumes the variance of the arms
+to be in \([0,1]\), which does not hold for half of the arms in the
+experiment. Similar goes for the EVT algorithm which is only able to
+catch up at the very end of the budget.
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/simulation4_results-1} 
+
+}
+
+\caption{Performance comparison of algorithms for simulation 4.}\label{fig:simulation4_results}
+\end{figure}
+
+In the case of Poisson arms, the performance of the arms is more clear
+cut. As expected, SLR improves APT and the other strategies. APT
+outperforms the EVT algorithm, which occurs even though the variance of
+all arms considered in this experiment is in \([0,1]\). But similarly to
+the Bernoulli simulations, the EVT might again have a hard time dealing
+with sequences of observations that are all equal to \(0\) for a long
+time. After about 1000 observations, APT and EVT appear to improve at
+about the same rate, but APT had a much better initial exploration
+phase.
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/simulation5_results-1} 
+
+}
+
+\caption{Performance comparison of algorithms for simulation 5.}\label{fig:simulation5_results}
+\end{figure}
+
+\subsection{\texorpdfstring{Real Data
+\label{sec:RealData}}{Real Data }}\label{real-data}
+
+In the following, we present the results of two experiments performed on
+a real world data set. While most new multi-armed bandit algorithms are
+assessed on synthetic data, as we have done in
+\autoref{sec:SyntheticData}, a real world data set is useful to observe
+how algorithms perform in presence of, for example, not fully i.i.d.
+samples. While of course every company tries to make their experiments
+as ideal as possible, there will always be problems. Thus our
+experiments serve as a first robustness check on the algorithms
+introduced before.
 
 \subsubsection{The Data Set}\label{the-data-set}
 
-The data have been collected by the German ecommerce company
+Data have been collected by the German online shop
 \href{https://amorelie.de}{Amorelie} as part of standard website
-performance tracking. For 197 selected products, we have the number of
-users visiting each product's detail page (PDP) at a given minute. The
-data set we use here has been collected during the entire month of
-November 2016. It can be considered time series data collected at
-minutely frequency. Thus the data contain 43200 observations per
-product, and overall 8510400 observations.
+analytics. For 197 selected products, we observe the number of users
+visiting each product's detail page (PDP) at a given minute. The data
+set we use here has been collected during the entire month of November
+2016. It can be considered time series data collected at minutely
+frequency. Thus the data contain 43200 observations per product, and
+overall 8510400 observations.
 
-Given that we want to run an offline comparison of bandit algorithms, it
-is important to have at each time point an observation for each arm.
-Given that, it is easy to evaluate the perfomance of algorithms that
-make different decisions at different point in times and thus do not
-observe the same samples. By having an observation for each arm at any
-given time point, each algorithm had at least the opportunity to observe
-a certain sample. Other papers (CITE YAHOO!) have solved this problem by
-using a sample drawn uniformly during for example an A/B test. Then, if
-the next observation in the sample is not from the same arm that the
-algorithm would like to draw from, observations are discarded until the
-next observation from the selected arm.
+Since we want to run an offline comparison of bandit algorithms, it is
+important to have at each time point an observation for each arm. Given
+that, it is easy to evaluate the perfomance of algorithms that make
+different decisions at different point in times and thus do not observe
+the same samples. By having an observation for each arm at any given
+time point, each algorithm had at least the opportunity to observe a
+certain sample. Other papers (for example, Li et al., 2011) have solved
+this problem by using a sample drawn uniformly during, for example, an
+A/B test. Then, if the next observation in the sample is not from the
+same arm that the algorithm would like to draw from, observations are
+discarded until the next observation from the selected arm.
 
-The choice of having basically multiple time series data as the sample
-leads to a simple way of running the algorithms just as often on the
-data as for simulated data. In particular, the goal is to perform 5000
-runs over the sample to confidently assess the performance. Since we
-wanted to preserve the potential time dependency of the data, a simple
-resampling of the data was not an option to create the needed 5000
-variations of the sample. Thus what we did instead was a form of time
-series cross validation. To preserve the autocorrelation, one can create
-different samples of \(X\) observations by sliding a window of size
-\(X\) over the time series. Moving the window one period (in our case
-minute) at a time, one ensures that no sample shares start and end
-observation with another sample. In particular, this means for a given
-bandit strategy and two samples that the observations that the algorithm
-collects as feedback during the two initialization phases differ from
-sample to sample and are never the same. This is because during
-initialization every strategy pulls arms \(1, ..., K\) once in this
-order.
+The choice of using what is basically multiple time series data as the
+sample offers a simple way of running the algorithms just as often on
+the data as for simulated data. The goal is to perform 5000 runs over
+the sample to confidently assess the performance. Since we want to
+preserve the potential time dependency of the data, a simple resampling
+of the data is not an option to create the needed 5000 variations of the
+sample. Instead we perform time series cross validation. To preserve the
+autocorrelation, one can create different samples of \(X\) observations
+by sliding a window of size \(X\) over the time series. Moving the
+window one period (in our case one minute) at a time, one ensures that
+no sample shares start and end observation with another sample. In
+particular, this means for a given bandit strategy and two samples that
+the observations that the algorithm collects as feedback during the
+initialization phases differ from sample to sample and are never the
+same. This is because during initialization every strategy pulls arms
+\(1, ..., K\) (or \(1,...,2K\) for EVT) once in this order.
 
 While the data is count data (the number of visits to a PDP during a
 given minute), we binarize the data by applying a certain threshold. If
-the counts is above this threshold, the observation becomes a \(1\),
-else \(0\). Thus we have a binary time series of length 43200 for each
-of the 197 products. Given that the number of visitors that come to a
-given PDP is likely to vary by time of day and by day, and in general
-over time, we expect that the mean of the time series to not be stable
-over time. For example, less visitors will come during night than during
-evening, thus leading to a decreasein the average. On the other hand,
-more users may visit the site during a weekend, thus leading to a spike
-on Saturdays and Sundays. Because of the latter time dependency, it is
-best practice to run online A/B tests for at least a week, or an integer
-multiple of weeks, so as to take into account the weekly seasonality in
-the time series. For this reason, the experiments we present below were
-run on \(60 \cdot 24 \cdot 7 = 10080\) observations for each arm, so as
-to have a sample for one full week.
+the count is above this threshold, the new observation is \(1\), else
+\(0\). Thus we have a binary time series of length 43200 for each of the
+197 products. Given that the number of visitors that come to a given PDP
+is likely to vary by time of day and by day, and in general over time,
+we expect that the mean of the time series to not be stable over time.
+For example, less visitors will come during night than during the
+evening. This leads to a decrease in the average, and a daily
+seasonality. On the other hand, more users may visit the site during a
+weekend, thus leading to a spike on Saturdays and Sundays. Because of
+the latter time dependency, it is best practice to run online A/B tests
+for at least a week, or an integer multiple of weeks, so as to take into
+account the weekly seasonality in the time series. For this reason, the
+experiments we present below were run on \(60 \cdot 24 \cdot 7 = 10080\)
+observations for each arm, so as to have a sample for one full week.
 
 We can look at summary statistics for the sample means of the 197
-products over the month of November to get a first idea of the data we
-are dealing with. We see that most products have a low mean, which is
-very common also for actual conversion rate data that would be tested
-with A/B tests or multi-armed bandits. Yet the sample of products
-contains a few outliers with very large view rates, with a maximum rate
-of 78\%. If we used a threshold \(\gamma\) to binarize the count data,
-then this means that on average every fourth minute the count of
-visitors was below \(\gamma\) for this product. On the other hand, we
-conclude that using thresholding bandit strategies to test the products
-against a threshold of for example \(\tau = \frac{2}{60} = 0.333\) or
-\(\tau = \frac{5}{60} = 0.083\) is likely to create more complex
-problems than a threshold of, say, \(\tau = \frac{15}{60} = 0.25\)
-would.
+products over the month of November to get a first impression of the
+data we are dealing with. We see that most products have a small mean,
+which is very common also for actual conversion rate or click-through
+rate data that can be tested with A/B tests or multi-armed bandits. Yet
+the sample of products contains a few outliers with very large view
+rates, with a maximum rate of 78\%. If we used a threshold \(\gamma\) to
+binarize the count data, then this means that on average every fourth
+minute the count of visitors was below \(\gamma\) for this product. On
+the other hand, we conclude that using thresholding bandit strategies to
+test the products against a threshold of for example
+\(\tau = \frac{2}{60} = 0.333\) or \(\tau = \frac{5}{60} = 0.083\) is
+likely to create more complex problems than a threshold of, say,
+\(\tau = \frac{15}{60} = 0.25\) would.
 
 \begin{longtable}[]{@{}rrrrrr@{}}
 \caption{Summary Statistics for View Rates of 197
@@ -3322,22 +3165,20 @@ Maximum\tabularnewline
 \bottomrule
 \end{longtable}
 
-\subsubsection{\texorpdfstring{Experiment 1:
-\(\tau = \frac{2}{60}\)}{Experiment 1: \textbackslash{}tau = \textbackslash{}frac\{2\}\{60\}}}\label{experiment-1-tau-frac260}
+\subsubsection{Experiment 1}\label{experiment-1}
 
-In this first experiment, we pick ten arms randomly from the set of 197
-arms. The experiment is run on these 10 arms with a budget of
-\(T=10080\) samples during each of the \(5000\) iterations for which we
-repeat the experiment. Given the time series cross-validation idea
-described above, this means that in total, \(15080\) observations of the
-available \(43200\) available observations per arm are used in training.
-In the thresholding bandit problem, we classify arms as below or above a
-threshold. Thus we can evaluate the strategies also based on whether
-their classifications are correct in a holdout sample. As this holdout
-sample, we can use the 10080 observations in our data set that follow
-the first 15080 observations used in training. In the table below, we
-present the count rates of the ten products for both training and test
-samples.
+In the first experiment, we pick ten arms randomly from the set of 197
+arms. The experiment is run with a budget of \(T=10080\) samples during
+each of the \(5000\) iterations for which we repeat the experiment.
+Given the time series cross-validation idea described above, this means
+that in total, \(15080\) observations of the \(43200\) available
+observations per arm are used in training. In the thresholding bandit
+problem, we classify arms as below or above a threshold. Thus we can
+evaluate the strategies also based on whether their classifications are
+correct in a holdout sample. As this holdout sample, we can use the
+10080 observations in our data set that follow the first 15080
+observations used in training. In the table below, we present the count
+rates of the ten products for both training and test samples.
 
 \begin{longtable}[]{@{}lrrrrrrrrrr@{}}
 \caption{Count rates for ten products for both training and test
@@ -3356,19 +3197,17 @@ Training & 0.001 & 0.013 & 0.027 & 0.053 & 0.059 & 0.071 & 0.071 & 0.102
 & 0.156 & 0.158\tabularnewline
 Test & 0.000 & 0.011 & 0.022 & 0.055 & 0.058 & 0.064 & 0.060 & 0.115 &
 0.150 & 0.130\tabularnewline
-TrainingMinusTau & -0.033 & -0.021 & -0.006 & 0.019 & 0.026 & 0.038 &
-0.038 & 0.068 & 0.123 & 0.125\tabularnewline
 \bottomrule
 \end{longtable}
 
-We see that while the rates do vary across samples, they are relatively
-stable which is likely due to the fact that the samples come from an
-entire week's worth of observations. In particular, since we test
-against a threshold of \(\tau = \frac{2}{60} = 0.333\) in this
-experiment, the classifications of arms do not differ across training
-and test data. A correct classification after training will be correct
-in the test set. For the rest of the analysis, we thus evaluate the
-performance using the training rates.
+We see that while the rates do vary across training and test samples,
+they are relatively stable which is likely due to the fact that the
+samples come from an entire week's worth of observations. In particular,
+since we test against a threshold of \(\tau = \frac{2}{60} = 0.333\) in
+this experiment, the classifications of arms do not differ across
+training and test data. A correct classification after training will be
+correct in the test set. For the rest of the analysis, we thus evaluate
+the performance using the training rates.
 
 When comparing the rates against the threshold, we see that three
 products are below the already small threshold. Product \(V64\) seems to
@@ -3389,7 +3228,14 @@ threshold twice. The same is true for arm \(V139\), which is not visible
 when considering the overall mean alone. Furthermore, arms \(V159\) and
 \(V189\) come very close to the threshold at times.
 
-\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-5-1} \end{center}
+\begin{figure}
+
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-3-1} 
+
+}
+
+\caption{Rolling average for the arms used in experiment 1.}\label{fig:unnamed-chunk-3}
+\end{figure}
 
 These difficulties seem to have a large impact on the performance of all
 algorithms. Given that the data are \(\{0,1\}\) observations, we can
@@ -3397,65 +3243,70 @@ compare all algorithms in a setting in which one expects all assumptions
 to hold before having observed the data. The distribution is
 sub-Gaussian for the APT algorithm, bounded between \(0\) and \(1\) for
 the variance-based algorithms, and assumed to be Bernoulli for the SLR
-algorithm. Additionally, we use the B-UCB algorithm as it performed
-often best on the synthetic data.
+algorithm. Additionally, we use the Bayes-UCB algorithm as it performed
+best on the synthetic data.
 
 We set \(\epsilon = 0\), and \(\tau = 2/60\). For the AugUCB algorithm
 we use the parameters as in Mukherjee et al. (2017), that is,
-\(\rho = 1/3\). For B-UCB we set the prior to \(\alpha = \tau\) and
-\(\beta = 1-\tau\). All other algorithms are parameter free.
+\(\rho = 1/3\). For B-UCB we set the prior to \(\alpha_0 = \tau\) and
+\(\beta_0 = 1-\tau\), and pick \(c=1\). All other algorithms are
+parameter free.
 
-The corresponding results are shown in the next figure.
+\begin{figure}
 
-\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-6-1} \end{center}
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-4-1} 
+
+}
+
+\caption{Performance comparison of algorithms for experiment 1.}\label{fig:unnamed-chunk-4}
+\end{figure}
 
 Compared to the previous simulations with synthetic data, the results
-are dramatic. First of all, we see that all strategies perform not well.
-All of them end above the 10\% error mark after 1 week of data. Second,
-the uniform sampling strategy fares best when evaluated against the
-sample mean of all observations used during training. This of course is
-the opposite of what we would like to see, and the opposite of what we
-saw on the synthetic data, where we were able to improve upon the naive
-strategy. Third, again in contrast to the results on synthetic data, we
-observe non-monotonicity in the error curves. Given that the highs and
-lows run very much parallel for the different models, it stands to
-reason that this effect is caused by the variation in means of the arms
-over time. Indeed, roughly comparing the error curves to the moving
-averages in the previous figure, the increase in errors after round
-\(5000\) and the decreasing error after round \(7500\) seems to line up
-more or less with the fluctuations observed in the data. Given that we
+are dramatically poor. First of all, we see that all strategies perform
+poorly. All of them end above the 10\% error rate mark after 1 week of
+data. Second, the uniform sampling strategy fares best when evaluated
+against the sample mean of all observations used during training. This
+of course is the opposite of what we would like to see, and the opposite
+of what we saw on the synthetic data, where we were able to improve upon
+the naive strategy. Third, again in contrast to the results on synthetic
+data, we observe non-monotonicity in the error curves. Given that the
+highs and lows run very much parallel for the different models, it
+stands to reason that this effect is caused by the variation in means of
+the arms over time. Indeed, roughly comparing the error curves to the
+moving averages in the previous figure, the increase in errors after
+round \(5000\) and the decreasing error after round \(7500\) seems to
+line up with the fluctuations observed in the data. Given that we
 evaluate the models against a sample mean of all observations, it is not
 surprising that the uniform sampling strategy has a certain advantage
 when it comes to ``factoring out'' the seasonalities. In contrast, the
 adaptive sampling schemes try to adapt more or less quickly to the
 changes in the means; a feature that would be valuable in a cumulative
 regret multi-armed bandit setting. Here, however, it leads to wrong
-estimates of the sample mean.
+estimates of the overall sample mean.
 
 If we focus on a comparison of adaptive sampling strategies and less on
 their globally bad performance, we see that the variance based
 strategies perform worse than APT and SLR. Very dramatic is the behavior
-of the Augmented-UCB algorithm, which first seems to perform well; that,
+of the Augmented-UCB algorithm, which first seems to perform well; this,
 however, is a result of it mostly pulling arms uniformly, until it
 starts to adapt its sampling and discarding arms after nearly 5000
 rounds. The result is a dramatic increase in error which leads to the
-worst performs at the end of the budget. The difference between APT,
-SLR, and EVT is not very large, and their performance fluctuates in
-sync. None of them is really able to converge due to the changes in the
-underlying means. Advantageous only seems to be the fact that their
-behavior is less erratic than that of the Augmented-UCB strategy given
-that they do not discard arms.
+worst performance at the budget horizon. The difference between APT,
+SLR, and EVT is small, and their performance fluctuates in sync. None of
+them is really able to converge due to the changes in the underlying
+means. Advantageous only seems to be the fact that their behavior is
+less erratic than that of the AugUCB strategy given that they do not
+discard arms.
 
-\subsubsection{\texorpdfstring{Experiment 2:
-\(\tau = \frac{5}{60}\)}{Experiment 2: \textbackslash{}tau = \textbackslash{}frac\{5\}\{60\}}}\label{experiment-2-tau-frac560}
+\subsubsection{Experiment 2}\label{experiment-2}
 
 In order to underline the results of the previous experiment, we perform
 a second experiment using the data collected by Amorelie. We increase
 the threshold to \(\tau = \frac{5}{60} = 0.833\) to make the problem in
 general slightly easier, and again pick 10 arms at random from the data
-set of 197 arms. We again use a rolling window of \(10080\) observations
+set of 197 arms. We again use a sliding window of \(10080\) observations
 to create \(5000\) iterations and look at the training and test sample
-means as in Experiment 1.
+means as in the previous experiment.
 
 Some arms, in particular \(V110\) and \(V150\), but also \(V103\),
 \(V149\), \(V104\), and \(V112\) are quite close to the threshold. Two
@@ -3477,12 +3328,10 @@ V154\tabularnewline
 V154\tabularnewline
 \midrule
 \endhead
-Training & 0.000 & 0.000 & 0.012 & 0.044 & 0.049 & 0.053 & 0.055 & 0.095
-& 0.123 & 0.199\tabularnewline
-Test & 0.013 & 0.000 & 0.011 & 0.040 & 0.049 & 0.063 & 0.060 & 0.114 &
-0.137 & 0.202\tabularnewline
-TrainingMinusTau & -0.083 & -0.083 & -0.071 & -0.039 & -0.035 & -0.030 &
--0.028 & 0.011 & 0.039 & 0.116\tabularnewline
+Training & 0.000 & 0 & 0.012 & 0.044 & 0.049 & 0.053 & 0.055 & 0.095 &
+0.123 & 0.199\tabularnewline
+Test & 0.013 & 0 & 0.011 & 0.040 & 0.049 & 0.063 & 0.060 & 0.114 & 0.137
+& 0.202\tabularnewline
 \bottomrule
 \end{longtable}
 
@@ -3495,22 +3344,19 @@ the maximum moving average around index 7500. We also observe that these
 fluctuations are heavier for products with in general larger means (that
 is, more visitors on the website). But these fluctuations are clearly
 much larger and systematic than those observed for synthetic data with
-the same sample means. While the moving average of product \(V159\) in
-the synthetic data has a valley after index 5000, this can be explained
-by the natural variance (which increases as the mean is closer to
-\(0.5\)).
+the same sample means.
 
 Given the moving averages and the previous experiment, the performance
 results of Experiment 2 shown in the next figure are not surprising. We
 recognize the same structure as previously. The uniform sampling
 strategy performs the best. The adaptive sampling strategies perform
-bad, do not converge, and end above the 10\% error mark. This time,
-Augmented-UCB is not (yet) the worst performing strategy, but equally
-erratic after it actually adapts its sampling. This time around, it even
-has two spikes in its adaptive phase. Again, APT, SLR, and EVT perform
-in sync and more or less equally bad, with EVT slightly better than APT
-and SLR this time around. Interestingly, Bayes-UCB performs clearly
-worst of all strategies. Its performance changes at the same time as
+bad, do not converge, and end above the 10\% error rate mark. This time,
+AugUCB is not (yet) the worst performing strategy, but equally erratic
+after it eventually adapts its sampling. This time around, it even has
+two spikes in its adaptive phase. Again, APT, SLR, and EVT perform in
+sync and more or less equally bad, with EVT slightly better than APT and
+SLR this time around. Interestingly, Bayes-UCB performs clearly worst of
+all strategies. Its performance changes at the same time as
 Augmented-UCB starts to adapt its sampling strategy, near round 7000.
 
 This last fact is of particular interest, as Bayes-UCB is dramatically
@@ -3520,51 +3366,50 @@ algorithms on synthetic data from Bernoulli distributions with the same
 sample mean is depicted. On this data, Bayes-UCB performs very well,
 ending at an average error of about 0.1\% of the simulations. This
 mirrors its performance observed in the previous simulations with
-synthetic data. Also all other strategies perform clearly better now,
-and their error rates are strictly decreasing. Interestingly, the
-uniform sampling scheme is now much worse than in the experiment on real
-data; it does no longer have the advantage of sampling the different
-mean phases at a representative rate. Instead, it is no in its original
-position of serving as upper bound on the error rate. Excluding
-Bayes-UCB, we see that the SLR algorithm performs better the best,
-followed by the variance-based algorithms. APT comes in at the same
-error rate as uniform sampling. While the difference between SLR and EVT
-are less than 2\% (1.2\% vs 3\%), the difference to uniform sampling
-(10\%) is relevant. The performance of 10\% error rate is achieved by
-SLR about 1000 observations earlier than by EVT.
+synthetic data. Also all other adaptive strategies perform clearly
+better now, and their error rates are strictly decreasing.
+Interestingly, the uniform sampling scheme is now much worse than in the
+experiment on real data; it does no longer have the advantage of
+sampling the different mean phases at a representative rate. Excluding
+Bayes-UCB, we see that the SLR algorithm performs the best, followed by
+the variance-based algorithms. APT comes in at the same error rate as
+uniform sampling. While the difference between SLR and EVT are less than
+2\% (1.2\% vs 3\%), the difference to uniform sampling (10\%) is
+relevant. The performance of 10\% error rate is achieved by SLR about
+1000 observations earlier than by EVT.
 
-\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-7-1} \end{center}
+\begin{figure}
 
-\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-7-2} \end{center}
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-5-1} 
 
-\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-7-3} \end{center}
+}
 
-\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-7-4} \end{center}
+\caption{Rolling average of arms used in experiment 2.}\label{fig:unnamed-chunk-5}
+\end{figure}
 
-\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-8-1} \end{center}
+\begin{figure}
 
-We can try to understand why some strategies fail, while showing
-significant improvements on synthetic data. Given that we run 5000
-iterations of the experiment, we can assess in how many of these
-iterations a given arm was pulled at a given round. Comparing these
-sampling shares across algorithms may give us hints to as to why
-algorithms perform a certain way. Given the setup with 5000 iterations
-and 10 arms in the current experiment, we would expect for the uniform
-strategy on average 500 pulls for each arm in every round. Given this
-benchmark, we can now look at how the other strategies split their
-budget. In the figures below, we have plotted not the absolute pulls per
-round, but have applied a 10-round moving average to remove some of the
-fluctuation in the plotted lines.
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-9-1} 
+
+}
+
+\caption{Performance results of algorithms in experiment 2.}\label{fig:unnamed-chunk-9}
+\end{figure}
+
+Again using a plot of the pulls at each round across the 5000
+simulations in Figure 17, we can try to understand why some strategies
+perform well on synthetic data, but poorly on the time series data.
 
 We observe that the patterns across algorithms are quite similar, while
-the patterns are very different across data sets. Given that arm
-\(V149\) is clearly the most difficult arm to classify due to its
-closeness to the threshold \(\tau\), all algorithms focus a major share
-of their budget on this arm. The speed at which they start to do so,
-however, differs. Perhaps surprisingly, the best performing Bayes-UCB
-algorithm increases its focus on arm \(V149\) the slowest, while in many
-iterations spending budget on exploring other arms. Surprisingly because
-Bayes-UCB is designed for the cumulative regret problem. Thus one would
+the patterns are very different across data sets. On the synthetic data,
+given that arm \(V149\) is clearly the most difficult arm to classify
+due to its closeness to the threshold \(\tau\), all algorithms focus a
+major share of their budget on this arm. The speed at which they start
+to do so, however, differs. Perhaps surprisingly, the best performing
+Bayes-UCB algorithm increases its focus on arm \(V149\) the slowest,
+while in many iterations spending budget on exploring other arms. This
+is surprising as the Bayes-UCB algorithm's exploration factor was
+originally conceived for the cumulative regret problem. Thus one would
 expect it to explore \emph{less} than other algorithms. But its
 performance does not seem to be easily explained by the lessened focus
 on the most difficult arm; else we would expect the APT algorithm to
@@ -3572,19 +3417,16 @@ perform second best. However, both SLR and EVT perform better than APT
 while converging more quickly to a higher share of samples allocated to
 the most difficult arm.
 
-One striking feature of the EVT algorithm seems to be the overall
-iterations and budget allocated to arm \(V32\), which, as we have seen,
-has a sample mean of zero. Something that might be hidden by this
-aggregated view of all 5000 iterations are a share of iterations in
-which the EVT completely fails by exploring wrong arms for long periods.
-This effect might even be more drastic for the APT algorithm. Even
-though it seems as if its behavior is very similar to SLR and EVT, the
-overall performance is not better than the performance of uniform
-sampling. Taking this reasoning into account, one can hypothesize that
-the Bayes-UCB algorithm finds the most difficult arm uniformly across
-most iterations as the rounds increase, while other algorithms either
-find the most difficult arm right away or never and thus have many
-iterations that end with a misclassification.
+Something that might be hidden by this aggregated view of all 5000
+iterations are a share of iterations in which the EVT completely fails
+by exploring wrong arms for long periods. This effect might even be more
+drastic for the APT algorithm. Even though it seems as if its behavior
+is very similar to SLR and EVT, the overall performance is not better
+than the performance of uniform sampling. Taking this reasoning into
+account, one can hypothesize that the Bayes-UCB algorithm finds the most
+difficult arm uniformly across most iterations as the rounds increase,
+while other algorithms either find the most difficult arm right away or
+never and thus have many iterations that end with a misclassification.
 
 For the real data, the difference between Bayes-UCB and the other
 algorithms is just as apparent. As is the effect of the time varying
@@ -3597,14 +3439,473 @@ evaluated. We see in the curves of arms \(V32\) and arm \(V154\) that
 the EVT algorithm is less impacted by daily seasonalities, while APT
 clearly is.
 
-\begin{center}\includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-9-1} \end{center}
+\begin{figure}
+
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-10-1} 
+
+}
+
+\caption{Budget allocation of algorithms across arms on real and synthetic data in experiment 2.}\label{fig:unnamed-chunk-10}
+\end{figure}
+
+\subsubsection{Experiments Conclusion}\label{experiments-conclusion}
+
+In the two previous experiments, we observe that the real time series
+data poses a major hurdle for the adaptive sampling algorithms. It seems
+that the poor performance can be mostly explained by the seasonality and
+sudden changes in the samples over time. The observations clearly are
+not i.i.d. sampled. However, the effect might be overly stark due to the
+fact that we use minutely time series data, which leads to observations
+even when in minutes when there are few or no users (during night). In
+contrast, the daily seasonality might be less represented in an actual
+online experiment observations are only drawn when there is an actual
+visitor on the site (and a proper conversion rate would fluctuate less
+than the count of visitors on a given product page).
+
+Furthermore, some of the problems in dealing with the fluctuating
+distributions might be specific to the thresholding bandit problem as
+opposed to the cumulative regret or best-arm identification problems. In
+the experiments above, we observe that the order of the arms is mostly
+unaffected by the seasonalities and fluctuations, which would mean that
+the best arm could still be identified. In contrast, given that all arms
+are individually classified against the \emph{fixed} threshold, a weekly
+seasonality can declare a correct classification on the first half of
+the sample null and void on the second half of the sample.
 
 \section{Conclusion}\label{conclusion}
 
 \section{Notes}\label{notes}
 
 The author thanks Alexandra Carpentier, Andrea Locatelli, and Urun Dogan
-for many hours of valuable feedback and ideas. \textless{}3
+for many hours of valuable feedback and ideas.
+
+\section{References}\label{references}
+
+\section{Appendix}\label{appendix}
+
+\subsection{\texorpdfstring{Proof of Thresholding Bandit Lower Bound
+\label{sec:AppendixAPTLB}}{Proof of Thresholding Bandit Lower Bound }}\label{proof-of-thresholding-bandit-lower-bound}
+
+We now give a proof for the lower bound for the thresholding bandit
+problem stated in \autoref{theorem:Locatelli2016Theorem1}.
+
+\emph{Proof of Theorem \ref{theorem:Locatelli2016Theorem1}}: Locatelli
+et al. (2016) derive a lower bound for the thresholding bandit problem.
+We restate the proof here. The idea is as follows. The problem
+formulation considered in the paper describes bandit problems for
+\(R\)-sub-Gaussian distributions. To show a lower bound, we show that
+every algorithm is expected to make a certain error even if we consider
+a very restricted scenario. Even then, the best algorithm will have a
+maximum error probability with which it cannot distinguish between the
+actual setting and slightly changed settings (under which the answer for
+the true setting leads to a misclassification).
+
+Consider the thresholding bandit setting as in \autoref{sec:Setup}. More
+specifically, consider a problem in which all arms follow Normal
+distributions \(\nu_i\) with mean \(\mu_i\) and variance
+\(\sigma^2 = 1\). ``in which w''e set \(\tau = 0\) and \(\epsilon = 0\)
+w.l.o.g. Consequently, for each arm \(i\) the distance from the
+threshold is given by \(\Delta_i = |\mu_i - \tau| + \epsilon = \mu_i\).
+Thus, we have for every arm the distribution
+\(\nu_i = \mathcal{N}(\mu_i,1) = \mathcal{N}(\Delta_i,1)\). Furthermore,
+define for each arm \(i \in \{1, \dots, K\}\) the alternative
+distribution \(\nu_i' = \mathcal{N}(-\Delta_i,1)\). It is easy to see
+that this is equivalent to a ``flip around the threshold''. Arms that
+originally have a mean larger than the threshold have a mean smaller
+than the threshold after the flip.
+
+The intuition now is that every arm \(i \in \{1,\dots,K\}\) generates a
+sample for every time point \(t\in \{1, \dots, T\}\) from its
+distribution \(\nu_i\) before the algorithm starts to choose arms. Thus,
+we have a \(T \times K\) table of realized observations from the product
+distribution given by
+\(\mathcal{B}^0 = \nu_1^0 \otimes \ldots \otimes \nu_K^0 = \nu_1^0 \otimes \ldots \otimes \nu_K\).
+This is a product distribution where the \(K\) different means are all
+above the threshold. We would hope that an algorithm classifies the
+means accordingly. However, we will show in what follows that any
+algorithm makes a certain error by not being able to distinguish
+\(\mathcal{B}^0\) from at least one of \(K\) alternative product
+distributions \(\mathcal{B}^i, i \in \{1, \dots, K\}\), of which each
+differs only slightly in one arm from the original distribution, and has
+the same overall complexity (as defined by
+\(H = \sum_{i=1}^K (\Delta_i)^{-2}\)). We require \(K\) different
+distributions so that an algorithm sampling arm \(i\) very often for
+some reason will not have a smaller lower bound by chance.
+
+For each of the \(K\) arms, we introduce an alternative model of the
+following kind. Before the start of the algorithm, we introduce a slight
+variation in the setup. The idea is similar to how one can switch arms
+in the pure exploration setup for multi-armed bandits (compare Audibert
+et al., 2010; Garivier \& Kaufmann, 2016) to ``confuse'' any algorithm
+without introducing additional complexity to the specified problem.
+However, since we do not compare arms directly with each other in the
+thresholding bandit problem (switching arms would still keep all means
+above the threshold), we instead need to flip an arm \(i\) with respect
+to the threshold in order to get the alternative model
+\(\mathcal{B}_i\). Since the threshold is \(\tau = 0\), we have for the
+flipped arm the new distribution \(\nu_i'\) as defined above. Indeed,
+define the new product distribution
+\(B^i = \nu_1^i \otimes \dots \otimes \nu_K^i\) where for
+\(k \leq K, \nu_k' := \nu_i \mathbbm{1}_{k \neq i} + \nu_i' \mathbbm{1}_{k=i}\).
+This arm flip corresponds to multiplying all \(X_{i,t}\) of arm \(i\) by
+\(-1\).
+
+As in Locatelli et al. (2016), let for \(i \leq K\),
+\(\mathbb{P}_{\mathcal{B}^i}\) be the probability distribution
+describing all samples that a bandit strategy can potentially collect up
+to horizon \(T\), i.e.~according to the samples
+\((X_{k,s})_{k\leq K, s \leq T} \sim (\mathcal{B}^i)^{\otimes T}\).
+\((T_k)_{k\leq K}\) denotes the number of samples collected on arm \(k\)
+until time \(T\).
+
+At this point, we have defined a finite set of problems of Gaussian
+distributions with fixed variance 1 for a given set of set of gaps
+between the means of the distributions and the threshold,
+\((\Delta_k)_k\). We now proof a lower bound on the worst case regret of
+any algorithm; that is, the maximum error probability that even the best
+algorithm makes on this problem.
+
+\subsubsection{Statistical Decision}\label{statistical-decision}
+
+The expected loss in our thresholding bandit setting,
+\(\mathbb{E}[\mathcal{L}(T)]\), corresponds directly to the probability
+of making a wrong classification of any of the \(K\) means. In general,
+given a binary decision function \(g\), define events
+\(\Omega = \{g = 0\}\) and \(\Omega^C = \{g = 1\}\). Assume that the
+decision \(g\) distinguishes between two states of the world, \(H_0\)
+and \(H_1\). Then an overall error probability can be seperated into
+\(P_{H_0}(g=1) + P_{H_1}(g = 0) = P_{H_0}(\Omega^C) + P_{H_1}(\Omega)\).
+
+In our case, \(H_0\) may correspond to the state in which we have
+\(\mathcal{B}^0\), and \(H_1\) corresponds to the case where any arm has
+been flipped, \(\mathcal{B}^i\). Furthermore, we consider the events in
+which the algorithm classifies arm \(i\) as being above the threshold:
+\(\mathcal{A}_i = \{i \in \hat{S}_\tau\}\). The event on which all arms
+are being classified as above the threshold is consequently given by
+\(\mathcal{A} = \bigcap_{i=1}^K \mathcal{A}_i\). We could thus separate
+the error probability \(\mathbb{E}[\mathcal{L}(T)]\) into
+\(\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\) and
+\(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A}^C)\). However, Theorem 1 does
+not bound the overall regret, but the maximum error probability on the
+\(K+1\) different models. We can write this now as
+
+\begin{align}
+\max_{i \in \{0, \dots, K\}} \mathbb{E}_{\mathcal{B}^i} (\mathcal{L}(T)) & \geq \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}^C) \big) \\
+& = \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \big) \label{LocatelliTheorem1ExpRegret}
+\end{align}
+
+\subsubsection{Empirical Kullback-Leibler
+Divergence}\label{empirical-kullback-leibler-divergence}
+
+In order to give a bound on the previous equation, we start by
+considering \(\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\). This
+probability can be written as the expected change in the likelihood of
+observed data when moving from distribution \(P_{\mathcal{B}_0}\) to
+\(P_{\mathcal{B}_i}\), times the probability under the original state.
+In other words, the probability of event \(\mathcal{A}_i\) under state
+\(\mathcal{B}^i\) is given as the probability of \(\mathcal{A}_i\) under
+the (original) state \(\mathcal{B}^0\) multiplied by a factor. This
+factor describes whether the new distribution increases or decreases the
+probability of the event, and is given by the change in the data
+likelihoods due to moving from \(\mathcal{B}^0\) to \(\mathcal{B}^i\),
+expressed as the expected likelihood ratio under \(\mathcal{B}^0\). By
+definition, the latter is equal to the empirical Kullback-Leibler
+divergence of the two distributions.
+
+We will define the change of distribution in terms of the empirical
+log-likelihood for our case. Then, we will show how to replace the
+log-likelihood by the empirical Kullback-Leibler divergence. Let us
+first introduce the empirical Kullback-Leibler divergence.
+
+Let every \(\nu_i, \nu_i'\) be dominated by the Lebesgue measure
+\(\lambda\). Then their density functions are given by
+\(f_i = \frac{\der \nu_i}{\der \lambda}\) and
+\(f_i' = \frac{\der \nu_i'}{\der \lambda}\) respectively. For
+\(T \geq t \geq 0\), define the empirical Kullback-Leibler divergence
+for an i.i.d. sample \(X_{k,1}, \dots,X_{k,t}\) as
+
+\begin{align*}
+\hat{\KL}_{k,t} & = \frac{1}{t} \sum_{s=1}^{t} \log(\frac{\der \nu_k'}{\der \nu_k}(X_{k,s})) \\
+& = \frac{1}{t} \sum_{s=1}^{t} \log \big(\frac{f_k'(X_{k,s})}{f_k(X_{k,s})} \big) \\
+& = \frac{1}{t} \log \big( \prod_{s=1}^{t} \frac{f_k'(X_{k,s})}{f_k(X_{k,s})} \big) \\
+& \stackrel{\text{iid}}{=} \frac{1}{t} \log \big( \frac{f_k'(X_{k,1}, \dots,X_{k,t})}{f_k(X_{k,1}, \dots,X_{k,t})} \big) \\
+& = \frac{1}{t} \log \big( \text{LR}((X_{k,1}, \dots,X_{k,t}), \nu_k', \nu_k) \big),
+\end{align*}
+
+where \(\text{LR}((X_{k,1}, \dots,X_{k,t}), \nu_k', \nu_k)\) is the
+likelihood ratio for the sample.
+
+Since we consider Gaussian distributions with variance \(\sigma^2 = 1\),
+we have density functions
+\(f_i(x) \propto \exp \big(-\frac{1}{2} (x-\Delta_i)^2\big)\) and
+\(f_i'(x) \propto \exp \big(-\frac{1}{2} (x+\Delta_i)^2\big)\). Plugging
+this into the above definition of the empirical Kullback-Leibler
+divergence, we easily see
+
+\begin{align*}
+\hat{\KL}_{k,t} & = \frac{1}{t} \sum_{s=1}^{t} \log \Big(\frac{\exp \big(-\frac{1}{2} (X_{k,s}+\Delta_k)^2\big)}{\exp \big(-\frac{1}{2} (X_{k,s}-\Delta_k)^2\big)} \Big) \\
+& = \frac{1}{t} \sum_{s=1}^{t} \log \Big( \exp \big(-\frac{1}{2} (X_{k,s}+\Delta_k)^2 + \frac{1}{2} (X_{k,s}-\Delta_k)^2 \big) \Big) \\
+& = - \frac{1}{t} \sum_{s=1}^{t} 2 X_{k,s} \Delta_k
+\end{align*}
+
+\subsubsection{Change of Distribution}\label{change-of-distribution}
+
+We are now ready to state the change of distribution. As alluded to
+above, we consider how the probability changes for the event
+\(\mathcal{A}_i\) when we move from \(\mathcal{B}^0\) to
+\(\mathcal{B}^i\). When flipping arm \(i\), we only change the samples
+of this arm, that is, the first \(T_i\) observations that the algorithm
+draws from arm \(i\). The change of distribution is then defined as:
+
+\begin{align*}
+\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i} \text{LR}((X_{i,1}, \dots,X_{i,T_i}), \nu_i', \nu_i) ] \\
+& = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i} \exp (- T_i \hat{\KL}_{i,T_i}) ]
+\end{align*}
+
+Obviously, \(\hat{\KL}_{i,T_i}\) depends on the realized samples
+\(X_{i,1}, \dots,X_{i,T_i}\). Consequently, we need to find a bound on
+\(\hat{\KL}_{i,T_i}\) itself to incorporate the uncertainty involved in
+this metric.
+
+\subsubsection{Concentration of the Empirical Kullback-Leibler
+Divergence}\label{concentration-of-the-empirical-kullback-leibler-divergence}
+
+For our problem, the Kullback-Leibler divergence of \(\nu_k'\) from
+\(\nu_k\) is given by \(\KL_k := \KL(\nu_k', \nu_k) = 2\Delta_k^2\), and
+consequently
+
+\begin{equation*}
+|\hat{\KL}_{k,t} - \KL_{k,t}| = |-\frac{2}{t} \Delta_k \sum_{s=1}^{t}(X_{k,s} - \Delta_k)|
+\end{equation*}
+
+itself is a normally distributed random variable with mean zero and a
+variance decreasing in \(t\). Thus, one can show as in Locatelli et al.
+(2016) that \(\mathbb{P}_{\mathcal{B}^i}(\xi) \geq 3/4\) for the event
+
+\begin{equation}
+\xi = \{ \forall k \leq K, \forall t \leq T, |\hat{\KL}_{k,t} - \KL_{k,t}| \leq 4 \Delta_k \sqrt{\frac{\log(4(\log(T)+1)K)}{t}}\}. \label{LocatelliTheorem1EventXi}
+\end{equation}
+
+Thus, in order to bound the empirical Kullback-Leibler divergence in our
+change of measure, we can consider the intersection of \(\mathcal{A}_i\)
+and \(\xi\) as follows and plug in the bound on event \(\xi\):
+
+\begin{align*}
+\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i} \exp (- T_i \hat{\KL}_{i,T_i}) ] \\
+& \geq \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- T_i \hat{\KL}_{i,T_i}) ] \\
+& \geq \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- 2 \Delta_i^2 T_i - 4 \Delta_i \sqrt{T_i} \sqrt{\log(4(\log(T)+1)K)}) ]
+\end{align*}
+
+Two things are left to do: With \(T_i\), we still have one random
+variable left which we cannot leave in our bound. Second, we are
+actually not interested in \(\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\)
+but in
+\(\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\).
+
+\subsubsection{\texorpdfstring{Bounding \(T_i\) for
+\(\max_{i \in \{1,\dots,K\}}\mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\)}{Bounding T\_i for \textbackslash{}max\_\{i \textbackslash{}in \textbackslash{}\{1,\textbackslash{}dots,K\textbackslash{}\}\}\textbackslash{}mathbb\{P\}\_\{\textbackslash{}mathcal\{B\}\^{}i\}(\textbackslash{}mathcal\{A\}\_i)}}\label{bounding-t_i-for-max_i-in-1dotskmathbbp_mathcalbimathcala_i}
+
+We are actually interested in bounding
+\(\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i)\).
+In general it holds that
+\(\max_{1 \leq i \leq K} (X_1, \dots, X_K) \geq \frac{1}{K}\sum_{i=1}^K X_i\).
+Thus we can write:
+
+\begin{align*}
+\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & \geq \frac{1}{K} \sum_{i=1}^{K} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) \\
+& \geq \frac{1}{K} \sum_{i=1}^{K} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i \cap \xi) \\
+& \geq \frac{1}{K} \sum_{i=1}^{K} \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- 2 \Delta_i^2 T_i - 4 \Delta_i \sqrt{T_i} \sqrt{\log(4(\log(T)+1)K)}) ]
+\end{align*}
+
+where the second line is again the intersection of \(\mathcal{A}_i\) and
+\(\xi\) as before, such that we can apply the change of distribution in
+the third line.
+
+What is left to show is a bound on \(T_i\). Given that we want to show
+that even the best algorithm makes an error on at least one of the
+problems (one of the arms), it makes sense to show that \(T_i\) is upper
+bounded. This implies that no arm can be infinitely sampled; we cannot
+reach full confidence in any arm, and a residual error probability
+should remain.
+
+First, let \(a = \Delta_i \sqrt{T_i}\) and
+\(b = 4\sqrt{\log((4\log(T)+1)K)}\). Then use \(ab \leq a^2 + b^2\) to
+write \(ab \leq \Delta_i^2 T_i + 16\log((4\log(T)+1)K)\). And so:
+
+\begin{align*}
+\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & \geq \frac{1}{K} \sum_{i=1}^{K} \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- 3 \Delta_i^2 T_i - 16 \log(4(\log(T)+1)K)) ]
+\end{align*}
+
+Furthermore, we know that the sum of the individual arm pulls has to be
+equal to the overall number of pulls (equal to the budget in the fixed
+budget sense), \(\sum_i T_i = T\), and furthermore we know that
+\(T_i>0\). The latter holds since any reasonable algorithm has to check
+each arm at least once in our setup. Thus it is easy to show that
+\(\exists i: T_i \leq \frac{T}{H \Delta_i^2} = \frac{T}{(\sum_{i=1}^{K} \Delta_i^{-2}) \Delta_i^2}\).
+To see this, assume the opposite:
+\(\forall i: T_i > T \frac{\sum_{i=1}^K \Delta_i^2}{\Delta_i^2}\). This
+implies however
+\(\sum_{i=1}^K T_i > \sum_{i=1}^K T \frac{\sum_{i=1}^K \Delta_i^2}{\Delta_i^2} = T \cdot 1 = T\)
+which is a contradiction.
+
+So we can write \((\Delta_i \sqrt{T_i})^2 \leq \frac{T}{H}\). We use
+\(\mathcal{A} = \cap_{i=1}^K \mathcal{A}_i\) to write:
+
+\begin{align*}
+\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & \geq \frac{1}{K} \sum_{i=1}^{K} \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A}_i \cap \xi} \exp (- 3 \Delta_i^2 T_i - 16 \log(4(\log(T)+1)K)) \big] \\
+& = \mathbb{E}_{\mathcal{B}^0} \big[\mathbbm{1}_{\mathcal{A} \cap \xi} \frac{1}{K} \sum_{i=1}^{K} \exp (- 3 \Delta_i^2 T_i - 16 \log(4(\log(T)+1)K)) \big]
+\end{align*}
+
+We write
+\(\frac{1}{K} \sum_{i=1}^K \exp(-3T_i \Delta_i^2) \geq \frac{1}{K} \sum_{i=1}^K \exp(-3 T/H) = \exp(-3 T/H)\).
+Thus:
+
+\begin{align*}
+\max_{i \in \{1,\dots,K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i) & = \mathbb{E}_{\mathcal{B}^0} \Big[\mathbbm{1}_{\mathcal{A} \cap \xi} \frac{1}{K} \sum_{i=1}^{K} \exp (- 3 \Delta_i^2 T_i) \exp \big(-16 \log(4(\log(T)+1)K)\big) \Big] \\
+& \geq \mathbb{E}_{\mathcal{B}^0} \Big[\mathbbm{1}_{\mathcal{A} \cap \xi} \frac{1}{K} \sum_{i=1}^{K} \exp \big(- 3 \frac{T}{H}\big) \exp \big(-16 \log(4(\log(T)+1)K)\big) \Big] \\
+& = \mathbb{E}_{\mathcal{B}^0} \Big[\mathbbm{1}_{\mathcal{A} \cap \xi} \exp \big(- 3 \frac{T}{H}\big) \exp \big(-16 \log(4(\log(T)+1)K)\big) \Big] \\
+& = \mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp \Big(- 3 \frac{T}{H} -16 \log \big(4(\log(T)+1)K\big)\Big)
+\end{align*}
+
+\subsubsection{Bringing everything
+together}\label{bringing-everything-together}
+
+Consider again the risk which we need to bound from equation
+\eqref{LocatelliTheorem1ExpRegret}. We bound the maximum expected loss
+over all \(\mathcal{B}_i\). By using again the fact that in general
+\(\max_{1 \leq i \leq K} (X_1, \dots, X_K) \geq \frac{1}{K} \sum_{i = 1}^K X_i\),
+we plug into our previous calculations:
+
+\begin{align}
+\max_{i \in \{0, \dots, K\}} \mathbb{E}_{\mathcal{B}^i} (\mathcal{L}(T)) & \geq \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \big) \\
+& \geq \frac{1}{2}\mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp \Big(- 3 \frac{T}{H} -16 \log \big(4(\log(T)+1)K\big)\Big) + \frac{1}{2}(1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A})) \label{LocatelliTheorem1DefinitionOfRisk}
+\end{align}
+
+From \eqref{LocatelliTheorem1EventXi} we know that for any
+\(i \in \{0, \dots, K\}\), \(\mathbb{P}_{\mathcal{B}^i}(\xi) \geq 3/4\).
+Following the argument in Locatelli et al. (2016), we now consider two
+cases: \(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \geq 1/2\) and
+\(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \leq 1/2\). In the former
+case, we can plug in the two probabilities into
+\eqref{LocatelliTheorem1DefinitionOfRisk}. If
+\(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \geq 1/2\) and
+\(\mathbb{P}_{\mathcal{B}^0}(\xi) \geq 3/4\), then
+\(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A} \cap \xi) \geq 1/4\). Thus:
+
+\begin{align*}
+\max_{i \in \{0, \dots, K\}} \mathbb{E}_{\mathcal{B}^i} (\mathcal{L}(T)) & \geq \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \big) \\
+& \geq \frac{1}{2}\mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp (- 3 \frac{T}{H} -16 \log(4(\log(T)+1)K)) + \frac{1}{2}(1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A})) \\
+& \geq \frac{1}{8} \exp (- 3 \frac{T}{H} -16 \log(4(\log(T)+1)K))
+\end{align*}
+
+where we drop the second summand of the second line so that the
+inequality holds.
+
+On the other hand, when
+\(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \leq 1/2\), then we know that
+\(\mathbb{P}_{\mathcal{B}^0}(\mathcal{A} \cap \xi) \leq 1/2\) for any
+\(\mathbb{P}_{\mathcal{B}^0}(\xi)\). At the same time
+\(1-\mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) = \mathbb{P}_{\mathcal{B}^0}(\mathcal{A^C}) \geq 1/2\).
+Consequently,
+\(1/4 \leq \frac{1}{2}(1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A})) \leq 1/2\),
+while
+\(\frac{1}{2}\mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp (- 3 \frac{T}{H} -16 \log(4(\log(T)+1)K)) \geq 0\).
+And so the stronger lower bound in that case is, as noticed by Locatelli
+et al. (2016), given simply by
+
+\begin{align*}
+\max_{i \in \{0, \dots, K\}} \mathbb{E}_{\mathcal{B}^i} (\mathcal{L}(T)) & \geq \max \big( \max_{i \in \{1, \dots, K\}} \mathbb{P}_{\mathcal{B}^i}(\mathcal{A}_i), 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) \big) \\
+& \geq 1 - \mathbb{P}_{\mathcal{B}^0}(\mathcal{A}) = \mathbb{P}_{\mathcal{B}^0}(\mathcal{A^C}) \\
+& \geq \frac{1}{2}
+\end{align*}
+
+\subsection{\texorpdfstring{Bayes-UCB Algorithm for the Thresholding
+Bandit Problem
+\label{sec:AppendixBUCB}}{Bayes-UCB Algorithm for the Thresholding Bandit Problem }}\label{bayes-ucb-algorithm-for-the-thresholding-bandit-problem}
+
+We show how the Bayes-UCB algorithm (Algorithm 1, Kaufmann et al., 2012)
+is adopted to the thresholding bandit problem to be used in the
+experiments in chapter \autoref{chap:Experiments}.
+
+We adopt their Algorithm 1 for Bernoulli distributions as follows:
+
+\IncMargin{1em}
+
+\begin{algorithm}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+\Input{\emph{$\tau$, $\epsilon$, $T$, $\Pi^0$ (initial prior on $\mu$), $c$ (parameters of the quantile)}}
+\Output{$\hat{S}_\tau = \{i \in \mathbb{A},  \hat{\mu}_i(T) \geq \tau\}$}
+\BlankLine
+\emph{Pull each arm once}\;
+\For{$t = K+1$ \KwTo $T$}{
+\For{$i = 1$ \KwTo $K$}{
+  \emph{Compute $q_i(t) = Q\Big(1-\frac{1}{t(\log T)^c}, \lambda_i^{t-1}\Big)$}\;
+  \emph{Compute $B_i(t) = $}\;
+  \If{$\hat{\sigma}^2_{i}(t) = 0$}{\emph{Set $\hat{\sigma}^2_{i}(t) = 1/T$}}
+}
+  \emph{Pull arm $I_t = \arg \min_{i\leq K} B_i^{SLR_{2D}}(t)$ as in \autoref{eqn:SLR2DIndex}}\;
+  \emph{Observe reward $X \sim \nu_{I_t}$}\;
+}
+\caption{2D-SLR algorithm for Normal distributions with unknown mean and unknown variance}\label{algo_slr_2d}
+\end{algorithm}
+
+\DecMargin{1em}
+
+\subsection{Empirical Analysis of the Bayes-UCB Algorithm in Simulation
+2}\label{empirical-analysis-of-the-bayes-ucb-algorithm-in-simulation-2}
+
+In order to assess the excellent performance of the Bayes-UCB algorithm,
+which comes at a surprise given that is is designed for the cumulative
+regret setting and thus should tend to explore the arms to less, we also
+plot the budget allocation of three different Bayes-UCB versions. The
+three versions differ in the quantile parameter \(c\) (compare
+\autoref{sec:AppendixBUCB}) for which we set here
+\(c \in \{1/5, 1, 5\}\) to explore more or less. In Kaufmann et al.
+(2012), the cumulative regret upper bound for the Bayes-UCB is shown for
+\(c\geq 5\), though they report that the choice of \(c=0\) worked much
+better in their experiments. In our problem, it makes also sense that
+the versions with smaller quantiles (smaller \(c\)) tend to perform
+better than
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/simulation2_results_bucb-1} 
+
+}
+
+\caption{Performance comparison of algorithms for simulation 2.}\label{fig:simulation2_results_bucb}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-11-1} 
+
+}
+
+\caption{Budget allocation for the Bayes-UCB algorithm in simulation 2 at three different values for the quantile parameter c.}\label{fig:unnamed-chunk-11}
+\end{figure}
+
+\subsection{Empirical Comparison of APT, SLR, and Bayes-UCB in
+Experiment
+2}\label{empirical-comparison-of-apt-slr-and-bayes-ucb-in-experiment-2}
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-12-1} 
+
+}
+
+\caption{Budget allocation for the Bayes-UCB algorithm in simulation 2 at three different values for the quantile parameter c.}\label{fig:unnamed-chunk-12}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.8\linewidth]{Draft_files/figure-latex/unnamed-chunk-13-1} 
+
+}
+
+\caption{Budget allocation for the Bayes-UCB algorithm in simulation 2 at three different values for the quantile parameter c.}\label{fig:unnamed-chunk-13}
+\end{figure}
 
 
 \end{document}

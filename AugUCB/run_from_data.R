@@ -688,6 +688,56 @@ get_next_arm_lr <- function(armls, tau, epsilon) {
 
 ##############################################################
 
+# Likelihood Ratio based Algorithm
+# for Bernoulli distribution
+# with additional D-tracking rule from
+# Garivier, Kaufmann (2016): Optimal Best Arm Identification with Fixed Confidence
+
+LRD_bandit_from_tsdata <- function(data, rounds = 5000, tau, epsilon,
+                                   verbose = FALSE, seed = NA) {
+  
+  if(!is.na(seed)) set.seed(seed)
+  K <- dim(data)[2]
+  
+  # initialize by pulling each arm once
+  arm_list <- diag(as.matrix(data[1:K,]))
+  arm_list <- as.list(arm_list)
+  
+  # initialize mean storage and the counter
+  mean_storage <- matrix(unlist(lapply(arm_list, mean)), nrow = 1)
+  arm_sequence <- 1:K
+  
+  for(i in (K+1):rounds) {
+    if(verbose) message(paste("this is round", i))
+    
+    # D-Tracking Rule
+    Uset <- which(table(arm_sequence) < sqrt(i) - K/2)
+    if(length(Uset) > 0){
+      next_arm <- get_min(table(arm_sequence))
+    } else {
+      next_arm <- get_min(-unlist(get_next_arm_lr(arm_list, tau = tau,
+                                                  epsilon = epsilon)))
+    }
+    
+    arm_sequence <- c(arm_sequence, next_arm)
+    
+    if(verbose) message("arm selecting done")
+    if(verbose) message(next_arm)
+    arm_list[[next_arm]] <- c(arm_list[[next_arm]], data[i, next_arm])
+    
+    mean_storage <- rbind(mean_storage, unlist(lapply(arm_list, mean)))
+    
+    if(verbose) message("arm pulling done")
+    
+  }
+  return(list(means = unlist(lapply(arm_list, mean)),
+              arm_list = arm_list,
+              arm_sequence = arm_sequence,
+              mean_storage = mean_storage))
+}
+
+##############################################################
+
 # for Normal distribution
 # actually uses log(-LikelihoodRatio) as the test statistic since
 # the LR goes to 0 too quickly
@@ -736,10 +786,16 @@ lr_gaussian <- function(x, tau, mu, n) {
   prod(dnorm(x, tau, sqrt(sigma_tau))) / prod(dnorm(x, mu, sqrt(sigma_emp)))
 }
 
+#kl_gaussian <- function(x, tau, mu, n) {
+#  sigma_tau <- 1/n*sum((x-tau)^2)
+#  sigma_emp <- 1/n*sum((x-mu)^2)
+#  ifelse(sigma_emp == 0, -Inf, n*log(sqrt(sigma_tau)/sqrt(sigma_emp)))
+#}
+
 kl_gaussian <- function(x, tau, mu, n) {
   sigma_tau <- 1/n*sum((x-tau)^2)
   sigma_emp <- 1/n*sum((x-mu)^2)
-  ifelse(sigma_emp == 0, -Inf, n*log(sqrt(sigma_tau)/sqrt(sigma_emp)))
+  ifelse(sigma_emp == 0, 1/10000, n*log(sqrt(sigma_tau)/sqrt(sigma_emp)))
 }
 
 get_next_arm_lr_gaussian <- function(armls, tau, epsilon) {

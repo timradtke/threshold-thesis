@@ -71,6 +71,21 @@ rm(loc6g_LR)
 gc()
 
 ########################################################################
+# Gaussian Likelihood Ratio 2D-SLR
+
+system.time(loc6g_LR2 <- para_bandit_sim_LR_gaussian(data = data_loc6g, 
+                                                    rounds = 10000, 
+                                                    tau = tau_loc6g, 
+                                                    epsilon = epsilon_loc6g))
+
+save(loc6g_LR2, file = paste0(current_path, "loc6g_LR2.Rda"))
+loc6g_comp_LR2 <- compare_to_ground_truth(mu_loc6g, loc6g_LR2, 
+                                         tau_loc6g, epsilon_loc6g)$mean
+save(loc6g_comp_LR2, file = paste0(current_path, "loc6g_comp_LR2.Rda"))
+rm(loc6g_LR2)
+gc()
+
+########################################################################
 # Anytime Parameter Free (Locatelli et. al, 2016)
 
 system.time(loc6g_APT <- para_bandit_sim_APT(data = data_loc6g, 
@@ -101,8 +116,11 @@ gc()
 
 
 load(file = paste0(current_path, "loc6g_comp_LR.Rda"))
+load(file = paste0(current_path, "loc6g_comp_APT.Rda"))
+load(file = paste0(current_path, "loc6g_comp_UNIFORM.Rda"))
 
 plot(c(0,10000), c(-8,0), type = "n")
 lines(log(loc6g_comp_LR))
+lines(log(loc6g_comp_LR2))
 lines(log(loc6g_comp_APT), col = "blue")
 lines(log(loc6g_comp_UNIFORM), col = "red")

@@ -115,3 +115,17 @@ exp2_comp_AugUCB <- compare_to_ground_truth(mu_exp2, exp2_AugUCB,
 save(exp2_comp_AugUCB, file = paste0(current_path, "exp2_comp_AugUCB.Rda"))
 rm(exp2_AugUCB)
 gc()
+
+
+load(paste0(current_path, "exp2_AugUCB.Rda"))
+length(exp2_AugUCB[[1]]$arm_sequence)
+length(exp2_AugUCB[[2]]$arm_sequence)
+length(exp2_AugUCB[[3]]$arm_sequence)
+length(exp2_AugUCB[[4]]$arm_sequence)
+length(exp2_AugUCB[[5]]$arm_sequence)
+length(exp2_AugUCB[[6]]$arm_sequence)
+augucb_lengths <- vector(length = 5000)
+for(i in 1:5000) {
+  augucb_lengths[i] <- length(exp2_AugUCB[[i]]$arm_sequence)
+}
+summary(augucb_lengths)

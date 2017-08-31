@@ -11,6 +11,13 @@ source(paste0(current_path, "run_from_data.R"))
 source(paste0(current_path, "run_parallelized_from_data.R"))
 current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/synthetic_experiments/"
 
+load(paste0(current_path, "loc6nt_BUCB_7000.Rda"))
+loc6nt_BUCB0_arm_seq <- data.frame(t(laply(loc6nt_BUCB_7000, 
+                                          function(x) x$arm_sequence)))
+save(loc6nt_BUCB0_arm_seq, file = "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/Thesis/experiment_postprocessing/loc6nt_BUCB0_arm_seq.Rda")
+rm(loc6nt_BUCB_7000, loc6nt_BUCB_arm_seq)
+gc()
+
 load(paste0(current_path, "loc6nt_BUCB_horizon_7000.Rda"))
 loc6nt_BUCB_arm_seq <- data.frame(t(laply(loc6nt_BUCB_horizon_7000, 
                                         function(x) x$arm_sequence)))

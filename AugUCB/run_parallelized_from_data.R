@@ -260,6 +260,30 @@ para_bandit_sim_LR <- function(data, seed = NA, do_verbose = FALSE, ...) {
   return(res)
 }
 
+para_bandit_sim_LRD <- function(data, seed = NA, do_verbose = FALSE, ...) {
+  require(foreach)
+  require(doParallel)
+  
+  # assume that data is a list of data frames
+  reps <- length(data)
+  
+  gc()
+  cl <- makeCluster(max(1,detectCores()-1))
+  registerDoParallel(cl)
+  res <- foreach(j = 1:reps, #.errorhandling = 'remove',
+                 .export = c("LRD_bandit_from_tsdata", "get_next_arm_lr",
+                             "get_min", "lr_ber"), 
+                 .verbose = do_verbose, .inorder = TRUE) %dopar% {
+                   alg_res <- LRD_bandit_from_tsdata(data = data[[j]], 
+                                                    seed = 512+j, ...)
+                   list(mean_storage = alg_res$mean_storage,
+                        arm_sequence = alg_res$arm_sequence,
+                        input_data = data[[j]])
+                 }
+  stopCluster(cl)
+  return(res)
+}
+
 para_bandit_sim_LR_gaussian <- function(data, seed = NA, do_verbose = FALSE, ...) {
   require(foreach)
   require(doParallel)

@@ -35,6 +35,138 @@ for(j in 1:5000) {
 }
 
 ########################################################################
+
+load(paste0(current_path, "/loc6nt_BUCB_horizon_7000.Rda"))
+load(paste0(current_path, "/loc6nt_AugUCB_7000.Rda"))
+load(paste0(current_path, "/loc6nt_UNIFORM_7000.Rda"))
+load(paste0(current_path, "/loc6nt_APT_7000.Rda"))
+load(paste0(current_path, "/loc6nt_LR_7000.Rda"))
+load(paste0(current_path, "/loc6nt_EVT.Rda"))
+
+table(loc6nt_LR_7000[[1]]$arm_sequence)
+table(loc6nt_LR_7000[[2]]$arm_sequence)
+table(loc6nt_LR_7000[[3]]$arm_sequence)
+table(loc6nt_LR_7000[[4]]$arm_sequence)
+table(loc6nt_LR_7000[[5]]$arm_sequence)
+tail(loc6nt_LR_7000[[5]]$mean_storage)
+
+library(ggplot2)
+library(ggjoy)
+library(dplyr)
+library(tidyr)
+
+pulls_of_arm_6_LR <- vector(length = 5000)
+for(i in 1:5000){
+  pulls_of_arm_6_LR[i] <- table(loc6nt_LR_7000[[i]]$arm_sequence)[6]
+}
+summary(pulls_of_arm_6_LR)
+quantile(pulls_of_arm_6_LR, 0.05)
+
+pulls_of_arm_6_APT <- vector(length = 5000)
+for(i in 1:5000){
+  pulls_of_arm_6_APT[i] <- table(loc6nt_APT_7000[[i]]$arm_sequence)[6]
+}
+summary(pulls_of_arm_6_APT)
+quantile(pulls_of_arm_6_APT, 0.05)
+
+pulls_of_arm_6_BUCB <- vector(length = 5000)
+for(i in 1:5000){
+  pulls_of_arm_6_BUCB[i] <- table(loc6nt_BUCB_horizon_7000[[i]]$arm_sequence)[6]
+}
+summary(pulls_of_arm_6_BUCB)
+quantile(pulls_of_arm_6_BUCB, 0.05)
+
+pulls_arm_6 <- data.frame(APT = pulls_of_arm_6_APT,
+                          SLR = pulls_of_arm_6_LR,
+                          BUCB = pulls_of_arm_6_BUCB)
+
+pulls_arm_6 %>% gather(key = "Algorithm", value = "Pulls") %>%
+  ggplot(aes(x = Pulls, group = Algorithm)) +
+  geom_histogram() +
+  facet_grid(Algorithm~.)
+
+pulls_of_arm_1_LR <- vector(length = 5000)
+for(i in 1:5000){
+  pulls_of_arm_1_LR[i] <- table(loc6nt_LR_7000[[i]]$arm_sequence)[1]
+}
+
+pulls_of_arm_1_APT <- vector(length = 5000)
+for(i in 1:5000){
+  pulls_of_arm_1_APT[i] <- table(loc6nt_APT_7000[[i]]$arm_sequence)[1]
+}
+
+pulls_of_arm_1_BUCB <- vector(length = 5000)
+for(i in 1:5000){
+  pulls_of_arm_1_BUCB[i] <- table(loc6nt_BUCB_horizon_7000[[i]]$arm_sequence)[1]
+}
+
+pulls_arm_1 <- data.frame(APT = pulls_of_arm_1_APT,
+                          SLR = pulls_of_arm_1_LR,
+                          BUCB = pulls_of_arm_1_BUCB)
+
+pulls_arm_1 %>% gather(key = "Algorithm", value = "Pulls") %>%
+  ggplot(aes(x = Pulls, group = Algorithm)) +
+  geom_histogram() +
+  facet_grid(Algorithm~.)
+
+pulls_of_arm_10_LR <- vector(length = 5000)
+for(i in 1:5000){
+  pulls_of_arm_10_LR[i] <- table(loc6nt_LR_7000[[i]]$arm_sequence)[10]
+}
+
+pulls_of_arm_10_APT <- vector(length = 5000)
+for(i in 1:5000){
+  pulls_of_arm_10_APT[i] <- table(loc6nt_APT_7000[[i]]$arm_sequence)[10]
+}
+
+pulls_of_arm_10_BUCB <- vector(length = 5000)
+for(i in 1:5000){
+  pulls_of_arm_10_BUCB[i] <- table(loc6nt_BUCB_horizon_7000[[i]]$arm_sequence)[10]
+}
+
+pulls_arm_10 <- data.frame(APT = pulls_of_arm_10_APT,
+                          SLR = pulls_of_arm_10_LR,
+                          BUCB = pulls_of_arm_10_BUCB)
+
+pulls_arm_10 %>% gather(key = "Algorithm", value = "Pulls") %>%
+  ggplot(aes(x = Pulls, group = Algorithm)) +
+  geom_histogram(binwidth = 50) +
+  facet_grid(Algorithm~.)
+
+pulls_arm_1_long <- pulls_arm_1 %>% gather(key = "Algorithm", value = "Pulls")
+pulls_arm_6_long <- pulls_arm_6 %>% gather(key = "Algorithm", value = "Pulls")
+pulls_arm_10_long <- pulls_arm_10 %>% gather(key = "Algorithm", value = "Pulls")
+
+save(pulls_arm_1_long, pulls_arm_6_long, pulls_arm_10_long,
+     file = paste0(current_path, "loc6nt_pulls_of_arms_vis.Rda"))
+
+pulls_arm_6_long %>%
+  ggplot(aes(x = Pulls)) +
+  geom_histogram(binwidth = 100) +
+  facet_grid(.~Algorithm, scales = "free_y") +
+  geom_vline(aes(xintercept = 7000/10), linetype = 2) +
+  labs(x = "Pulls", y = "Count", 
+       title = "Distribution of Pulls of Arm 6 Across Simulations",
+       subtitle = "Binwidth = 100. Budget = 7000. 5000 Simulations.
+Vertical line indicates pulls by uniform sampling given 10 arms in experiment.") +
+  theme_bw()
+
+cbind.data.frame(
+  Arm = rep(c("01", "10"), each = 15000),
+  rbind.data.frame(pulls_arm_1_long, pulls_arm_10_long),
+  stringsAsFactors = FALSE
+) %>% 
+  ggplot(aes(x = Pulls, group = Arm)) +
+  geom_histogram(binwidth = 50) +
+  facet_grid(Arm~Algorithm, scales = "free_y")+
+  geom_vline(aes(xintercept = 7000/10), linetype = 2) +
+  labs(x = "Pulls", y = "Count", 
+       title = "Distribution of Pulls of Arms 1 and 10 Across Simulations",
+       subtitle = "Binwidth = 50. Budget = 7000. 5000 Simulations.
+Vertical line indicates pulls by uniform sampling given 10 arms in experiment.") +
+  theme_bw()
+
+########################################################################
 # Empirical Variance Guided Algorithm (Zhong et al., 2017)
 
 loc6nt_EVT <- para_bandit_sim_EVT(data = data_list6, 
@@ -61,12 +193,14 @@ load(paste0(current_path, "/loc6nt_comp_APT_7000.Rda"))
 load(paste0(current_path, "/loc6nt_comp_LR_7000.Rda"))
 
 plot(c(0,7000), c(0, -5), type = "n")
+lines(log(loc6nt_comp_BUCB_7000), col = "black")
 lines(log(loc6nt_comp_BUCB_horizon_7000), col = "blue")
 lines(log(loc6nt_comp_BUCB_horizon_c5_7000), col = "lightblue")
 lines(log(loc6nt_comp_BUCB_horizon_c15_7000), col = "darkblue")
 #lines(log(loc6nt_comp_BUCB_horizon), col = "lightblue")
 #lines(log(loc6nt_comp_APT), col = "pink")
 lines(log(loc6nt_comp_LR_7000), col = "green")
+lines(log(loc6nt_comp_LRD), col = "darkgreen")
 lines(log(loc6nt_comp_APT_7000), col = "red")
 lines(log(loc6nt_comp_UNIFORM_7000), col = "black")
 abline(h=log(0.1))
@@ -108,6 +242,26 @@ loc6nt_comp_BUCB_horizon_7000 <- compare_to_ground_truth(mean_loc6nt,
                                                          epsilon_loc6nt)$mean
 save(loc6nt_comp_BUCB_horizon_7000, file = paste0(current_path, 
                                                   "loc6nt_comp_BUCB_horizon_7000.Rda"))
+
+########################################################################
+# Try a different exploration parameter for BUCB
+
+loc6nt_BUCB_7000 <- para_bandit_sim_bucb(data = data_list6, 
+                                          rounds = 7000, 
+                                          rate = "inverse",
+                                          tau = tau_loc6nt, 
+                                          epsilon = epsilon_loc6nt, 
+                                          alpha = tau_loc6nt, 
+                                          beta = 1-tau_loc6nt)
+save(loc6nt_BUCB_7000,
+     file = paste0(current_path, "loc6nt_BUCB_7000.Rda"))
+loc6nt_comp_BUCB_7000 <- compare_to_ground_truth(mean_loc6nt, 
+                                                 loc6nt_BUCB_7000,
+                                                  tau_loc6nt,
+                                                  epsilon_loc6nt)$mean
+save(loc6nt_comp_BUCB_7000, file = paste0(current_path, 
+                                           "loc6nt_comp_BUCB_7000.Rda"))
+rm(loc6nt_BUCB_7000)
 
 ########################################################################
 # Try a different exploration parameter for BUCB
@@ -187,6 +341,20 @@ loc6nt_comp_LR_7000 <- compare_to_ground_truth(mean_loc6nt, loc6nt_LR_7000,
                                                 tau_loc6nt, epsilon_loc6nt)$mean
 save(loc6nt_comp_LR_7000, file = paste0(current_path, 
                                         "loc6nt_comp_LR_7000.Rda"))
+
+########################################################################
+# Standard Likelihood Ratio with D-Tracking rule
+system.time(loc6nt_LRD <- para_bandit_sim_LRD(data = data_list6, 
+                                               rounds = 7000, 
+                                               tau = tau_loc6nt, 
+                                               epsilon = epsilon_loc6nt,
+                                               do_verbose = TRUE))
+
+save(loc6nt_LRD, file = paste0(current_path, "loc6nt_LRD.Rda"))
+loc6nt_comp_LRD <- compare_to_ground_truth(mean_loc6nt, loc6nt_LRD, 
+                                            tau_loc6nt, epsilon_loc6nt)$mean
+save(loc6nt_comp_LRD, file = paste0(current_path, 
+                                    "loc6nt_comp_LRD.Rda"))
 
 ########################################################################
 
