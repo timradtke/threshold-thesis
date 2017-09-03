@@ -1,0 +1,41 @@
+---
+title: "Corollary"
+header-includes:
+   #- \documentclass[a4paper,twoside,english]{article}
+   - \usepackage[retainorgcmds]{IEEEtrantools}
+   - \usepackage{bm}
+   - \usepackage{amsmath}
+   - \usepackage{bbm}
+   - \usepackage{hyperref}
+   - \usepackage[lined,boxed]{algorithm2e}
+   - \newtheorem{theorem}{Theorem}
+   - \newtheorem{definition}{Definition}
+   - \newtheorem{lemma}{Lemma}
+   - \newtheorem{corollary}{Corollary}
+   - \newcommand{\KL}{\,\text{KL}}
+   - \newcommand{\der}{\,\text{d}}
+   - \newcommand*{\Alignyesnumber}{\refstepcounter{equation}\tag{\theequation}}%
+   #- \usepackage[top=1.5cm, bottom=1.5cm, outer=5cm, inner=2cm, heightrounded, marginparwidth=2.5cm, marginparsep=2cm]{geometry}
+   #- \usepackage{fontspec}
+   #-   \setmainfont{Arial}
+keep_tex: TRUE
+output:
+  pdf_document:
+    number_sections: true
+    keep_tex: true
+    toc: true
+    toc_depth: 2
+    #latex_engine: xelatex
+fontsize: 12pt
+urlcolor: blue
+---
+
+\begin{corollary}
+Let $\nu = \nu_1$ be a one-armed thresholding bandit model where $\tau$ is the threshold fixed upfront. Let $\nu$ be from the univariate canonical exponential family of distributions such that it can be parameterized by its mean, $\mu_1$, and the Kullback-Leibler divergence between distributions $\nu_1$ and $\nu_1'$ can be written as $\KL(\nu_1', \nu_1) = \KL(\mu_1', \mu_1)$. In the fixed budget setting, any consistent algorithm satisfies:
+
+$$
+\lim_{t \rightarrow \infty}- \frac{1}{t} \log p_t(\nu) \leq \KL(\tau, \mu_1)
+$$
+\end{corollary}
+
+**Proof**: The proof follows closely the proof of Theorem 

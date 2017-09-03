@@ -1,0 +1,116 @@
+---
+title: "Corollary"
+header-includes:
+   #- \documentclass[a4paper,twoside,english]{article}
+   - \usepackage[retainorgcmds]{IEEEtrantools}
+   - \usepackage{bm}
+   - \usepackage{amsmath}
+   - \usepackage{bbm}
+   - \usepackage{hyperref}
+   - \usepackage[lined,boxed]{algorithm2e}
+   - \newtheorem{theorem}{Theorem}
+   - \newtheorem{definition}{Definition}
+   - \newtheorem{lemma}{Lemma}
+   - \newtheorem{corollary}{Corollary}
+   - \newcommand{\KL}{\,\text{KL}}
+   - \newcommand{\der}{\,\text{d}}
+   - \newcommand*{\Alignyesnumber}{\refstepcounter{equation}\tag{\theequation}}%
+   #- \usepackage[top=1.5cm, bottom=1.5cm, outer=5cm, inner=2cm, heightrounded, marginparwidth=2.5cm, marginparsep=2cm]{geometry}
+   #- \usepackage{fontspec}
+   #-   \setmainfont{Arial}
+keep_tex: TRUE
+output:
+  pdf_document:
+    number_sections: true
+    keep_tex: true
+    toc: true
+    toc_depth: 2
+    #latex_engine: xelatex
+fontsize: 12pt
+urlcolor: blue
+---
+
+\begin{corollary}
+Let $\nu = \nu_1$ be a one-armed thresholding bandit model where $\tau$ is the threshold fixed upfront. Let $\nu$ be from the univariate canonical exponential family of distributions such that it can be parameterized by its mean, $\mu_1$, and the Kullback-Leibler divergence between distributions $\nu_1$ and $\nu_1'$ can be written as $\KL(\nu_1', \nu_1) = \KL(\mu_1', \mu_1)$. In the fixed budget setting, any consistent algorithm satisfies:
+
+$$
+- \frac{1}{t} \log p_t(\nu) \leq \KL(\tau, \mu_1)
+$$
+\end{corollary}
+
+**Proof**: The proof follows closely the proof of Theorem 12 in Kaufmann et al. (2016) and is again an application of their transportation Lemma, Lemma 2. 
+
+Consider the one-armed bandit problem, $K = 1$ with the canonical exponential family of distributions distribution $\nu_1$ parameterized by its mean $\mu_1$. Furthermore, given we are in the thresholding bandit problem, we have a threshold $\tau$ against which the arm is classified. Assume w.l.o.g. that for $\nu_1$, $\mu_1 \geq \tau$. Thus, $\mathcal{S}_{\tau}^* = \{1\}$. After $T$ rounds, a consistent algorithm returns with error probability $p_T(\nu)$ the guess $\hat{\mathcal{S}}_{\tau}$. Thus, we have for the event $A = (\hat{\mathcal{S}}_\tau = \{1\})$ the probability $\mathbb{P}_{\nu}(A)$. On the other hand, define the alternative model $\nu'$ with mean $\mu_1' < \tau$ such that the correct classification from $\nu$ is now wrong: $\mathcal{S}_{\tau}^* {'} = (\mathcal{S}_{\tau}^*)^C = \{\emptyset\}$. Consequently, since the algorithm is still consistent on this problem, we have that $\mathbb{P}_{\nu'}(A) = p_t(\nu')$. Thus, we expect that as we let $t$ increase, $\mathbb{P}_{\nu'}(A)$ will decrease while $\mathbb{P}_{\nu}(A)$ will increase.
+
+Indeed, given we consider only consistent algorithms, there should exist a number of samples for which the probability of the correct decision in problem $\nu$ is larger than the error probability in problem $\nu'$, that is: for every $\epsilon > 0$, there exists $t_0(\epsilon)$ such that for all $t \geq t_0(\epsilon)$ we have 
+
+\begin{equation*}
+\mathbb{P}_{\nu'}(A) \leq \epsilon \leq \mathbb{P}_{\nu}(A). \label{eq:BoundForCorollary}
+\end{equation*}
+
+Now, consider again Lemma 2 in Kaufmann et al. (2016). If we let the algorithm be such that $T = t$, we can apply the Lemma to the stopping time $\sigma = t$ a.s. and the event $A$ to get
+
+$$
+\mathbb{E}_{\nu'}[N_1(t)]\KL(\nu_1', \nu_1) \geq d(\mathbb{P}_{\nu'}(A), \mathbb{P}_{\nu}(A)).
+$$
+
+We can lower bound the RHS by using the bound on $\mathbb{P}_{\nu'}(A)$ given in \eqref{eq:BoundForCorollary} and the monotonicity of the binary relative entropy. We get:
+
+\begin{align*}
+\mathbb{E}_{\nu'}[N_1(t)]\KL(\nu_1', \nu_1) & = t \KL(\nu_1', \nu_1) \\
+& \geq d(\mathbb{P}_{\nu'}(A), \mathbb{P}_{\nu}(A)) \\
+& \geq d(\epsilon, 1- p_t(\nu)) \\
+& = \epsilon \log\Big(\frac{\epsilon}{1-p_t(\nu)}\Big) + (1-\epsilon) \log \Big(\frac{1-\epsilon}{p_t(\nu)}\Big) \\
+& \geq (1-\epsilon) \log \Big(\frac{1-\epsilon}{p_t(\nu)}\Big) + \epsilon \log(\epsilon) \\
+\end{align*}
+
+Letting $\epsilon \rightarrow 0$, we get
+
+$$
+t \KL(\nu_1', \nu_1) \geq \log \Big(\frac{1}{p_t(\nu)}\Big) = -\log p_t(\nu).
+$$
+To make the bound as tight as possible, we choose the alternative model that minimizes $\KL(\nu_1', \nu_1)$ while still ensuring that $\mathcal{S}_{\tau}^* {'} = \{\emptyset\}$. In our case of the thresholding bandit with univariate exponential family distributions, this is given by choosing $\mu_1' = \tau$. By pluggin in, we get the result:
+
+$$
+t \KL(\tau, \mu_1) \geq -\log p_t(\nu).
+$$
+
+\begin{corollary}
+Let $\nu = (\nu_1, ..., \nu_K)$ be a $K$-armed thresholding bandit problem in which $\tau$ is the threshold fixed upfront. For $i \in \{1,...,K\}$, let $\nu_i$ be from the univariate canonical exponential family of distributions such that it can be parameterized by its mean, $\mu_i$, and the Kullback-Leibler divergence between distributions $\nu_i$ and $\nu_i'$ can be written as $\KL(\nu_i, \nu_i') = \KL(\mu_i, \mu_i')$. In the fixed budget setting, every consistent algorithm satisfies:
+
+$$
+\lim_{t \rightarrow \infty} -\frac{1}{t} \log p_t(\nu) \leq \max_{a \in \{1,...,K\}} \KL(\tau, \mu_a)
+$$
+\end{corollary}
+
+**Proof**: The proof is very similar to the proof of the corollary for $K=1$. However, the alternative model needs more motivation than in the case of a single arm. But first, consider again that we are in the thresholding bandit problem with $K$ arms of univariate canonical exponential family distributions that are parameterized by their means $\mu_1, ..., \mu_K$ for the original problem $\nu = (\nu_1, ..., \nu_K)$. W.l.o.g, assume that all arms are above the threshold, that is, $\mu_1 \geq \tau, ..., \mu_K \geq \tau$. Then $\mathcal{S}_{\tau}^* = \{1, ... , K\}$. The correct classification returned after $t$ rounds is thus the event $A = (\hat{\mathcal{S}}_{\tau} = \{1, ..., K\})$. We can now consider Lemma 2. The RHS is maximized when the alternative model is chosen such that $d(\mathbb{P}_{\nu'}(A), \mathbb{P}_{\nu}(A))$ is maximized. Given the event $A$ as defined before, this is the case when $\mathbb{P}_{\nu'}(A)$ is as small as possible. For consistent algorithms, this is the case when $\nu'$ is chosen such that all $\mu_1' < \tau, ..., \mu_K' < \tau$. Then even classifying a single arm correctly under $\nu$ would lead to a mistake in $\nu'$. Consequently, $A$ is the most unlikely classification for a consistent algorithm for the problem $\nu'$. We thus expect for any consistent algorithm that $\mathbb{P}_{\nu}(A)$ becomes large and $\mathbb{P}_{\nu'}(A)$ becomes small as the number of observations $t$ increases. Again, for every $\epsilon > 0$, there exists $t_0(\epsilon)$ such that for all $t \geq t_0(\epsilon)$ we have $\mathbb{P}_{\nu'}(A) \leq \epsilon \leq \mathbb{P}_\nu(A)$. This allows us to now use Lemma 1 as previously:
+
+\begin{align*}
+\sum_{i=1}^K \mathbb{E}_{\nu'}[N_i(t)]\KL(\nu_i', \nu_i) & \geq \sum_{i=1}^K \mathbb{E}_{\nu'}[N_i(t)]\KL(\tau, \mu_i) \\
+& \geq d(\mathbb{P}_{\nu'}(A), \mathbb{P}_{\nu}(A)) \\
+& \geq d(\epsilon, 1-p_t(\nu)) \\
+& = \epsilon \log \Big(\frac{\epsilon}{1-p_t(\nu)}\Big) + (1-\epsilon) \log \Big( \frac{1-\epsilon}{p_t(\nu)}\Big) \\
+& \geq (1-\epsilon) \log \Big(\frac{1-\epsilon}{p_t(\nu)}\Big) + \epsilon \log(\epsilon)
+\end{align*}
+
+We let $\epsilon \rightarrow 0$, divide by $t$ and take the limsup on both sides as in Kaufmann et al. (2016):
+
+\begin{align*}
+\lim_{t \rightarrow \infty} \sup - \frac{1}{t} \log p_t(\nu) & \leq \lim_{t \rightarrow \infty} \sup \frac{1}{t} \sum_{i=1}^K \mathbb{E}_{\nu'}[N_i(t)]\KL(\tau, \mu_i) \\
+& \leq \max_{i \in \{1,...,K\}} \KL(\tau, \mu_i)
+\end{align*}
+
+Though, since for the alternative problem $\nu'$ we have for every $i \in \{1,...,K\}$ that $\mu_i = \tau$, it should hold for any consistent algorithm that $\mathbb{E}_{\nu'}[N_i(t)] = \frac{t}{K}$, that is, every arm receives an equal amount of the budget. In that case, the above equation simplifies to
+
+$$
+- \frac{1}{t} \log p_t(\nu) \leq \frac{1}{t} \sum_{i=1}^K \frac{t}{K}\KL(\tau, \mu_i) = \frac{\sum_{i=1}^{K} \KL(\tau, \mu_i)}{K},
+$$
+
+that is, the complexity is given by the simple average of the Kullback-Leibler distances of the threshold with regard to the respective distributions. This relates well to the lower bound that Kaufmann et al. (2016) describe in their Theorem 12 for consistent algorithms using *uniform* sampling strategies; in our case, however, it is explained by the fact that under the alternative model, every consistent algorithm should adapt to a uniform sampling strategy. Thus our bound holds for any consistent strategy.
+
+
+
+
+
+
+

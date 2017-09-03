@@ -1,0 +1,236 @@
+\documentclass[12pt,]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\PassOptionsToPackage{usenames,dvipsnames}{color} % color is loaded by hyperref
+\hypersetup{unicode=true,
+            pdftitle={Corollary},
+            colorlinks=true,
+            linkcolor=Maroon,
+            citecolor=Blue,
+            urlcolor=blue,
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{Corollary}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{}
+  \preauthor{}\postauthor{}
+  \date{}
+  \predate{}\postdate{}
+
+\usepackage[retainorgcmds]{IEEEtrantools}
+\usepackage{bm}
+\usepackage{amsmath}
+\usepackage{bbm}
+\usepackage{hyperref}
+\usepackage[lined,boxed]{algorithm2e}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newcommand{\KL}{\,\text{KL}}
+\newcommand{\der}{\,\text{d}}
+\newcommand*{\Alignyesnumber}{\refstepcounter{equation}\tag{\theequation}}%
+
+\begin{document}
+\maketitle
+
+{
+\hypersetup{linkcolor=black}
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\begin{corollary}
+Let $\nu = \nu_1$ be a one-armed thresholding bandit model where $\tau$ is the threshold fixed upfront. Let $\nu$ be from the univariate canonical exponential family of distributions such that it can be parameterized by its mean, $\mu_1$, and the Kullback-Leibler divergence between distributions $\nu_1$ and $\nu_1'$ can be written as $\KL(\nu_1', \nu_1) = \KL(\mu_1', \mu_1)$. In the fixed budget setting, any consistent algorithm satisfies:
+
+$$
+- \frac{1}{t} \log p_t(\nu) \leq \KL(\tau, \mu_1)
+$$
+\end{corollary}
+
+\textbf{Proof}: The proof follows closely the proof of Theorem 12 in
+Kaufmann et al. (2016) and is again an application of their
+transportation Lemma, Lemma 2.
+
+Consider the one-armed bandit problem, \(K = 1\) with the canonical
+exponential family of distributions distribution \(\nu_1\) parameterized
+by its mean \(\mu_1\). Furthermore, given we are in the thresholding
+bandit problem, we have a threshold \(\tau\) against which the arm is
+classified. Assume w.l.o.g. that for \(\nu_1\), \(\mu_1 \geq \tau\).
+Thus, \(\mathcal{S}_{\tau}^* = \{1\}\). After \(T\) rounds, a consistent
+algorithm returns with error probability \(p_T(\nu)\) the guess
+\(\hat{\mathcal{S}}_{\tau}\). Thus, we have for the event
+\(A = (\hat{\mathcal{S}}_\tau = \{1\})\) the probability
+\(\mathbb{P}_{\nu}(A)\). On the other hand, define the alternative model
+\(\nu'\) with mean \(\mu_1' < \tau\) such that the correct
+classification from \(\nu\) is now wrong:
+\(\mathcal{S}_{\tau}^* {'} = (\mathcal{S}_{\tau}^*)^C = \{\emptyset\}\).
+Consequently, since the algorithm is still consistent on this problem,
+we have that \(\mathbb{P}_{\nu'}(A) = p_t(\nu')\). Thus, we expect that
+as we let \(t\) increase, \(\mathbb{P}_{\nu'}(A)\) will decrease while
+\(\mathbb{P}_{\nu}(A)\) will increase.
+
+Indeed, given we consider only consistent algorithms, there should exist
+a number of samples for which the probability of the correct decision in
+problem \(\nu\) is larger than the error probability in problem
+\(\nu'\), that is: for every \(\epsilon > 0\), there exists
+\(t_0(\epsilon)\) such that for all \(t \geq t_0(\epsilon)\) we have
+
+\begin{equation*}
+\mathbb{P}_{\nu'}(A) \leq \epsilon \leq \mathbb{P}_{\nu}(A). \label{eq:BoundForCorollary}
+\end{equation*}
+
+Now, consider again Lemma 2 in Kaufmann et al. (2016). If we let the
+algorithm be such that \(T = t\), we can apply the Lemma to the stopping
+time \(\sigma = t\) a.s. and the event \(A\) to get
+
+\[
+\mathbb{E}_{\nu'}[N_1(t)]\KL(\nu_1', \nu_1) \geq d(\mathbb{P}_{\nu'}(A), \mathbb{P}_{\nu}(A)).
+\]
+
+We can lower bound the RHS by using the bound on
+\(\mathbb{P}_{\nu'}(A)\) given in \eqref{eq:BoundForCorollary} and the
+monotonicity of the binary relative entropy. We get:
+
+\begin{align*}
+\mathbb{E}_{\nu'}[N_1(t)]\KL(\nu_1', \nu_1) & = t \KL(\nu_1', \nu_1) \\
+& \geq d(\mathbb{P}_{\nu'}(A), \mathbb{P}_{\nu}(A)) \\
+& \geq d(\epsilon, 1- p_t(\nu)) \\
+& = \epsilon \log\Big(\frac{\epsilon}{1-p_t(\nu)}\Big) + (1-\epsilon) \log \Big(\frac{1-\epsilon}{p_t(\nu)}\Big) \\
+& \geq (1-\epsilon) \log \Big(\frac{1-\epsilon}{p_t(\nu)}\Big) + \epsilon \log(\epsilon) \\
+\end{align*}
+
+Letting \(\epsilon \rightarrow 0\), we get
+
+\[
+t \KL(\nu_1', \nu_1) \geq \log \Big(\frac{1}{p_t(\nu)}\Big) = -\log p_t(\nu).
+\] To make the bound as tight as possible, we choose the alternative
+model that minimizes \(\KL(\nu_1', \nu_1)\) while still ensuring that
+\(\mathcal{S}_{\tau}^* {'} = \{\emptyset\}\). In our case of the
+thresholding bandit with univariate exponential family distributions,
+this is given by choosing \(\mu_1' = \tau\). By pluggin in, we get the
+result:
+
+\[
+t \KL(\tau, \mu_1) \geq -\log p_t(\nu).
+\]
+
+\begin{corollary}
+Let $\nu = (\nu_1, ..., \nu_K)$ be a $K$-armed thresholding bandit problem in which $\tau$ is the threshold fixed upfront. For $i \in \{1,...,K\}$, let $\nu_i$ be from the univariate canonical exponential family of distributions such that it can be parameterized by its mean, $\mu_i$, and the Kullback-Leibler divergence between distributions $\nu_i$ and $\nu_i'$ can be written as $\KL(\nu_i, \nu_i') = \KL(\mu_i, \mu_i')$. In the fixed budget setting, every consistent algorithm satisfies:
+
+$$
+\lim_{t \rightarrow \infty} -\frac{1}{t} \log p_t(\nu) \leq \max_{a \in \{1,...,K\}} \KL(\tau, \mu_a)
+$$
+\end{corollary}
+
+\textbf{Proof}: The proof is very similar to the proof of the corollary
+for \(K=1\). However, the alternative model needs more motivation than
+in the case of a single arm. But first, consider again that we are in
+the thresholding bandit problem with \(K\) arms of univariate canonical
+exponential family distributions that are parameterized by their means
+\(\mu_1, ..., \mu_K\) for the original problem
+\(\nu = (\nu_1, ..., \nu_K)\). W.l.o.g, assume that all arms are above
+the threshold, that is, \(\mu_1 \geq \tau, ..., \mu_K \geq \tau\). Then
+\(\mathcal{S}_{\tau}^* = \{1, ... , K\}\). The correct classification
+returned after \(t\) rounds is thus the event
+\(A = (\hat{\mathcal{S}}_{\tau} = \{1, ..., K\})\). We can now consider
+Lemma 2. The RHS is maximized when the alternative model is chosen such
+that \(d(\mathbb{P}_{\nu'}(A), \mathbb{P}_{\nu}(A))\) is maximized.
+Given the event \(A\) as defined before, this is the case when
+\(\mathbb{P}_{\nu'}(A)\) is as small as possible. For consistent
+algorithms, this is the case when \(\nu'\) is chosen such that all
+\(\mu_1' < \tau, ..., \mu_K' < \tau\). Then even classifying a single
+arm correctly under \(\nu\) would lead to a mistake in \(\nu'\).
+Consequently, \(A\) is the most unlikely classification for a consistent
+algorithm for the problem \(\nu'\). We thus expect for any consistent
+algorithm that \(\mathbb{P}_{\nu}(A)\) becomes large and
+\(\mathbb{P}_{\nu'}(A)\) becomes small as the number of observations
+\(t\) increases. Again, for every \(\epsilon > 0\), there exists
+\(t_0(\epsilon)\) such that for all \(t \geq t_0(\epsilon)\) we have
+\(\mathbb{P}_{\nu'}(A) \leq \epsilon \leq \mathbb{P}_\nu(A)\). This
+allows us to now use Lemma 1 as previously:
+
+\begin{align*}
+\sum_{i=1}^K \mathbb{E}_{\nu'}[N_i(t)]\KL(\nu_i', \nu_i) & \geq \sum_{i=1}^K \mathbb{E}_{\nu'}[N_i(t)]\KL(\tau, \nu_i) \\
+& \geq d(\mathbb{P}_{\nu'}(A), \mathbb{P}_{\nu}(A)) \\
+& \geq d(\epsilon, 1-p_t(\nu)) \\
+& = \epsilon \log \Big(\frac{\epsilon}{1-p_t(\nu)}\Big) + (1-\epsilon) \log \Big( \frac{1-\epsilon}{p_t(\nu)}\Big) \\
+& \geq (1-\epsilon) \log \Big(\frac{1-\epsilon}{p_t(\nu)}\Big) + \epsilon \log(\epsilon)
+\end{align*}
+
+We let \(\epsilon \rightarrow 0\), divide by \(t\) and take the limsup
+on both sides as in Kaufmann et al. (2016):
+
+\begin{align*}
+\lim_{t \rightarrow \infty} \sup - \frac{1}{t} \log p_t(\nu) & \leq \lim_{t \rightarrow \infty} \sup \frac{1}{t} \sum_{i=1}^K \mathbb{E}_{\nu'}[N_i(t)]\KL(\tau, \nu_i) \\
+& \leq \max_{i \in \{1,...,K\}} \KL(\tau, \nu_i)
+\end{align*}
+
+
+\end{document}

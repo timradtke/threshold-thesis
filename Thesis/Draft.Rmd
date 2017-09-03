@@ -11,6 +11,7 @@ header-includes:
    - \newtheorem{theorem}{Theorem}
    - \newtheorem{definition}{Definition}
    - \newtheorem{lemma}{Lemma}
+   - \newtheorem{corollary}{Corollary}
    - \newcommand{\KL}{\,\text{KL}}
    - \newcommand{\der}{\,\text{d}}
    - \newcommand*{\Alignyesnumber}{\refstepcounter{equation}\tag{\theequation}}%
@@ -127,15 +128,16 @@ As we see in algorithm \ref{alg:APT}, the APT algorithm initiates by pulling eac
 \SetKwFunction{Union}{Union}\SetKwFunction{FindCompress}{FindCompress}
 \SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
 \Input{$\tau$, $\epsilon$}
-\Output{$\hat{S}_{\tau} = \{k: \hat{\mu}_k(T) \geq \tau\}$}
+\Output{$\hat{S}_{\tau} = \{i \in \{1,...,K\}, \hat{\mu}_i(T) \geq \tau\}$}
 \BlankLine
 \emph{Pull each arm once}\;
 \For{$t = K+1$ \KwTo $T$}{
-  \emph{Pull arm $I_t = \arg \min_{k\leq K} B_k^{APT}(t) = \sqrt{T_k(t)} (|\hat{\mu}_i(t) - \tau|+\epsilon)$}\;
-  \emph{Observe reward $X \sim \nu_{I_t}$}\;
+  \emph{Pull arm $I_t = \arg \min_{i \in A} B_i^{APT}(t) = \arg \min_{i \in A} \sqrt{T_i(t)} (|\hat{\mu}_i(t) - \tau|+\epsilon)$}\;
+  \emph{Observe reward $X_t \sim \nu_{I_t}$}\;
 }
 \caption{Anytime Parameter-free Thresholding Algorithm (Locatelli et al., 2016)}\label{alg:APT}
-\end{algorithm}\DecMargin{1em}
+\end{algorithm}
+\DecMargin{1em}
 
 Just like the general index policies mentioned in \autoref{sec:Setup}, we see that the APT algorithm adapts its strategy using an index $B_i(t+1)$ for each arm that is based entirely on the observations observed until time $t$. Given the arm with the smallest index is pulled at round $t+1$, we observe that arms that are estimated to be further away from the threshold $\tau$ as measured by the absolute distance to their empirical mean $\hat{\mu}_i$, $\hat{\Delta}_i(t)$, are pulled less often. Intuitively, it is easier to classify arms as below or above $\tau$ when their mean is far away from the threshold. In contrast to the uniform sampling strategy, APT will gather more evidence for arms which appear to be inherently more difficult to classify. Likewise, APT tends to pull arms less often which it already pulled considerably often as measured by $T_i(t)$. If arm $i$ has been pulled more often than arm $j$, then we should in general be more confident in its estimated mean and the corresponding distance to the threshold. If we are confident in $i$, then it is better to explore other arms by drawing an observation from arm $j$. By adapting its sampling strategy in this way during the sequential sampling process, the APT algorithm minimizes the probability of error $\mathbb{E}[\mathcal{L}(T)]$ after $T$ samples have been observed.
 
@@ -180,18 +182,18 @@ In order to upper bound the expected loss of the APT algorithm, we want to defin
 
 As noted in Zhong et al. (2017), a simple requirement to correctly classify arms at the final round is the following. For every arm $i \in \{1, ..., K\}$ after the final round $T$, require
 $$
-\hat{\mu}_{i,T_i(n)} \geq \mu_i - \frac{\mu_i - \tau + \epsilon}{2} \quad \text{if} \quad \mu_i \geq \tau
+\hat{\mu}_{i}(T) \geq \mu_i - \frac{\mu_i - \tau + \epsilon}{2} \quad \text{if} \quad \mu_i \geq \tau
 $$
 or
 $$
-\hat{\mu}_{i,T_i(n)} \leq \mu_i + \frac{\tau - \mu_i + \epsilon}{2} \quad \text{if} \quad \mu_i < \tau
+\hat{\mu}_{i}(T) \leq \mu_i + \frac{\tau - \mu_i + \epsilon}{2} \quad \text{if} \quad \mu_i < \tau
 $$
 Or simply in terms of the gap between the arm and the threshold as used in the index by the APT algorithm:
 $$
-| \hat{\mu}_{i, T_i(n)} - \mu_i | \leq \frac{|\mu_i - \tau| + \epsilon}{2} = \frac{\Delta_i}{2}.
+| \hat{\mu}_{i}(T) - \mu_i | \leq \frac{|\mu_i - \tau| + \epsilon}{2} = \frac{\Delta_i}{2}.
 $$
 
-Intuitively, this condition makes sense as it ensures that the current mean estimate is closer to the true mean than to the threshold. Consequently, there is no arrangement possible in which the arm is classified wrong while the separation condition holds. Assuming $\mu_i < \tau$ and $\epsilon = 0$, an incorrect classification would require $\mu_i < \tau \leq \hat{\mu_i}$. But then  $| \hat{\mu}_{i, T_i(n)} - \mu_i | \geq |\mu_i - \tau|$, which violates the separation condition.
+Intuitively, this condition makes sense as it ensures that the current mean estimate is closer to the true mean than to the threshold. Consequently, there is no arrangement possible in which the arm is classified wrong while the separation condition holds. Assuming $\mu_i < \tau$ and $\epsilon = 0$, an incorrect classification would require $\mu_i < \tau \leq \hat{\mu_i}$. But then  $| \hat{\mu}_{i}(T) - \mu_i | \geq |\mu_i - \tau|$, which violates the separation condition.
 
 Thus, we need to show that this condition holds for every arm $i \in \{1,...,K\}$ with large probability after the final round $T$. In different words, we need to derive an upper bound on the probability with which this condition does not hold.
 
@@ -293,13 +295,13 @@ This is a contradiction, since as an requirement to the algorithm we have that $
 
 Furthermore, we have assumed $T>2K$ in the statement of Theorem \ref{theorem:LocatelliTheorem4}. Plugging this in gives 
 $$
-T_k(T) - 1 \geq \frac{(T-K)h_k}{H} \geq \frac{(T-1/2T)h_k}{H} = \frac{Th_i}{2H}
+T_k(T) - 1 \geq \frac{(T-K)h_k}{H} \geq \frac{(T-1/2T)h_k}{H} = \frac{Th_k}{2H}
 $$ 
 
 Now we know how often the arm has been pulled at the very end. That does not mean that $k$ has been pulled at time $T$. Thus we consider the time $t \leq T$ at which arm $k$ is pulled for the last time. We get
 
 $$
-T_k(t) \geq T_k(T) - 1 \geq \frac{Th_i}{2H}.
+T_k(t) \geq T_k(T) - 1 \geq \frac{Th_k}{2H}.
 $$
 
 This gives us a lower bound on how often arms are pulled that are pulled frequently relative to their contribution to the problem complexity. Now we need a lower bound on $T_i(T)$ for every other arm $i$.
@@ -386,7 +388,7 @@ $$
 We have seen that on the favorable event $\xi$, which holds with large probability $\mathbb{P}(\xi)$, the separation condition holds as all arms have been pulled a sufficient number of times, such that their estimated mean is close to the true mean. All arms are classified correctly, and the algorithm does not suffer a loss. On the other hand, we make an error whenever the favorable event does not hold after all; that is, the deviation bound for the mean does not hold. At least one arm is misclassified and the arm suffers a loss. This occurs with probability $1-\mathbb{P}(\xi)$. Consequently, the expected loss is upper bounded by
 
 $$
-\mathbb{E}[L] = 1 - \mathbb{P}(\xi) \leq 2(\log(T)+1)K \exp(-\frac{1}{64R^2}\frac{T}{H}).
+\mathbb{E}[\mathcal{L}(T)] = 1 - \mathbb{P}(\xi) \leq 2(\log(T)+1)K \exp(-\frac{1}{64R^2}\frac{T}{H}).
 $$
 
 We now present the lower bound given in Locatelli et al. (2016) for the thresholding bandit problem. In order to derive the bound, a problem is specified to show that the error of the lower bound is attained even in this specific problem. In particular, for a set of problems with Gaussian distributions of variance $1$, the largest probability of error on these problems that the best algorithm exhibits is still at least as large as the lower bound.
@@ -505,7 +507,7 @@ In order to give more intuition to why that is the case, and in what ways inform
 
 Instead of the thresholding bandit problem, Kaufmann et al. (2016) consider the problem of identifying the best $m$ out of $K$ arms, that is, the Top-$m$ problem. They describe their a bandit model $\nu$ also by $K$ arms characterized by probability distributions $\nu_a$, $a \in \{1,...,K\}$ with mean $\mu_a$. As before, a learner decides at any time step $t=1,2,...,$ an arm $A_t \in \{1,...,K\}$ for which he observes the independent reward $Z_{t} \sim \nu_{A_t}$. The learner aims to find the $m$ out of $K$ arms with the largest expected reward. This set of arm indices is denoted by $\mathcal{S}_m^*$. Kaufmann et al. write the in decreasing order sorted means $(\mu_{1}, ..., \mu_{K})$ as the K-tuple $(\mu_{[1]}, ..., \mu_{[K]})$. Based on this, they require that $\mu_{[m]} > \mu_{[m+1]}$ such that the solution $\mathcal{S}_m^*$ is unique. The class of bandit problems $\nu$ for which the latter condition holds is called $\mathcal{M}_m$ by Kaufmann et al. At the end of the sampling procedure, after $T$ samples (denoted by $\tau$ in Kaufmann et al.) the learner is required to return a classification $\hat{\mathcal{S}}_m$. This classification is then evaluated by the loss function $\mathcal{L}(T) = \mathbb{I}(\mathcal{S}^*_m \neq \hat{\mathcal{S}}_m)$. This binary loss is of course very similar to the loss in the thresholding bandit problem. We can now define a strategy of the learner as $\mathcal{A} = ((A_t), T, \hat{\mathcal{S}}_m)$: The strategy defines how he chooses an arm, how many samples are observed, and how the arms are classified in the end.
 
-When introducing the thresholding bandit setting, we did not mention the fact that the budget $T$ does not need to be fixed upfront. Indeed, the setting in which the budget is *not* fixed upfront might be more popular among the best arm identification and top-$m$ literature. This setting is called *fixed-confidence*, while the setting we considered so far is called *fixed-budget*. In the fixed-budget setting, we run algorithms for $T$ samples and then compare them based on their expected loss, $\mathbb{E}[\mathcal{L}(T)] = \mathbb{P}(\mathcal{S}^*_m \neq \hat{\mathcal{S}}_m) =: p_t(\nu)$ as we have seen in $\autoref{sec:Setup}$. Alternatively, consider a $\delta$-PAC strategy $\mathcal{A}(\delta)$for which holds for every problem $\nu \in \mathcal{M}_m$ that the classification holds at least with confidence level $1-\delta$, that is, $\mathbb{P}(\mathcal{S}^*_m = \hat{\mathcal{S}}_m) \geq 1-\delta$. The strategy has to achieve this level of confidence in its prediction before it is allowed to stop sampling. This is the fixed-confidence case, in which the budget $T$ is no longer fixed upfront, but becomes a random variable. We compare algorithms by their expected number of draws $\mathbb{E}_{\nu}[T_{\delta}]$ and prefer those which arrive at the confidence level $1-\delta$ with a smaller expected budget.
+When introducing the thresholding bandit setting, we did not mention the fact that the budget $T$ does not need to be fixed upfront. Indeed, the setting in which the budget is *not* fixed upfront might be more popular among the best arm identification and top-$m$ literature. This setting is called *fixed confidence*, while the setting we considered so far is called *fixed budget*. In the fixed budget setting, we run algorithms for $T$ samples and then compare them based on their expected loss, $\mathbb{E}[\mathcal{L}(T)] = \mathbb{P}(\mathcal{S}^*_m \neq \hat{\mathcal{S}}_m) =: p_t(\nu)$ as we have seen in $\autoref{sec:Setup}$. Alternatively, consider a $\delta$-PAC strategy $\mathcal{A}(\delta)$for which holds for every problem $\nu \in \mathcal{M}_m$ that the classification holds at least with confidence level $1-\delta$, that is, $\mathbb{P}(\mathcal{S}^*_m = \hat{\mathcal{S}}_m) \geq 1-\delta$. The strategy has to achieve this level of confidence in its prediction before it is allowed to stop sampling. This is the fixed confidence case, in which the budget $T$ is no longer fixed upfront, but becomes a random variable. We compare algorithms by their expected number of draws $\mathbb{E}_{\nu}[T_{\delta}]$ and prefer those which arrive at the confidence level $1-\delta$ with a smaller expected budget.
 
 Following Kaufmann et al. (2016), in the fixed confidence setting, a family of strategies $A = (\mathcal{A}(\delta))_{\delta \in (0,1)}$ is called PAC if for every $\delta$, $\mathcal{A}(\delta)$ is $\delta$-PAC. On the other hand, in the fixed budget setting, a family of strategies $A = (\mathcal{A}(t))_{t \in \mathbb{N}}$ is called consistent if $p_t(\nu) \rightarrow 0$ as $t \rightarrow \infty$ for every problem $\nu \in \mathcal{M}_m$.
 
@@ -521,9 +523,9 @@ Let $\nu \in \mathcal{M}_m$, where $\mathcal{M}_m$ is the set of uniquely identi
 where $\der(x,y) := x \log(x/y) + (1-x) \log((1-x)/(1-y))$ is the binary relative entropy, with the convention that $\der(0,0) = \der(1,1) = 0$.
 \end{theorem}
 
-To prove this statement, we assume as before that the arms are ordered by their means decreasing in size. For a given $\delta$-PAC algorithm $\mathcal{A} = ((A_t), \tau, \hat{S}_m)$, and under the continuity conditions (compare Kaufmann et al. (2016)), there exists for every arm $a \in \{1, \dots, K\}$ an alternative model $\nu' = (\nu_1, \dots, \nu_{a-1}, \nu_a', \nu_{a+1}, \dots, \nu_K)$. In this alternative model, only arm $a$ is modified in accordance with the continuity conditions. Modified in such a way, the arm $\nu_{m+1}$ is now closer to $\nu_a$ as measured by the Kullback-Leibler divergence than $\nu_a'$ is to $\nu_a$, if $\mu_a > \mu_{m+1}$ (consequently, $\mu_a' < \mu_{m+1}$). On the other hand, if $\mu_a < \mu_{m}$, then $\nu_a'$ will be moved away from $\nu_a$ just enough so that $\nu_a$ is closer to $\nu_m$ than to $\nu_a'$ (consequently, $\mu_a' > \mu_m$). These changes in distribution make the original set of optimal arms, $\{1,\dots,m\}$, no longer optimal under the alternative model $\nu'$. Given that the algorithm returns $\hat{S}_m$, we know that for the event $\mathcal{E} = (\hat{S}_m = \{1, \dots, m\})$ (which is element of the $\sigma$-Algebra $\mathcal{F}_{\tau}$ induced by the stopping time $\tau$), that $\mathbb{P}_{\nu}(\mathcal{E}) \geq 1-\delta$ and $\mathbb{P}_{\nu'}(\mathcal{E}) \leq \delta$ (because fixed confidence $\delta$!).
+To prove this statement for a given $\delta$-PAC algorithm $\mathcal{A}$, we assume certain continuity conditions (compare Kaufmann et al. (2016)), with which there exists for every arm $a \in \{1, \dots, K\}$ an alternative model $\nu' = (\nu_1, \dots, \nu_{a-1}, \nu_a', \nu_{a+1}, \dots, \nu_K)$. In this alternative model, in accordance with the continuity conditions, only arm $a$ is modified. After the modification, the arm $\nu_{m+1}$ is now closer to $\nu_a$ as measured by the Kullback-Leibler divergence than $\nu_a'$ is to $\nu_a$, if $\mu_a > \mu_{m+1}$ (consequently, $\mu_a' < \mu_{m+1}$). On the other hand, if $\mu_a < \mu_{m}$, then $\nu_a'$ will be moved away from $\nu_a$ just enough so that $\nu_a$ is closer to $\nu_m$ than to $\nu_a'$ (consequently, $\mu_a' > \mu_m$). These changes in distribution make the original set of optimal arms, $\{1,\dots,m\}$, no longer optimal under the alternative model $\nu'$. To compare this to the thresholding bandit problem, assume that arms $\nu_{m}$ and $\nu_{m+1}$ indirectly define a threshold $\tau \in (\mu_{m+1},\mu_m)$. Then, by creating an alternative problem as described here, we flip arm $a$ around the implied threshold $\tau$ (compare the lower bound proof in \autoref{sec:AppendixAPTLB}).
 
-To now give the lower bound on the expected number of samples, $\mathbb{E}_{\nu}[\tau]$, we employ the general Lemma given by the authors for such changes in distribution in bandit models.
+Given that the strategy returns $\hat{S}_m$, we know that for the event $\mathcal{E} = (\hat{S}_m = \{1, \dots, m\})$ (which is element of the $\sigma$-Algebra $\mathcal{F}_{T}$ induced by the stopping time $T$), that $\mathbb{P}_{\nu}(\mathcal{E}) \geq 1-\delta$ and $\mathbb{P}_{\nu'}(\mathcal{E}) \leq \delta$ (because fixed confidence $\delta$!). To now give the lower bound on the expected number of samples, $\mathbb{E}_{\nu}[\tau]$, we employ the general Lemma given by the authors for such changes in distribution in bandit models.
 
 \begin{lemma}[Kaufmann et al., 2016] \label{theorem:KaufmannEtAlLemma1}
 Let $\nu$ and $\nu'$ be two bandit models with $K$ arms such that for all $a$, the distributions $\nu_a$ and $\nu_a'$ are mutually absolutely continuous. For any almost-surely finite stopping time $\sigma$ with respect to $(\mathcal{F}_t)$,
@@ -550,70 +552,60 @@ and
 We can then let $\alpha \to 0$, sum the bounds on the individual arms to get the bound on the overall number of draws:
 
 \begin{equation*}
-\mathbb{E}_{\nu}[\tau] = \sum_{a=1}^K \mathbb{E}_{\nu}[N_a] \geq \Big( \sum_{a \in \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m+1]})} + \sum_{a \notin \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m]})} \Big) \der(1-\delta, \delta)
+\mathbb{E}_{\nu}[T] = \sum_{a=1}^K \mathbb{E}_{\nu}[N_a] \geq \Big( \sum_{a \in \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m+1]})} + \sum_{a \notin \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m]})} \Big) \der(1-\delta, \delta)
 \end{equation*}
 
-Given that we will be naturally interested in either very high or very low confidence of our algorithm, that is, $P_\nu(\mathcal{E})$ is either close to 0 or 1, it is possible to use the following approximation to the binary relative entropy:
+Given that we will be naturally interested in either very high or very low confidence of our algorithm, that is, $P_\nu(\mathcal{E})$ is either close to 0 or 1, it is possible to use the following approximation to the binary relative entropy given in Kaufmann et al. (2016):
 
 \begin{equation}\label{bre_approx}
-\forall x \in [0,1], \quad \der(x,1-x) = \der(1-x,x) \geq \log \frac{1}{2.4x}
+\forall x \in [0,1], \quad \der(x,1-x) = \der(1-x,x) \geq \log \frac{1}{2.4x}.
 \end{equation}
 
-And so the final lower bound can be written as
+This allows us to write the lower bound on the expected stopping time as:
 
 \begin{equation*}
-\mathbb{E}_{\nu}[\tau] \geq \Big( \sum_{a \in \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m+1]})} + \sum_{a \notin \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m]})} \Big) \log \big(\frac{1}{2.4\delta} \big).
+\mathbb{E}_{\nu}[T] \geq \Big( \sum_{a \in \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m+1]})} + \sum_{a \notin \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m]})} \Big) \log \big(\frac{1}{2.4\delta} \big).
 \end{equation*}
 
-```{r, echo = FALSE}
-x <- seq(0,1,by = 0.001)
-bre <- function(x) x * log(x/(1-x)) + (1-x) * log((1-x)/x)
-plot(x,bre(x), type = "l", ylab = "Binary Relative Entropy")
-lines(x, log(1/(2.4*x)), col = "red")
-abline(v = 0.15, lty = 2)
-```
+Given this lower bound, it becomes clear that the complexity of the top-$m$ problem can be lower bounded by the Kullback-Leibler divergence between arms and the implied threshold between the $m$-th best arm and the $(m+1)$-th best arm. After all, the latter gives a lower bound on the effort (in terms of expected number of samples) required to achieve a certain confidence level. And a problem that requires a larger effort can be described as more complex. Indeed, in the case of fixed confidence problems, Kaufmann et al. (2016) describe problems as having a larger *sampling complexity*.
 
-Given this general lower bound for the sampling complexity, or expected number of draws, it makes sense to define the complexity of a Top-$m$ bandit problem using the Kullback-Leibler divergence. After all, besides the number of arms and the experimenter-chosen confidence, it is just how close arms are with respect to each other in terms of Kullback-Leibler divergence that influences the sampling complexity.
-
-Thus, following Kaufmann et al. (2016), define the complexity $\kappa_C(\nu)$ for the fixed confidence setting as
+Following Kaufmann et al. (2016), we can now define the complexity $\kappa_C(\nu)$ for the fixed confidence setting as
 
 \begin{equation}
-\kappa_C(\nu) = \inf_{A \, \text{PAC}} \lim_{\delta \to 0} \sup \frac{\mathbb{E}_{\nu}[\tau_{\delta}]}{\log \frac{1}{\delta}}.
+\kappa_C(\nu) = \inf_{A \, \text{PAC}} \lim_{\delta \to 0} \sup \frac{\mathbb{E}_{\nu}[T{\delta}]}{\log \frac{1}{\delta}}. \label{eq:KappaC}
 \end{equation}
 
-By plugging in the lower bound on the sampling complexity, we arrive at a complexity measure that depends only on the Kullback-Leibler measuring for each arm how far it is away from the border between the two groups of arms. To see this, consider the lower bound on the complexity measure given in Kaufmann et al. (2016):
+This definition makes sense if we consider the fact that the confidence level $\delta$ is experimenter chosen and thus not relevant in describing the complexity. Thus, by including $\log(1/\delta)$ explicitly in \eqref{eq:KappaC}, we get rid of the confidence term in the lower bound on $\mathbb{E}_{\nu}[T]$ after plugging it into \eqref{eq:KappaC}. We arrive at the lower bound on the complexity measure given in Kaufmann et al. (2016):
 
 \begin{equation*}
 \kappa_C(\nu) \geq \sum_{a \in \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m+1]})} + \sum_{a \notin \mathcal{S}_m^*} \frac{1}{\KL(\nu_a, \nu_{[m]})}
 \end{equation*}
 
-Given this description, we can already note that an intuitive extension of this complexity notion to the thresholding bandit problem might involve replacing $\mu_{[m]}$ and $\mu_{[m+1]}$ by the actual threshold $\tau$ (notation in Locatelli et al.) that divides the group above the threshold from the group below the threshold. In this sense, the previously used $\alpha$ is similar to the $\epsilon$ used in Locatelli et al. (2016).
+Given this description, we would expect that a complexity measure in a fixed confidence thresholding bandit probem might involve replacing $\mu_{[m]}$ and $\mu_{[m+1]}$ by the actual threshold $\tau$ that divides the group above the threshold from the group below the threshold.
 
-Before we get to an extension of the thresholding bandit problem, however, at least two important steps remain. First, we need to define a complexity for the fixed budget problem. Second, we need to create algorithms that can match the lower bound.
-
-Kaufmann et al. are able to provide a bound on their complexity measure in the fixed budget case, however only in the case of **two-armed** bandit models. As demanded in their paper, a fixed-budget algorithm is called consistent if the failure probability $p_t(\nu) := \mathbb{P}_{\nu}(\hat{S}_m \neq S^*_m)$ tends to zero as the number of samples goes to infinity. Also, define the complexity in the fixed-budget setting as follows:
+However, given the problem formulation in Locatelli et al. (2016), we are mainly interested in complexity measures and algorithms for the fixed budget setting. As we will see now, the results of Kaufmann et al. (2016) are more limited for this case. While the authors are able to provide a bound on their complexity measure in the fixed budget case, it only applies to the case of *two-armed* bandit models. Consider a consistent fixed budget strategy $\mathcal{A}$ ($p_t(\nu)$ tends to zero as $t \rightarrow \infty$), and define the complexity in the fixed budget setting as follows:
 
 \begin{equation}
 \kappa_B(\nu) = \inf_{A \, \text{consistent}} \big(\lim_{t \to \infty} \sup - \frac{1}{t} \log p_t(\nu)\big)^{-1}.
 \end{equation}
 
-Given this definition, one can interpret the bound given in Theorem 12 of Kaufmann et al. directly as a lower bound on the complexity $\kappa_B(\nu)$ (note the inverse).
+While we included the experimenter-fixed $\delta$ in the definition of $\kappa_C$, we now include the experimenter-fixed $T$ in the definition of $\kappa_B$ to disregard it in the complexity measure after plugging in the lower bound on $p_t(\nu)$. The resulting lower bound given in Theorem 12 of Kaufmann et al. (2016):
 
 \begin{theorem}[Theorem 12, Kaufmann et al., 2016] \label{theorem:KaufmannEtAlTheorem12}
-Let $\nu = (\nu_1, \nu_2)$ be a two-armed bandit model such that $\mu_1 > \mu_2$. In the fixed-budget setting, any consistent algorithm satisfies:
+Let $\nu = (\nu_1, \nu_2)$ be a two-armed bandit model such that $\mu_1 > \mu_2$. In the fixed budget setting, any consistent algorithm satisfies:
 
 \begin{equation*}
 \lim_{t \to \infty} \sup - \frac{1}{t} \log p_t(\nu) \leq \inf_{(\nu_1', \nu_2') \in \mathcal{M}: \mu_1' < \mu_2'} \frac{\KL(\nu_1', \nu_1) + \KL(\nu_2', \nu_2)}{2}
 \end{equation*}
 \end{theorem}
 
-For a proof, consider first the two different bandit models, $\nu$ and $\nu'$, where we fix without loss of generality that $a^* = 1$ is the best arm in $\nu$, while $a^* = 2$ in $\nu'$. Note that in this case we don't necessarily try to fool the algorithm by a change of distribution. Indeed, we want the algorithm $\mathcal{A}$ to be consistent for both problems. Since we are in the fixed-budget setting, the stopping time is fixed at $\tau = t$. Even though the correct decision differs between the two problems, we focus on the event $A = (\hat{S}_1 = 1)$. Given the formulation in Kaufmann et al. (2016), we have $A \in \mathcal{F}_t = \mathcal{F}_{\tau}$. Now, we can apply Lemma 1 as before, as it in essense gives a measure of how different two bandit models are. Here, we want to know how different $\nu$ is from $\nu'$, and so, given we have only two arms,
+For a proof, consider first the two different bandit models, $\nu$ and $\nu'$, where we fix w.l.o.g. $a^* = 1$ as the best arm in $\nu$, while $a^* = 2$ in $\nu'$. Note that in this case we don't necessarily try to fool the algorithm by a change of distribution. Indeed, we want the algorithm $\mathcal{A}$ to be consistent for both problems. Since we are in the fixed budget setting, the stopping time is fixed at $T = t$. Even though the correct decision differs between the two problems, we focus on the event $A = (\hat{S}_1 = 1)$. Now, we can apply Lemma 1 as before, as it in essence gives a measure of how different two bandit models are. Here, we want to know how different $\nu$ is from $\nu'$, and so, given we have only two arms,
 
 \begin{equation*}
 \mathbb{E}_{\nu'}[N_1(t)]\KL(\nu_1', \nu_1) + \mathbb{E}_{\nu'}[N_2(t)]\KL(\nu_2', \nu_2) \geq \der(\mathbb{P}_{\nu'}(A),\mathbb{P}_{\nu}(A)))
 \end{equation*}
 
-The expectations were chosen with respect to $\nu'$ in order to allow the for the following: We have $p_t(\nu) = 1 - \mathbb{P}_{\nu}(A)$ and $p_t(\nu') = \mathbb{P}_{\nu'}(A)$ (since $A$ is wrong in $\nu'$). But since algorithm $\mathcal{A}$ is consistent for both $\nu$ and $\nu'$, we know that there should exist some number of samples such that the probability of event $A$ is bigger in setting $\nu$ (where it is the correct decision), than in setting $\nu'$ (where this would be a wrong decision and failure). Thus, for every $\epsilon > 0$, there exists $t_0(\epsilon)$ such that for all $t \geq t_0(\epsilon)$, $\mathbb{\nu'}(A) \leq \epsilon \leq \mathbb{P}_\nu(A)$. Consequently, if we plug in the bound of $\epsilon$ for $\mathbb{P}_{\nu'}(A)$, then
+The expectations were chosen with respect to $\nu'$ in order to allow for the following: We have $p_t(\nu) = 1 - \mathbb{P}_{\nu}(A)$ and $p_t(\nu') = \mathbb{P}_{\nu'}(A)$ (since $A$ is wrong in $\nu'$). But since algorithm $\mathcal{A}$ is consistent for both $\nu$ and $\nu'$, we know that there should exist some number of samples such that the probability of event $A$ is bigger in setting $\nu$ (where it is the correct decision) than in setting $\nu'$ (where this would be a wrong decision and failure). Thus, for every $\epsilon > 0$, there exists $t_0(\epsilon)$ such that for all $t \geq t_0(\epsilon)$, $\mathbb{P}_{\nu'}(A) \leq \epsilon \leq \mathbb{P}_\nu(A)$. Consequently, if we plug in the bound of $\epsilon$ for $\mathbb{P}_{\nu'}(A)$, then
 
 \begin{align*}
 \mathbb{E}_{\nu'}[N_1(t)]\KL(\nu_1', \nu_1) + \mathbb{E}_{\nu'}[N_2(t)]\KL(\nu_2', \nu_2) & \geq \der(\epsilon,1-p_t(\nu))) \\
@@ -638,7 +630,7 @@ Dividing both sides by $t$ and taking the limsup, we arrive at
 
 where the last line follows from the fact that the $\frac{1}{t} \sum_{a=1}^2 \mathbb{E}_{\nu'}[N_a(t)]$ part creates a weighted average of the two divergences $\KL(\nu_a', \nu_a)$. As noted in Kaufmann et al. (2016), one arrives at the final result by choosing $\mu_1'$, $\mu_2'$ so that $| \KL(\nu_1', \nu_1) - \KL(\nu_2', \nu_2) |$ is as small as possible.
 
-Note that while deriving the lower bound on the complexity measure, we have also derived the following lower bound on the failure probability for the two-armed fixed-budget bandit:
+Note that while deriving the lower bound on the complexity measure, we have also derived the following lower bound on the failure probability for the two-armed fixed budget bandit:
 
 \begin{equation*}
 p_t(\nu) \geq \exp \big(- \sum_{a=1}^2 \mathbb{E}_{\nu'}[N_a(t)] \KL(\nu_a', \nu_a) \big)
@@ -650,60 +642,45 @@ or, to not rely on the share of samples attributed to each arm,
 p_t(\nu) \geq \exp \big(- \max_{a=1,2} \KL(\nu_a', \nu_a) \big).
 \end{equation*}
 
-**Mention something about the fact that we were not able to do this for more than 2 arms and top-m bandits. How could it be extended to that? How could it be extended to the threshold bandit?**
+As noted by Kaufmann et al. (2016), the advantage of this lower bound is that it makes the complexity in the fixed confidence and the fixed budget setting directly comparable. The disadvantage of course being that the result only holds for two-armed models. While the authors are not able to derive directly comparable lower bounds for the top-$m$ case, they derive a first lower bound in the Gaussian case with equal variances, which we describe shortly in the appendix in \autoref{sec:KaufmannLBTopMGaussian}.
 
-As noted by Kaufmann et al. (2016), the advantage of this lower bound is that it makes the complexity in the fixed-confidence and the fixed-budget setting directly comparable. The disadvantage of course being that the result only holds for two-armed models. While the authors were not able to derive directly comparable lower bounds for the Top-$m$ case, they did derive a first lower bound in the Gaussian case with equal variances. While we would like to move beyond Gaussian distributions in the work at hand, the idea for the proof might show a way of how the ideas can be transferred to the thresholding bandit problem. We first state the result and then discuss the proof.
+Before we discuss the strategies of Kaufmann et al. (2016) matching the lower bounds, we now show how lower bounds can be derived very similarly for the fixed budget thresholding problem.
 
-\begin{lemma}[Lemma 15, Kaufmann et al., 2016] \label{theorem:KaufmannEtAlLemma15}
-Let $\nu$ and $\nu'$ be two bandit models such that $S^*_m(\nu) \neq S*_m(\nu')$. Then
+### Lower Bound for Fixed Budget Thresholding Problem
 
-\begin{equation*}
-\max \big( \mathbb{P}_{\nu}(S \neq S^*_m(\nu)), \mathbb{P}_{\nu'}(S \neq S^*_m(\nu')) \big) \geq \frac{1}{4} \exp \Big(-\sum_{a=1}^{K} \mathbb{E}_{\nu}[N_a] \KL(\nu_a, \nu_a') \Big).
-\end{equation*}
-\end{lemma}
+In order to derive a bound for the fixed budget problem, Kaufmann et al. (2016) have focused on the case of the two-armed bandit which is the most simple version of the top-$m$ problem. Less than two arms do not make sense, since then this single arm will always be the best arm. In the case of the thresholding bandit, however, a single-armed problem makes still some sense in that we still have to classify this arm correctly with respect to the threshold. Thus, we can show the following corollary which gives the a bound on the complexity of the single-armed thresholding bandit.
 
-The following theorem only holds in the case of Gaussian bandit models with equal known variance.
+\begin{corollary}
+Let $\nu = \nu_1$ be a one-armed thresholding bandit model where $\tau$ is the threshold fixed upfront. Let $\nu$ be from the univariate canonical exponential family of distributions such that it can be parameterized by its mean, $\mu_1$, and the Kullback-Leibler divergence between distributions $\nu_1$ and $\nu_1'$ can be written as $\KL(\nu_1', \nu_1) = \KL(\mu_1', \mu_1)$. In the fixed budget setting, any consistent algorithm satisfies:
 
-\begin{theorem}[Theorem 17, Kaufmann et al., 2016] \label{theorem:KaufmannEtAlTheorem17}
+$$
+- \frac{1}{t} \log p_t(\nu) \leq \KL(\tau, \mu_1)
+$$
+\end{corollary}
 
-Let $\mathcal{M}_m = \{\nu = (\nu_1, \dots, \nu_K): \nu_a = \mathcal{N}(\mu_a, \sigma^2), \mu_a \in \mathbb{R}, \mu_{[m]}\neq \mu_{[m+1]}\}.$ Furthermore, let $\nu$ be such that $\mu_1 > \dots > \mu_m > \mu_{m+1} > \dots > \mu_K$, and let
+This of course is basically the Chernoff-Stein Lemma for the hypothesis test of two alternatives (compare chapter 11 in Cover and Thomas, 2006).
 
-\begin{equation*}
-H +(\nu) = \sum_{a=1}^m \frac{2\sigma^2}{(\mu_a - \mu_{m+1})^2}, \quad H^-(\nu) = \sum_{a=m+1}^K \frac{2\sigma^2}{(\mu_m - \mu_a)^2} \quad
-and \quad
-H(\nu) = H^+(\nu) + H^-(\nu).
-\end{equation*}
+But as we see in the following corollary, we can extend the lower bound to the $K$-armed fixed budget thresholding bandit problem, which stands in contrast to the fact that for the top-$m$ problem, it is only possible to show the lower bound for two arms.
 
-There exists $a \in {1, \dots, m}$ and $b \in \{m+1, \dots, K\}$ such that the bandit model $\nu^{[a,b]}$ described in Figure 4 (Kaufmann et al., 2016) satisfies $H(\nu^{[a,b]}) < H(\nu)$ and is such that
+\begin{corollary}
+Let $\nu = (\nu_1, ..., \nu_K)$ be a $K$-armed thresholding bandit problem in which $\tau$ is the threshold fixed upfront. For $i \in \{1,...,K\}$, let $\nu_i$ be from the univariate canonical exponential family of distributions such that it can be parameterized by its mean, $\mu_i$, and the Kullback-Leibler divergence between distributions $\nu_i$ and $\nu_i'$ can be written as $\KL(\nu_i, \nu_i') = \KL(\mu_i, \mu_i')$. In the fixed budget setting, every consistent algorithm satisfies:
 
-\begin{equation*}
-\max \big( p_t(\nu),p_t(\nu^{[a,b]})\big) \geq \frac{1}{4} \exp \big(-\frac{4t}{\bar{H}(\nu)}\big), \quad where \quad \bar{H}(\nu) = \frac{H(\nu) \min(H^+(\nu),H^-(\nu))}{H(\nu)+\min(H^+(\nu),H^-(\nu))}
-\end{equation*}
-\end{theorem}
+$$
+\lim_{t \rightarrow \infty} -\frac{1}{t} \log p_t(\nu) \leq \max_{a \in \{1,...,K\}} \KL(\tau, \mu_a)
+$$
+\end{corollary}
 
-Given that we are again in the Top-$m$ setting, the proof idea is similar to the proof of Theorem \ref{theorem:KaufmannEtAlTheorem4} in that we again consider problems where we switch arms around the limit seperating the two groups of arms as given implicitly by $\mu_{[m]}$ and $\mu_{[m+1]}$. The hope here being that these methods could be applied to the thresholding bandit problem where the threshold of course gives the limit between the arms above and below the threshold. As we have seen in chapter 1, this flip around the threshold was of course used in the proof of the lower bound in Theorem 1 of Locatelli et al. (2016). However, there, again, the distributions were assumed to be Gaussian. This brings the big advantage that the Kullback-Leibler divergence becomes symmetric, and the feedback can take values on all $\mathbb{R}$. And by using the complexity measure $H(\nu)$, it is also clear that there exists an arm that is undersampled with respect to its contribution to the overall complexity of the problem (or sampled exactly according to its contribution), which leads to a convenient upper bound on this arms number of draws which is again employed in both the proof of Theorem \ref{theorem:KaufmannEtAlTheorem17} and in Locatelli et al. (2016). It is not clear yet, whether the same can also be done with other complexity measures.
-
-We do not repeat the proof here for now.
-
-See p20!
-
-What remains is to present algorithms that are able to match the lower bounds derived so far.
+Given the lower bounds on the sampling complexity and error probability, as well as the complexity measures, we now turn to sampling strategies that are designed to match these lower bounds.
 
 ### Matching algorithm strategies
 
-Given these lower bounds, all that is left is to find algorithms which are able to match the complexity. Sadly, not straightforward for Bernoullis.
+Kaufmann et al. (2016) do not present algorithms matching the lower bound of Theorem \ref{theorem:KaufmannEtAlTheorem17}. They do consider algorithms that connect to Theorem \ref{theorem:KaufmannEtAlTheorem4} and Theorem \ref{theorem:KaufmannEtAlTheorem12}. Given that we aim to extend the fixed budget thresholding bandit problem, we are most interested in the matching strategies for Theorem \ref{theorem:KaufmannEtAlTheorem12}. However, given that this lower bound applies only to two-armed bandits, the algorithms proposed by Kaufmann et al. (2016) are of limited practical interest. Furthermore, the proposed strategies require knowledge that is in general not available upfront: For Gaussian distributions, the knowledge of the (potentially different) variance is assumed which enables a strategy that pulls each arm proportional to its variance. 
 
-Kaufmann et al. (2016) do not present algorithms matching the lower bound of Theorem \ref{theorem:KaufmannEtAlTheorem17}. They do consider algorithms that connect to Theorem \ref{theorem:KaufmannEtAlTheorem4} and Theorem \ref{theorem:KaufmannEtAlTheorem12}.
+Even more difficult are the assumptions in the case of Bernoulli two-armed bandit models: The proposed algorithm requires knowledge about the true parameters of the distributions. That this limits the practical interest is also noted by the authors of Kaufmann et al. (2016). Thus, they suggest to use uniform sampling strategies in the case of two-armed Bernoulli bandits, and show that there is not much to be lost by doing so.
 
-Given that Locatelli et al. (2016), and thus the problem we mostly consider in this thesis, is in the fixed-budget setting, we are most interested in the matching strategies for Theorem \ref{theorem:KaufmannEtAlTheorem12}. However, given that the lower bound applies only to two-armed bandits, the algorithms are of limited practical interest. Furthermore, the algorithms proposed require knowledge that is in general not available upfront.
+Thus, Kaufmann et al. (2016) join a number of other papers like Audibert et al. (2010) and Kaufmann and Kalyanakrishnan (2013) which struggle to find matching strategies in the fixed budget setting that do not rely on knowledge of parameters or the complexity of the problem.
 
-For the example of Gaussian distributions, the knowledge of the (potentially different) variance is assumed which enables a strategy that pulls each arm proportional to its variance. 
-
-Even worse is the case of Bernoulli two-armed bandit models where the proposed algorithm requires knowledge about the true parameters of the distributions. That this limits the practical interest is also noted by the authors of Kaufmann et al. (2016). Thus, they suggest to use uniform sampling strategies in the case of two-armed Bernoulli bandits, and show that there is not much to be lost by doing so.
-
-Thus, Kaufmann et al. (2016) join a number of other papers like Audibert et al. (2010) and Kaufmann and Kalyanakrishnan (2013) which struggle to find matching strategies in the fixed-budget setting that do not rely on knowledge of parameters or the complexity of the problem.
-
-In contrast, Kaufmann et al. (2016) are able to show that their complexity measure derived for the fixed-confidence setting, $\kappa_C(\nu)$, can be upper-bounded using the upper bound of the sample complexity (number of pulls) given for the KL-LUCB algorithm in Kaufmann and Kalyanakrishnan (2013). Consequently, in the case of exponential family bandits, the complexity $\kappa_C(\nu)$ is bounded as given in equation (6) in Kaufmann et al. (2016):
+In contrast, Kaufmann et al. (2016) are able to show that their complexity measure derived for the fixed confidence setting, $\kappa_C(\nu)$, can be upper-bounded using the upper bound given for the KL-LUCB algorithm in Kaufmann and Kalyanakrishnan (2013). Consequently, in the case of exponential family bandits, the complexity $\kappa_C(\nu)$ is bounded as given in equation (6) in Kaufmann et al. (2016):
 
 \begin{equation*}
 \sum_{a \in S^*_m} \frac{1}{K(\theta_a, \theta_{[m+1]})} + \sum_{a \notin S^*_m} \frac{1}{K(\theta_a,\theta_{[m]})} \leq \kappa_C(\nu) \leq 24 \min_{\theta \in [\theta_{[m+1]},\theta_{[m]}]} \sum_{a=1}^{K} \frac{1}{K^*(\theta_a, \theta)},
@@ -711,38 +688,29 @@ In contrast, Kaufmann et al. (2016) are able to show that their complexity measu
 
 where $K(\theta, \theta') = \KL(\nu_{\theta}, \nu_{\theta'})$ for $(\theta, \theta') \in \Theta^2$ was defined as the shorthand for the Kullback-Leibler divergence for two distributions from the exponential family parameterized by $\theta$ and $\theta'$ respectively. $K^*(\theta,\theta') = K(\theta^*, \theta)$ is the Chernoff distribution between the two distributions, where $\theta^*$ is chosen so that $K(\theta^*,\theta) = K(\theta^*, \theta')$.
 
-## Optimal Best Arm Identification
+## Optimal Best Arm Identification \label{sec:OptimalBestArmIdentification}
 
-A very similar application of the KL divergence has been given in Garivier and Kaufmann (2016) to derive a lower bound on the sample complexity in the case of best arm identification. In particular, the transportation Lemma 1 is used again. And a matching algorithm for $K \geq 2$ arms is proposed.
+Instead of discussing the KL-LUCB algorithm for the fixed confidence top-$m$ problem, we shift our focus slightly onto the fixed confidence best arm identification problem, which is discussed in Garivier and Kaufmann (2016). The authors derive again a lower bound on the sample complexity using again the Lemma \autoref{theorem:KaufmannEtAlLemma1}. Furthermore, they propose a matching strategy for $K \geq 2$ arms.
 
-Talk about:
-- Not a simple sum of squares
-- Idea of algorithm: Equalize the probability of all wrong decisions
-
-
-In Garivier and Kaufmann (2016), the authors are able to derive a somewhat similar lower bound on the sample complexity of a $K$-armed bandit in the single best arm identification problem with fixed confidence. Additionally, they provide a $\delta$-PAC algorithm achieving said bound asymptotically.
-
-In particular, the authors pick up Lemma 1 from Kaufmann et al. (2016) -- which we discussed above -- to derive the lower bound. While presenting these results, we try to stick as much as possible with the notation used so far. In particular, we let for distributions $\nu_{\theta}$ from a canonical exponential family, which can be parameterized by its mean $\stackrel{.}{b}(\theta) = \mu$ and thus be written as $\nu^{\mu}$; for these, we continue to write the Kullback-Leibler divergence as
+The setting differs slightly from the setting considered in Kaufmann et al. (2016). In particular, Garivier and Kaufmann (2016) focus on distributions $\nu_{\theta}$ from the univariate canonical exponential family of distributions, which can be parameterized by their mean $\stackrel{.}{b}(\theta) = \mu$, and thus can be written as $\nu^{\mu}$; for these, we write the Kullback-Leibler divergence as (compare \autoref{sec:LRforUnivariateExponentialFamily} and Cappé et al., 2013)
 
 \begin{equation*}
-\KL(\mu, \mu') = \KL(\nu^{\mu},\nu^{\mu'}) = \KL(\nu_{\theta},\nu_{\theta'}) = \KL(\nu, \nu')
+\KL(\mu, \mu') = \KL(\nu_{\mu},\nu_{\mu'}) = \KL(\nu_{\theta},\nu_{\theta'}) = \KL(\nu, \nu').
 \end{equation*}
 
-while $d(x,y)$ continues to represent the binary relative entropy.
-
-As we will consider only problems with exponential family distributions, the distributions can be parameterized by their means. Therefore, if we let $\mathcal{S}$ to be a set of bandit models with $K$ distributions each, then each model is fully defined by a vector $\bm{\mu} = (\mu_1, \dots, \mu_K)$. Assume that every $\bm{\mu} \in \mathcal{S}$ has a unique maximum given by $a^*(\bm{\mu})$ such that $\mu_{a^*} > \max_{a \neq a^*(\bm{\mu})} \mu_a$. In order to fix the confidence, we specify the risk $\delta$. The strategies corresponding to this risk are called $\delta$-PAC if for every $\bm{\mu} \in \mathcal{S}$, $\mathbb{P}_{\bm{\mu}}(\tau_{\delta} < \infty) = 1$ (the strategy ends surely after a finite number of samples) and $\mathbb{P}_{\bm{\mu}}(\hat{a}_{\tau_{\delta}} \neq a^*) \leq \delta$ (the probability of picking not the optimal arm is smaller than the fixed risk). As in Garivier and Kaufmann (2016), we introduce the set of problems for which the optimal arm is different from the one in $\bm{\mu}$:
+Furthermore, if we let $\mathcal{S}$ to be a set of bandit models with $K$ distributions each, then each model is fully defined by a vector $\bm{\mu} = (\mu_1, \dots, \mu_K)$. Assume that every $\bm{\mu} \in \mathcal{S}$ has a unique maximum given by $a^*(\bm{\mu})$ such that $\mu_{a^*} > \max_{a \neq a^*(\bm{\mu})} \mu_a$. In order to fix the confidence, we specify the risk $\delta$. Similar to the top-$m$ case considered before, strategies corresponding to this risk are called $\delta$-PAC if for every $\bm{\mu} \in \mathcal{S}$, the strategy ends surely after a finite number of samples, $\mathbb{P}_{\bm{\mu}}(T_{\delta} < \infty) = 1$, and the error probability is at least as small as the fixed risk level, $\mathbb{P}_{\bm{\mu}}(\hat{a}_{T_{\delta}} \neq a^*) \leq \delta$. In order to derive the lower bound on the expected number of samples $\mathbb{E}[T]$ through a change in distributions, we introduce the set of problems for which the optimal arm is different from $\bm{\mu}$:
 
 \begin{equation*}
 \text{Alt}(\bm{\mu}) := \{\bm{\lambda} \in \mathcal{S}: a^*(\bm{\lambda}) \neq a^*(\bm{\mu})\}
 \end{equation*}
 
-where $\bm{\lambda}$ is the vector of means defining the distributions of the alternative problem to $\bm{\mu}$. Lastly, we have the set of probability distributions on the arms $\mathcal{A}$: $\Sigma_K = \{w \in \mathbb{R}_{+}^K: w_1 + \dots + w_K = 1\}$. We are now ready to state the theorem.
+where $\bm{\lambda}$ is the vector of means defining the distributions of the alternative problem to $\bm{\mu}$. Lastly, we have the set of probability distributions on the arms $\{1,...,K\}$: $\Sigma_K = \{w \in \mathbb{R}_{+}^K: w_1 + \dots + w_K = 1\}$. Each $w_i$ corresponds to the fraction of overall samples that the arm $i$ receives. We are now ready to state the lower bound:
 
 \begin{theorem}[Theorem 1, Garivier and Kaufmann, 2016] \label{theorem:GarivierKaufmannTheorem1}
 Let $\delta \in (0,1)$. For any $\delta$-PAC strategy and any bandit model $\bm{\mu} \in \mathcal{S}$,
 
 \begin{equation*}
-\mathbb{E}_{\bm{\mu}} [\tau_{\delta}] \geq T^*(\bm{\mu}) \text{\em{d}}(\delta,1-\delta),
+\mathbb{E}_{\bm{\mu}} [T_{\delta}] \geq T^*(\bm{\mu}) \text{\em{d}}(\delta,1-\delta),
 \end{equation*}
 
 where 
@@ -752,12 +720,12 @@ T^*(\bm{\mu})^{-1} := \sup_{w \in \Sigma_K} \inf_{\bm{\lambda} \in \text{\em{Alt
 \end{equation}
 \end{theorem}
 
-And so we see that the two bounds on the sample complexity (one for Top-$m$, one for best arm identification) differ only in the way that they build the sum of Kullback-Leibler divergences over the $K$ arms. In contrast to Theorem \ref{theorem:KaufmannEtAlTheorem4}, here the contribution of each arm through its KL-divergence is weighted. The difference is that while we were able to very clearly describe the change of distribution in the Top-$m$ case for each arm -- for each arm, we specified an alternative model that yields a new set of $m$ optimal arms -- we now consider all alternative models that yield a different best arm than the model $\bm{\mu}$. In the previous theorem, we sum over the complexity of each individual arm, as the change in distribution only ever touches one arm, thus leading to a KL-divergence of 0 for the other arms while still changing the optimal set. Here, we consider all instances of alternative models $\bm{\lambda}$, and thus also those in which several arms are modified (and thus have a KL-divergence unequal 0 in the result of Lemma 1).
+We see that the two bounds on the sample complexity (one for Top-$m$, one for best arm identification) differ only in the way in which they build the sum of Kullback-Leibler divergences over the $K$ arms. In contrast to Theorem \ref{theorem:KaufmannEtAlTheorem4}, here the contribution of each arm through its KL-divergence is weighted. The difference is that while we were able to very clearly describe the change of distribution in the Top-$m$ case for each arm -- we specified an alternative model for each arm that yields a new set of $m$ optimal arms -- we now consider all alternative models that yield a different best arm than the model $\bm{\mu}$. In the previous theorem, we sum over the complexity of each individual arm, as the change in distribution only ever touches one arm, thus leading to a KL-divergence of 0 for the other arms while still changing the optimal set. Here, we consider all instances of alternative models $\bm{\lambda}$, and thus also those in which several arms are modified (and thus have a KL-divergence unequal 0 in the result of Lemma 1).
 
-*Proof of Theorem \ref{theorem:GarivierKaufmannTheorem1}*: As stated before, we let $\delta \in (0,1)$, $\bm{\mu} \in \mathcal{S}$, and only consider $\delta$-PAC strategies. As before, $N_a(t)$ describes the random number of pulls of arm $a$ until time $t$, for all $t\geq 1$. Again, Lemma \ref{theorem:KaufmannEtAlLemma1} states how the failure probability $\delta$ relates to the expected number of draws of each arm given two models which differ in their optimal arm, and where it is evaluated based on the Kullback-Leibler divergence for each pair of arms how much the two models differ:
+*Proof of Theorem \ref{theorem:GarivierKaufmannTheorem1}*: As stated before, we let $\delta \in (0,1)$, $\bm{\mu} \in \mathcal{S}$, and only consider $\delta$-PAC strategies. As before, $N_a(t)$ describes the random number of pulls of arm $a$ until time $t$, for all $t\geq 1$. Again, Lemma \ref{theorem:KaufmannEtAlLemma1} states how the risk $\delta$ relates to the expected number of draws of each arm given two models which differ in their optimal arm. How much the two models differ is evaluated based on the Kullback-Leibler divergence for each pair of arms:
 
 \begin{equation*}
-\forall \lambda \in \mathcal{S}: a^*(\lambda) \neq a^*(\mu), \sum_{a=1}^K \KL(\mu_a,\lambda_a)\mathbb{E}_{\bm{\mu}}[N_a(\tau_{\delta})] \geq \d(\delta, 1- \delta).
+\forall \lambda \in \mathcal{S}: a^*(\lambda) \neq a^*(\mu), \sum_{a=1}^K \KL(\mu_a,\lambda_a)\mathbb{E}_{\bm{\mu}}[N_a(T_{\delta})] \geq \d(\delta, 1- \delta).
 \end{equation*}
 
 As mentioned, we now do not consider a specific alternative for each arm, but instead look at the infimum over all the possible alternatives, and use the fact that $\mathbb{E}_{\bm{\mu}}[\tau_{\delta}] = \sum_{a=1}^K \mathbb{E}_{\bm{\mu}}[N_a(\tau_{\delta})]$:
@@ -770,13 +738,13 @@ As mentioned, we now do not consider a specific alternative for each arm, but in
 
 As stated in Garivier and Kaufmann (2016), the term $\frac{\mathbb{E}_{\bm{\mu}}[N_a]}{\mathbb{E}_{\mu}[\tau_{\delta}]}$ gives the fraction of draws each arm receives. This value, however, depends on the used algorithm. To make it hold for any $\delta$-PAC algorithm, it is replaced by the supremum over $\Sigma_K$, which is the distribution over these fractions for any $\mathcal{A}$, that is, for any $\delta$-PAC strategy.
 
-This lower bound can be interpreted as a Minimax game, where the experimenter has to choose the share of samples he attributes to each arm in a way that is optimal given that nature will respond and choose the most difficult alternative model given his weights. Thus, to make the lower bound practical, it is a matter of finding the optimal weights $w^*(\bm{\mu})$. This step did not occur in the previous lower bound, as the alternative models were made specific by changing the distribution of one arm with respect to the "border" between the two groups of arms.
+This lower bound can be interpreted as a Minimax game, where the experimenter has to choose the share of samples he attributes to each arm in a way that is optimal given that nature will respond and choose the most difficult alternative model given his weights. Thus, to make the lower bound practical, it is a matter of finding the optimal weights $w^*(\bm{\mu})$. This step did not occur in the lower bound for the top-$m$ problem since the alternative models were specified by changing the distribution of one arm with respect to the "border" between the two groups of arms.
 
-In any case, the existence of the optimal weights suggests an algorithm that keeps track of the share of samples that is attributed to each arm and makes sure that it stays close to the optimum until some decision rule assures that the $\delta$-PAC condition is fulfilled.
+The existence of the optimal weights suggests an algorithm that keeps track of the share of samples that is attributed to each arm and makes sure that it stays close to the optimum until some decision rule assures that the $\delta$-PAC condition is fulfilled.
 
-Indeed, the optimal weights will lead to a sampling structure in which arms are drawn in such a way ensuring that their individual failure probabilities are at the same level. Take a situation where the currently best arm $\hat{\mu}_1$ is the best arm. Then, we calculate for each arm the risk that actually it is better than arm 1. Since the arms are assumed to be independent, the we only have to compare every arm individually to arm 1. Given that, it makes sense that we don't want to disregard an arm that has a high probability of being better than arm 1. Assuming arm 1 is actually the best arm, we would an algorithm that ensures a low failure probability on all arms, thus equalizing the failure probability for every arm compared to arm 1.
+Indeed, the optimal weights will lead to a sampling structure in which arms are drawn in a way that ensures that their individual probability of error stays at the same level. An arm more distant from the optimal arm in terms of Kullback-Leibler divergence should receive a smaller share of the samples to achieve the same error probability as an arm closer to the optimal arm.
 
-This is exactly what happens when we look for the proportions $w \in \Sigma_K$ that minimize the cost from a change in distributions, that is, the term $F(\bm{\mu}, \bm{w}) = \inf_{\bm{\lambda} \in \text{Alt}(\bm{\mu})} \Big(\sum_{a= 1}^K w_a \KL(\mu_a, \lambda_a)\Big)$. In the proof of Lemma 3 of Garivier and Kaufmann, it is shown that nature, selecting the alternative model $bm{\lambda}$ will always pick an alternative model in which only a single arm $a$ is changed such that $\lambda_a > \lambda_1$ since
+This is exactly what happens when we look for the proportions $w \in \Sigma_K$ that minimize the cost from a change in distributions, that is, the term $F(\bm{\mu}, \bm{w}) = \inf_{\bm{\lambda} \in \text{Alt}(\bm{\mu})} \Big(\sum_{a= 1}^K w_a \KL(\mu_a, \lambda_a)\Big)$. In the proof of Lemma 3 of Garivier and Kaufmann, it is shown that nature, selecting the alternative model $\bm{\lambda}$ will always pick an alternative model in which only a single arm $a$ is changed such that $\lambda_a > \lambda_1$ since
 
 \begin{align*}
 T^*(\bm{\mu})^{-1} & = \sup_{w \in \Sigma_K} \min_{a \neq 1} \inf_{\bm{\lambda} \in \mathcal{S}: \lambda_a > \lambda_1} \sum_{a=1}^K w_a \KL(\mu_a, \lambda_a)  \\
@@ -801,13 +769,13 @@ which let's us furthermore conclude that these quantities are equal for all $a,b
 
 which is simply the statement in Lemma 4 of Garivier and Kaufmann (2016).
 
-And so by assuring the reader that there are ways to compute $w_a^*$ and $T^*$ given $\bm{\mu}$ (see chapter 2.2 in Garivier and Kaufmann (2016)), we can now introduce the *Track-and-Stop* strategy given in Garivier and Kaufmann (2016) that is able to match the lower bound by the intuition given above.
+And so by assuring the reader that there are ways to compute $w_a^*$ and $T^*$ given $\bm{\mu}$ (see chapter 2.2 in Garivier and Kaufmann (2016)), we can now introduce the *Track-and-Stop* strategy given in Garivier and Kaufmann (2016) that is able to match the lower bound by the intuition given above. The main idea of the *Track-and-Stop* algorithm is now to keep track of the optimal shares for each arm by equalizing the error probabilies for each arm.
 
 When going from theory to algorithm, the obvious problem is of course that we do no longer know $\bm{\mu}$ and thus cannot simply calculate the optimal weights. Instead, we are estimating the maximum likelihood estimates $\hat{\mu}(t) = (\hat{\mu}_1(t), \dots, \hat{\mu}_K(t))$ of the true mean at the current round $t$ and need to base our weights based on these. It is however problematic to rely on these sample means as we are inherently unsure about them. And so wrong estimates, which naturally occur most easily in the beginning when not many samples have been pulled, are prone to lead to wrong weights. Thus, if a wrong estimate $\hat{\mu}_a$ for arm $a$ leads to a small weight $w_a$, then neither the estimate nor the weight will be correct soon. Thus, Kaufmann and Garivier conclude that "a naive plug-in sampling rule sometimes fails". They propose to enforce a certain minimum level of exploration to make sure that arms that erroneously received a very small weight will be further explored regardless.
 
-A very intuitive fix to this problem is the solution proposed in Lemma 8 of Garivier and Kaufmann (2016), with their $D-Tracking$ rule. Basically, whenever an arm has received a very low number of pulls $N_a(t)$ given the number of iterations so far, $t$ and the number of arms $K$ that have to share the samples, pull the arm that has received the smallest amount of samples so far. Else, pull the arm which number of pulls so far $N_a(t)$ is the furthest away from what its optimal share $t\cdot w^*_a(\hat{\bm{\mu}}(t))$ would be. Given this sampling rule, the authors can show in their Proposition 9 that the empirical proportion of draws converges in probability to the optimal weights given the true means.
+A very intuitive fix to this problem is the solution proposed in Lemma 8 of Garivier and Kaufmann (2016) with their $D-Tracking$ rule. Whenever an arm has received a very low number of pulls $N_a(t)$ given the number of iterations so far, $t$, and the number of arms $K$ that have to share the samples, pull the arm that has received the smallest amount of samples so far. Else, pull the arm which number of pulls so far $N_a(t)$ is the furthest away from what its optimal share $t\cdot w^*_a(\hat{\bm{\mu}}(t))$ would be. Given this sampling rule, the authors can show in their Proposition 9 that the empirical proportion of draws converges in probability to the optimal weights given the true means.
 
-When combining this sampling rule with an appropriate stopping rule, the authors are able to prove in Theorem 14 an upper bound on the expected sampling complexity $\mathbb{E}_{\mu}[\tau_{\delta}]$. The stopping rule ensures that the algorithm explores sufficiently to promise a risk smaller than $\delta$, while stopping as soon as possible. Given that the sampling rule is independent of this stopping rule, the rule boils down to a statistical test at every iteration and thus is a sequential test based on the current estimate of $\hat{\bm{\mu}}$. The Chernoff's Stopping Rule proposed in Garivier and Kaufmann (2016) calculates for each arm $a\in \mathcal{A}$ the Generalized Likelihood Ratio statistic with every arm $b \in \mathcal{A}^{\setminus a}$, which for $\hat{\mu}_a(t) \geq \hat{\mu}_b(t)$ can be written as
+When combining this sampling rule with an appropriate stopping rule, the authors are able to prove in Theorem 14 an upper bound on the expected sampling complexity $\mathbb{E}_{\mu}[T_{\delta}]$. The stopping rule ensures that the algorithm explores sufficiently to promise a risk smaller than $\delta$, while stopping as soon as possible. Given that the sampling rule is independent of this stopping rule, the rule boils down to a statistical test at every iteration and thus is a sequential test based on the current estimate of $\hat{\bm{\mu}}$. The Chernoff's Stopping Rule proposed in Garivier and Kaufmann (2016) calculates for each arm $a\in \{1,...K\}$ the Generalized Likelihood Ratio statistic with every arm $b \in \mathcal{A}^{\setminus a}$, which for $\hat{\mu}_a(t) \geq \hat{\mu}_b(t)$ can be written as
 
 \begin{equation*}
 Z_{a,b}(t) = - Z_{b,a} = N_a(t) \KL(\hat{\mu}_a(t),\hat{\mu}_{a,b}(t)) + N_b(t) \KL(\hat{\mu}_{b}(t), \hat{\mu}_{a,b}(t)),
@@ -819,10 +787,10 @@ where
 \hat{\mu}_{a,b}(t) := \frac{N_a(t)}{N_a(t) + N_b(t)}\hat{\mu}_a + \frac{N_b(t)}{N_a(t) + N_b(t)}\hat{\mu}_b.
 \end{equation*}
 
-Consequently, a sensible idea for a stopping rule would be that there has to be an arm $a \in \mathcal{A}$ for which $Z_{a,b} \geq 0 \forall b \in \mathcal{A}^{\setminus a}$ (which is always fulfilled if there is a uniquely best arm), and, additionally, we demand that for this arm the smallest of the $(K-1)$ test statistics has to be larger than an exploration threshold $\beta(t, \delta)$. Consequently, the final number of samples $\tau_{\delta}$ of an algorithm is given by:
+Consequently, a sensible idea for a stopping rule would be that there has to be an arm $a \in \{1,...,K\}$ for which $Z_{a,b} \geq 0 \, \forall  b \in \{1,...,K\}^{\setminus a}$ (which is always fulfilled if there is a uniquely best arm), and, additionally, we demand that for this arm the smallest of the $(K-1)$ test statistics has to be larger than an exploration threshold $\beta(t, \delta)$. Consequently, the final number of samples $T_{\delta}$ of an algorithm is given by:
 
 \begin{equation*}
-\tau_{\delta} = \inf \{t \in \mathbb{N}: \exists a \in \mathcal{A}, \forall b\in \mathcal{A}^{\setminus a}, Z_{a,b}(t) > \beta(t, \delta)\}
+T_{\delta} = \inf \{t \in \mathbb{N}: \exists a \in \mathcal{A}, \forall b\in \mathcal{A}^{\setminus a}, Z_{a,b}(t) > \beta(t, \delta)\}
 \end{equation*}
 
 Demanding that the optimal exploration threshold increases in rounds $t$ (if we have more samples, require more certainty; also, punish for failing previous tests) and decreases in the risk $\delta$, and does so at a diminishing rate, the optimal threshold derived in Theorem 10 of Garivier and Kaufmann (2016) makes sense intuitively:
@@ -834,16 +802,16 @@ Demanding that the optimal exploration threshold increases in rounds $t$ (if we 
 With this, we can state the final theorem of the chapter, which gives the upper bound matching the lower bound in Theorem \ref{theorem:GarivierKaufmannTheorem1} for small risk values $\delta$ using the D-Tracking rule and Chernoff's stopping rule with the exploration term given in the previous equation:
 
 \begin{theorem}[Theorem 14, Garivier and Kaufmann, 2016] \label{theorem:GarivierAndKaufmannTheorem14}
-Let $\bm{\mu}$ be an exponential family bandit model. Let $\alpha \in [1, e/2]$ and $r(t) = O(t^{\alpha})$. Using Chernoff's stopping rule with $\beta(t,\delta) = \log(r(t)/\delta)$ and the sampling rule C-Tracking or D-Tracking,
+Let $\bm{\mu}$ be an exponential family bandit model. Let $\alpha \in [1, e/2]$ and $r(t) = O(t^{\alpha})$. Using Chernoff's stopping rule with $\beta(t,\delta) = \log(r(t)/\delta)$ and the sampling rule D-Tracking,
 
 \begin{equation*}
-\lim_{\delta \to 0} \sup \frac{\mathbb{E}_{\bm{\mu}}[\tau_{\delta}]}{\log(1/\delta)} \leq \alpha T^*(\mu).
+\lim_{\delta \to 0} \sup \frac{\mathbb{E}_{\bm{\mu}}[T_{\delta}]}{\log(1/\delta)} \leq \alpha T^*(\mu).
 \end{equation*}
 \end{theorem}
 
 ## Conclusion of Complexity of Best Arm Identification
 
-Overall, the two papers presented in this chapter make significant contributions to identifying the top-$1$ or the top-$m$ arms in a multi-armed bandit setting. Their contribution is primarily based on including the Kullback-Leibler divergence in the derivation of bounds and the matching algorithms and thus going beyond a sum of squared gaps which is most practical only in the case of Gaussian distributions. While the contribution in the fixed-budget setting was limited to the two-armed bandit case, the authors derive general lower bounds in the fixed-confidence setting which are primarily based on Lemma \ref{theorem:KaufmannEtAlLemma1}. Lemma \ref{theorem:KaufmannEtAlLemma1} is able to measure the "transportation cost" (see Garivier and Kaufmann, 2016) of moving from one distribution to another one in terms of Kullback-Leibler divergence. This transportation cost will increase the expected stopping time, and so the experimenter has to be careful when selecting which arm to sample. By picking proportions $w^*(\bm{\mu})$ that minimize the transportation cost, a solution is found with as few iterations as possible.
+Overall, the two papers presented in this chapter make significant contributions to identifying the top-$1$ or the top-$m$ arms in a multi-armed bandit setting. Their contribution is primarily based on including the Kullback-Leibler divergence in the derivation of bounds and the matching algorithms and thus going beyond a sum of squared gaps which is most practical only in the case of Gaussian distributions. While the contribution in the fixed budget setting was limited to the two-armed bandit case, the authors derive general lower bounds in the fixed confidence setting which are primarily based on Lemma \ref{theorem:KaufmannEtAlLemma1}. Lemma \ref{theorem:KaufmannEtAlLemma1} is able to measure the "transportation cost" (see Garivier and Kaufmann, 2016) of moving from one distribution to another one in terms of Kullback-Leibler divergence. This transportation cost will increase the expected stopping time, and so the experimenter has to be careful when selecting which arm to sample. By picking proportions $w^*(\bm{\mu})$ that minimize the transportation cost, a solution is found with as few iterations as possible.
 
 With respect to the optimal proportions we have derived some characteristics that now allow for a few interpretations. First, we have demanded that the algorithm keeps arms proportions in a way that equalizes the failure probability of every arm with respect to the best arm. This is basically similar to keeping the weighted Jensen-Shannon divergence at the same level which was shown in Lemma 4 of Garivier and Kaufmann (2016) and which we have repeated above. The fact that the risk plays an important role at any round of the algorithm suggests the possibility of turning the algorithm into an anytime algorithm. That is, instead of relying on Chernoff's stopping rule to end the algorithm at one point, and not being able to stop the algorithm before that and receiving a meaningful result, one would be able to stop the algorithm at any iteration, and receive both the recommended best arm and a confidence level. Second, the idea of comparing each arm to the best arm and based on that keeping the failure probabilities at a flat level seems transferrable to the thresholding bandit problem. Indeed, it might even be easier as the best arm does not have to be estimated; thus, the risk with respect to this estimate goes away. Instead, every arm will be compared to the threshold. One idea might be to compute for each arm $a$ the probability that the mean $\mu_a$ is actually on the other side of the threshold as currently suggested by $\hat{\mu}_a(t)$. This is independent of the other arms. And so a strategy might be to draw arms such that their failure probabilities are at the same level (draw whatever arm has the highest failure probability). We will come back to this idea in chapter 3.
 
@@ -1176,7 +1144,7 @@ The next arm to be pulled is the minimizer of the index $B_i^{SLR}(t+1)$, $I_{t+
 \emph{Pull each arm once}\;
 \For{$t = K+1$ \KwTo $T$}{
   \emph{Pull arm $I_t = \arg \min_{i\leq K} B_i^{SLR}(t)$ as in \autoref{eqn:SLRIndex}}\;
-  \emph{Observe reward $X \sim \nu_{I_t}$}\;
+  \emph{Observe reward $X_t \sim \nu_{I_t}$}\;
 }
 \caption{SLR algorithm for univariate exponential family of distributions}\label{algo_slr_1d}
 \end{algorithm}\DecMargin{1em}
@@ -1208,7 +1176,7 @@ Then, as for the univariate case, the next arm to be pulled is the minimizer of 
   \If{$\hat{\sigma}^2_{i}(t) = 0$}{\emph{Set $\hat{\sigma}^2_{i}(t) = 1/T$}}
 }
   \emph{Pull arm $I_t = \arg \min_{i\leq K} B_i^{SLR_{2D}}(t)$ as in \autoref{eqn:SLR2DIndex}}\;
-  \emph{Observe reward $X \sim \nu_{I_t}$}\;
+  \emph{Observe reward $X_t \sim \nu_{I_t}$}\;
 }
 \caption{2D-SLR algorithm for Normal distributions with unknown mean and unknown variance}\label{algo_slr_2d}
 \end{algorithm}\DecMargin{1em}
@@ -1326,6 +1294,8 @@ The figure below shows the performance of all algorithms. We see that the proble
 
 One interesting observation, that we will observe in all experiments with synthetic Bernoulli arms, is the superior performance of the Bayes-UCB algorithm adapted from Kaufmann et al. (2012) which was originally designed for cumulative regret problems. Nonetheless, the algorithm will again and again proof to be the best performing. Compare with \autoref{sec:AppendixBUCB} for more analysis on the behavior of the Bayes-UCB algorithm on simulation 2. In particular, consider Figures 17 and 18 which show for individual arms, the distribution of pulls for that arm across simulations. These distributions highlight that both the APT and SLR fail in many iterations of the simulations to pull arms frequently enough to estimate their correct mean. The APT algorithm pulls the most difficult arm (Arm 6) in more than 5% of the simulations only once (during initialization). Consider arm 6 returns $X_{6,1} = 1$ as its first observation. Then $B_6(t+1) = 1 \cdot |1-0.05| = 0.95$. It will then not be pulled for a long time because the index is very large. Indeed, consider some arm that has been pulled 4000 times with $\mu_i(4000) = 0.03$. Then $B_i(t+1) = \sqrt{2000} \cdot |0.05-0.03| \approx 0.89$. Then even though we have basically no evidence for the performance of arm $6$, we would continue to pull arm $i$. Similar holds for the SLR algorithm. For both, the distribution of pulls for arm 6 is very flat across the interval of $[1,6000]$ pulls. In contrast, the distribution of pulls looks normally distributed for the Bayes-UCB algorithm with the mode between 2100 and 2300 pulls. The numerical problem that can arise for the APT and SLR algorithms might be weakened by the combination of a (weak) prior that shrinks the mean estimates, and the way in which quantiles are based on the posterior. Similar distributions are also reported for arms 1 and 10 in the appendix.
 
+We show empirically that part of this problem can be alleviated by including the D-Tracking rule proposed by Garivier and Kaufmann (2016) and discussed in \autoref{sec:OptimalBestArmIdentification} into the SLR algorithm.
+
 While the Bayes-UCB performance is impressive, we observe that also the Simple Likelihood Ratio strategy improves considerably upon the alternative strategies. SLR reaches the average empirical error of 0.1 within the budget, and it improves at an exponential rate within the entire budget; in contrast to APT which appears to improve linearly in the observations. At the end of the budget, the difference in the empirical error is nearly 10% between the two strategies.
 
 In order to assess how the SLR strategy improves upon the APT algorithm, it is useful to look at how often the algorithm pulls each arm. Given that we run the simulation 5000 times, we can compare across simulations how often an algorithm pulls each arm at a given round. Across the 5000 iterations, the algorithm should pull at any given iteration the arm most often that it thinks is the most difficult to classify. In the figure below, we plot the resulting curves where the value at an iteration is the 10-round moving average to remove some variation.
@@ -1343,13 +1313,15 @@ load(paste0(current_path, "loc6nt_comp_AugUCB_7000.Rda"))
 load(paste0(current_path, "loc6nt_comp_UNIFORM_7000.Rda"))
 load(paste0(current_path, "loc6nt_comp_APT_7000.Rda"))
 load(paste0(current_path, "loc6nt_comp_LR_7000.Rda"))
+load(paste0(current_path, "loc6nt_comp_LRD.Rda"))
 load(paste0(current_path, "loc6nt_comp_EVT.Rda"))
 
-alg_names <- c(rep(c("Uniform", "APT", "AugUCB","SLR", "B-UCB"), 
+alg_names <- c(rep(c("Uniform", "APT", "AugUCB","SLR", "SLR-D", "B-UCB"), 
                    each = 6991), rep("EVT", 6981))
-index <- c(rep(10:7000, times = 5), 20:7000)
+index <- c(rep(10:7000, times = 6), 20:7000)
 alg_res <- log(c(loc6nt_comp_UNIFORM_7000, loc6nt_comp_APT_7000,
                  loc6nt_comp_AugUCB_7000, loc6nt_comp_LR_7000,
+                 loc6nt_comp_LRD,
                  loc6nt_comp_BUCB_horizon_7000, loc6nt_comp_EVT))
 loc6nt_comp_res <- data.frame(index = index, names = alg_names, 
                             results = alg_res)
@@ -1403,15 +1375,17 @@ current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis
 load(file = paste0(current_path, "loc7nt_comp_UNIFORM_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_APT_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_LR_10000.Rda"))
+load(file = paste0(current_path, "loc7nt_comp_LRD_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_BUCB_horizon_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_AugUCB_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_EVT.Rda"))
 
-alg_names <- c(rep(c("Uniform", "APT", "AugUCB", "SLR", "B-UCB"), 
+alg_names <- c(rep(c("Uniform", "APT", "AugUCB", "SLR", "SLR-D", "B-UCB"), 
                    each = 9990), rep("EVT", times = 9979))
-index <- c(rep(11:10000, times = 5), 22:10000)
+index <- c(rep(11:10000, times = 6), 22:10000)
 alg_res <- log(c(loc7nt_comp_UNIFORM_10000, loc7nt_comp_APT_10000,
                  loc7nt_comp_AugUCB_10000, loc7nt_comp_LR_10000,
+                 loc7nt_comp_LRD_10000,
                  loc7nt_comp_BUCB_horizon_10000, loc7nt_comp_EVT))
 loc7nt_comp_res <- data.frame(index = index, Algorithm = alg_names, 
                             results = alg_res)
@@ -2023,6 +1997,79 @@ $\frac{1}{2}\mathbb{P}_{\mathcal{B}^0} (\mathcal{A} \cap \xi) \exp (- 3 \frac{T}
 & \geq \frac{1}{2}
 \end{align*}
 
+## Lower Bound on Probability of Error in FB-Top-$m$ with Gaussian Arms \label{sec:KaufmannLBTopMGaussian}
+
+While we would like to move beyond Gaussian distributions in the work at hand, the idea for the proof might show a way of how the ideas can be transferred to the thresholding bandit problem. We first state the result and then discuss the proof.
+
+\begin{lemma}[Lemma 15, Kaufmann et al., 2016] \label{theorem:KaufmannEtAlLemma15}
+Let $\nu$ and $\nu'$ be two bandit models such that $S^*_m(\nu) \neq S^*_m(\nu')$. Then
+
+\begin{equation*}
+\max \big( \mathbb{P}_{\nu}(S \neq S^*_m(\nu)), \mathbb{P}_{\nu'}(S \neq S^*_m(\nu')) \big) \geq \frac{1}{4} \exp \Big(-\sum_{a=1}^{K} \mathbb{E}_{\nu}[N_a] \KL(\nu_a, \nu_a') \Big).
+\end{equation*}
+\end{lemma}
+
+The following theorem only holds in the case of Gaussian bandit models with equal known variance.
+
+\begin{theorem}[Theorem 17, Kaufmann et al., 2016] \label{theorem:KaufmannEtAlTheorem17}
+
+Let $\mathcal{M}_m = \{\nu = (\nu_1, \dots, \nu_K): \nu_a = \mathcal{N}(\mu_a, \sigma^2), \mu_a \in \mathbb{R}, \mu_{[m]}\neq \mu_{[m+1]}\}.$ Furthermore, let $\nu$ be such that $\mu_1 > \dots > \mu_m > \mu_{m+1} > \dots > \mu_K$, and let
+
+\begin{equation*}
+H^+(\nu) = \sum_{a=1}^m \frac{2\sigma^2}{(\mu_a - \mu_{m+1})^2}, \quad H^-(\nu) = \sum_{a=m+1}^K \frac{2\sigma^2}{(\mu_m - \mu_a)^2} \quad
+and \quad
+H(\nu) = H^+(\nu) + H^-(\nu).
+\end{equation*}
+
+There exists $a \in \{1, \dots, m\}$ and $b \in \{m+1, \dots, K\}$ such that the bandit model $\nu^{[a,b]}$ described in Figure 4 (Kaufmann et al., 2016) satisfies $H(\nu^{[a,b]}) < H(\nu)$ and is such that
+
+\begin{equation*}
+\max \big( p_t(\nu),p_t(\nu^{[a,b]})\big) \geq \frac{1}{4} \exp \big(-\frac{4t}{\bar{H}(\nu)}\big), \quad where \quad \bar{H}(\nu) = \frac{H(\nu) \min(H^+(\nu),H^-(\nu))}{H(\nu)+\min(H^+(\nu),H^-(\nu))}
+\end{equation*}
+\end{theorem}
+
+Given that we are again in the Top-$m$ setting, the proof idea is similar to the proof of Theorem \ref{theorem:KaufmannEtAlTheorem4} in that we again consider problems in which we switch arms around the threshold implied by $\mu_{[m]}$ and $\mu_{[m+1]}$. Given that, one might hope to apply a similar proof to the thresholding bandit problem. As we see in \autoref{sec:AppendixAPTLB}, a flip around the threshold is used in the proof of the lower bound in Theorem 1 of Locatelli et al. (2016). However, there, again, the distributions are assumed to be Gaussian. This brings the big advantage that the Kullback-Leibler divergence is symmetric, and the feedback can take values on all $\mathbb{R}$. This is important, as is allows us to easily define alternative problems by a flip around the threshold with the same complexity as the original problem. This would not hold for KL-divergences that are not symmetric (e.g., for Bernoulli arms). For the full proof, refer to page 20 in Kaufmann et al. (2016).
+
+## Proof of Corollary 1
+
+**Proof**: The proof follows closely the proof of Theorem 12 in Kaufmann et al. (2016) and is again an application of their transportation Lemma, Lemma 2. 
+
+Consider the one-armed bandit problem, $K = 1$ with the canonical exponential family of distributions distribution $\nu_1$ parameterized by its mean $\mu_1$. Furthermore, given we are in the thresholding bandit problem, we have a threshold $\tau$ against which the arm is classified. Assume w.l.o.g. that for $\nu_1$, $\mu_1 \geq \tau$. Thus, $\mathcal{S}_{\tau}^* = \{1\}$. After $T$ rounds, a consistent algorithm returns with error probability $p_T(\nu)$ the guess $\hat{\mathcal{S}}_{\tau}$. Thus, we have for the event $A = (\hat{\mathcal{S}}_\tau = \{1\})$ the probability $\mathbb{P}_{\nu}(A)$. On the other hand, define the alternative model $\nu'$ with mean $\mu_1' < \tau$ such that the correct classification from $\nu$ is now wrong: $\mathcal{S}_{\tau}^* {'} = (\mathcal{S}_{\tau}^*)^C = \{\emptyset\}$. Consequently, since the algorithm is still consistent on this problem, we have that $\mathbb{P}_{\nu'}(A) = p_t(\nu')$. Thus, we expect that as we let $t$ increase, $\mathbb{P}_{\nu'}(A)$ will decrease while $\mathbb{P}_{\nu}(A)$ will increase.
+
+Indeed, given we consider only consistent algorithms, there should exist a number of samples for which the probability of the correct decision in problem $\nu$ is larger than the error probability in problem $\nu'$, that is: for every $\epsilon > 0$, there exists $t_0(\epsilon)$ such that for all $t \geq t_0(\epsilon)$ we have 
+
+\begin{equation}
+\mathbb{P}_{\nu'}(A) \leq \epsilon \leq \mathbb{P}_{\nu}(A). \label{eq:BoundForCorollary}
+\end{equation}
+
+Now, consider again Lemma 2 in Kaufmann et al. (2016). If we let the algorithm be such that $T = t$, we can apply the Lemma to the stopping time $\sigma = t$ a.s. and the event $A$ to get
+
+$$
+\mathbb{E}_{\nu'}[N_1(t)]\KL(\nu_1', \nu_1) \geq d(\mathbb{P}_{\nu'}(A), \mathbb{P}_{\nu}(A)).
+$$
+
+We can lower bound the RHS by using the bound on $\mathbb{P}_{\nu'}(A)$ given in \eqref{eq:BoundForCorollary} and the monotonicity of the binary relative entropy. We get:
+
+\begin{align*}
+\mathbb{E}_{\nu'}[N_1(t)]\KL(\nu_1', \nu_1) & = t \KL(\nu_1', \nu_1) \\
+& \geq d(\mathbb{P}_{\nu'}(A), \mathbb{P}_{\nu}(A)) \\
+& \geq d(\epsilon, 1- p_t(\nu)) \\
+& = \epsilon \log\Big(\frac{\epsilon}{1-p_t(\nu)}\Big) + (1-\epsilon) \log \Big(\frac{1-\epsilon}{p_t(\nu)}\Big) \\
+& \geq (1-\epsilon) \log \Big(\frac{1-\epsilon}{p_t(\nu)}\Big) + \epsilon \log(\epsilon) \\
+\end{align*}
+
+Letting $\epsilon \rightarrow 0$, we get
+
+$$
+t \KL(\nu_1', \nu_1) \geq \log \Big(\frac{1}{p_t(\nu)}\Big) = -\log p_t(\nu).
+$$
+To make the bound as tight as possible, we choose the alternative model that minimizes $\KL(\nu_1', \nu_1)$ while still ensuring that $\mathcal{S}_{\tau}^* {'} = \{\emptyset\}$. In our case of the thresholding bandit with univariate exponential family distributions, this is given by choosing $\mu_1' = \tau$. By pluggin in, we get the result:
+
+$$
+t \KL(\tau, \mu_1) \geq -\log p_t(\nu).
+$$
+
+
 ## Bayes-UCB Algorithm for the Thresholding Bandit Problem \label{sec:AppendixBUCB}
 
 We show how the Bayes-UCB algorithm (Algorithm 1, Kaufmann et al., 2012) is adopted to the thresholding bandit problem to be used in the experiments in chapter \autoref{chap:Experiments}.
@@ -2097,7 +2144,6 @@ rbind(loc6nt_BUCB_c15_ma, loc6nt_BUCB_ma, loc6nt_BUCB_c5_ma) %>%
 
 ## Empirical Comparison of APT, SLR, and Bayes-UCB in Experiment 2
 
-
 ```{r, echo = FALSE, message = FALSE, fig.align = "center", out.width = '80%', fig.cap = "Budget allocation for the Bayes-UCB algorithm in simulation 2 at three different values for the quantile parameter c."}
 current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/synthetic_experiments/"
 
@@ -2118,7 +2164,7 @@ Vertical line indicates pulls by uniform sampling given 10 arms in experiment.")
 ```{r, echo = FALSE, message = FALSE, fig.align = "center", out.width = '80%', fig.cap = "Budget allocation for the Bayes-UCB algorithm in simulation 2 at three different values for the quantile parameter c."}
 
 cbind.data.frame(
-  Arm = rep(c("01", "10"), each = 15000),
+  Arm = rep(c("01", "10"), each = 20000),
   rbind.data.frame(pulls_arm_1_long, pulls_arm_10_long),
   stringsAsFactors = FALSE
 ) %>% 

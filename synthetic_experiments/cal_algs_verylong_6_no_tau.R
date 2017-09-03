@@ -37,11 +37,9 @@ for(j in 1:5000) {
 ########################################################################
 
 load(paste0(current_path, "/loc6nt_BUCB_horizon_7000.Rda"))
-load(paste0(current_path, "/loc6nt_AugUCB_7000.Rda"))
-load(paste0(current_path, "/loc6nt_UNIFORM_7000.Rda"))
 load(paste0(current_path, "/loc6nt_APT_7000.Rda"))
 load(paste0(current_path, "/loc6nt_LR_7000.Rda"))
-load(paste0(current_path, "/loc6nt_EVT.Rda"))
+load(paste0(current_path, "/loc6nt_LRD.Rda"))
 
 table(loc6nt_LR_7000[[1]]$arm_sequence)
 table(loc6nt_LR_7000[[2]]$arm_sequence)
@@ -76,8 +74,14 @@ for(i in 1:5000){
 summary(pulls_of_arm_6_BUCB)
 quantile(pulls_of_arm_6_BUCB, 0.05)
 
+pulls_of_arm_6_LRD <- vector(length = 5000)
+for(i in 1:5000){
+  pulls_of_arm_6_LRD[i] <- table(loc6nt_LRD[[i]]$arm_sequence)[6]
+}
+
 pulls_arm_6 <- data.frame(APT = pulls_of_arm_6_APT,
                           SLR = pulls_of_arm_6_LR,
+                          SLRD = pulls_of_arm_6_LRD,
                           BUCB = pulls_of_arm_6_BUCB)
 
 pulls_arm_6 %>% gather(key = "Algorithm", value = "Pulls") %>%
@@ -88,6 +92,11 @@ pulls_arm_6 %>% gather(key = "Algorithm", value = "Pulls") %>%
 pulls_of_arm_1_LR <- vector(length = 5000)
 for(i in 1:5000){
   pulls_of_arm_1_LR[i] <- table(loc6nt_LR_7000[[i]]$arm_sequence)[1]
+}
+
+pulls_of_arm_1_LRD <- vector(length = 5000)
+for(i in 1:5000){
+  pulls_of_arm_1_LRD[i] <- table(loc6nt_LRD[[i]]$arm_sequence)[1]
 }
 
 pulls_of_arm_1_APT <- vector(length = 5000)
@@ -102,6 +111,7 @@ for(i in 1:5000){
 
 pulls_arm_1 <- data.frame(APT = pulls_of_arm_1_APT,
                           SLR = pulls_of_arm_1_LR,
+                          SLRD = pulls_of_arm_1_LRD,
                           BUCB = pulls_of_arm_1_BUCB)
 
 pulls_arm_1 %>% gather(key = "Algorithm", value = "Pulls") %>%
@@ -112,6 +122,11 @@ pulls_arm_1 %>% gather(key = "Algorithm", value = "Pulls") %>%
 pulls_of_arm_10_LR <- vector(length = 5000)
 for(i in 1:5000){
   pulls_of_arm_10_LR[i] <- table(loc6nt_LR_7000[[i]]$arm_sequence)[10]
+}
+
+pulls_of_arm_10_LRD <- vector(length = 5000)
+for(i in 1:5000){
+  pulls_of_arm_10_LRD[i] <- table(loc6nt_LRD[[i]]$arm_sequence)[10]
 }
 
 pulls_of_arm_10_APT <- vector(length = 5000)
@@ -126,6 +141,7 @@ for(i in 1:5000){
 
 pulls_arm_10 <- data.frame(APT = pulls_of_arm_10_APT,
                           SLR = pulls_of_arm_10_LR,
+                          SLRD = pulls_of_arm_10_LRD,
                           BUCB = pulls_of_arm_10_BUCB)
 
 pulls_arm_10 %>% gather(key = "Algorithm", value = "Pulls") %>%
@@ -139,6 +155,7 @@ pulls_arm_10_long <- pulls_arm_10 %>% gather(key = "Algorithm", value = "Pulls")
 
 save(pulls_arm_1_long, pulls_arm_6_long, pulls_arm_10_long,
      file = paste0(current_path, "loc6nt_pulls_of_arms_vis.Rda"))
+load(file = paste0(current_path, "loc6nt_pulls_of_arms_vis.Rda"))
 
 pulls_arm_6_long %>%
   ggplot(aes(x = Pulls)) +
@@ -152,7 +169,7 @@ Vertical line indicates pulls by uniform sampling given 10 arms in experiment.")
   theme_bw()
 
 cbind.data.frame(
-  Arm = rep(c("01", "10"), each = 15000),
+  Arm = rep(c("01", "10"), each = 20000),
   rbind.data.frame(pulls_arm_1_long, pulls_arm_10_long),
   stringsAsFactors = FALSE
 ) %>% 
@@ -224,6 +241,26 @@ loc6nt_comp_EVT <- compare_to_ground_truth(mean_loc6nt, loc6nt_EVT,
 save(loc6nt_comp_EVT, file = paste0(current_path, "loc6nt_comp_EVT.Rda"))
 rm(loc6nt_EVT)
 gc()
+
+########################################################################
+# Probability of Improvement
+
+loc6nt_PI <- para_bandit_sim_PI(data = data_list6, 
+                                rounds = 7000,
+                                 tau = tau_loc6nt, 
+                                 epsilon = epsilon_loc6nt, 
+                                 alpha = tau_loc6nt, 
+                                 beta = 1-tau_loc6nt,
+                                tadj = FALSE)
+save(loc6nt_PI, 
+     file = paste0(current_path, "loc6nt_PI.Rda"))
+loc6nt_comp_PI <- compare_to_ground_truth(mean_loc6nt, 
+                                          loc6nt_PI,
+                                          tau_loc6nt,
+                                          epsilon_loc6nt)$mean
+save(loc6nt_comp_PI, file = paste0(current_path, 
+                                   "loc6nt_comp_PI.Rda"))
+
 
 ########################################################################
 

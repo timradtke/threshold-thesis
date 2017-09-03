@@ -82,6 +82,21 @@ rm(loc7nt_LR_10000, loc7nt_comp_LR_10000)
 gc()
 
 ########################################################################
+# Standard Likelihood Ratio with D-Tracking Rule
+system.time(loc7nt_LRD_10000 <- para_bandit_sim_LRD(data = data_list7_10000, 
+                                                  rounds = 10000, 
+                                                  tau = tau_loc7nt, 
+                                                  epsilon = epsilon_loc7nt))
+
+save(loc7nt_LRD_10000, file = paste0(current_path, "loc7nt_LRD_10000.Rda"))
+loc7nt_comp_LRD_10000 <- compare_to_ground_truth(mean_loc7nt, loc7nt_LRD_10000, 
+                                                tau_loc7nt, epsilon_loc7nt)$mean
+save(loc7nt_comp_LRD_10000, file = paste0(current_path, 
+                                         "loc7nt_comp_LRD_10000.Rda"))
+rm(loc7nt_LRD_10000)
+gc()
+
+########################################################################
 # Standard Uniform
 system.time(loc7nt_UNIFORM_10000 <- para_bandit_sim_uniform(data = data_list7_10000, 
                                                          rounds = 10000))
@@ -146,6 +161,7 @@ save(loc7nt_comp_AugUCB_10000, file = paste0(current_path,
 load(file = paste0(current_path, "loc7nt_comp_UNIFORM_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_APT_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_LR_10000.Rda"))
+load(file = paste0(current_path, "loc7nt_comp_LRD_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_BUCB_horizon_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_AugUCB_10000.Rda"))
 load(file = paste0(current_path, "loc7nt_comp_EVT.Rda"))
@@ -155,5 +171,6 @@ lines(log(loc7nt_comp_BUCB_horizon_10000), col = "green")
 lines(log(loc7nt_comp_UNIFORM_10000), col = "darkblue")
 lines(log(loc7nt_comp_APT_10000), col = "red")
 lines(log(loc7nt_comp_LR_10000), col = "darkred")
+lines(log(loc7nt_comp_LRD_10000), col = "darkgreen")
 lines(log(loc7nt_comp_AugUCB_10000), col = "darkgreen")
 lines(log(loc7nt_comp_EVT), col = "blue")

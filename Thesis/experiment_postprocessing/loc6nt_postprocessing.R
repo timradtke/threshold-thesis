@@ -53,6 +53,13 @@ save(loc6nt_LR_arm_seq, file = "/Users/timradtke/Dropbox/1Master/Master Thesis/t
 rm(loc6nt_LR_7000, loc6nt_LR_arm_seq)
 gc()
 
+load(paste0(current_path, "loc6nt_LRD.Rda"))
+loc6nt_LRD_arm_seq <- data.frame(t(laply(loc6nt_LRD, 
+                                        function(x) x$arm_sequence)))
+save(loc6nt_LRD_arm_seq, file = "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/Thesis/experiment_postprocessing/loc6nt_LRD_arm_seq.Rda")
+rm(loc6nt_LRD, loc6nt_LRD_arm_seq)
+gc()
+
 
 ##########################################################
 
@@ -86,6 +93,26 @@ loc6nt_LR_ma <- data.frame(algorithm = rep("SLR",6981),
                            lapply(loc6nt_LR_arm_seq_summary[,-1], FUN = zoo::rollapply, width = 10, mean)) %>%
   gather(arm, mean, -index, -algorithm)
 
+load("/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/Thesis/experiment_postprocessing/loc6nt_LRD_arm_seq.Rda")
+
+loc6nt_LRD_arm_seq_summary <- loc6nt_LRD_arm_seq %>% 
+  tbl_df() %>% 
+  mutate(index = 1:7000) %>%
+  gather(key = iter, value = arm, -index) %>%
+  dplyr::filter(index > 10) %>%
+  dplyr::group_by(arm, index) %>%
+  dplyr::summarize(n = n()) %>%
+  ungroup() %>% 
+  spread(arm, n) %>%
+  as.data.frame()
+
+names(loc6nt_LRD_arm_seq_summary)[-1] <- c(paste0("V0", 1:9), "V10")
+
+loc6nt_LRD_ma <- data.frame(algorithm = rep("SLR-D",6981),
+                           index = 1:6981,
+                           lapply(loc6nt_LRD_arm_seq_summary[,-1], FUN = zoo::rollapply, width = 10, mean)) %>%
+  gather(arm, mean, -index, -algorithm)
+
 load("/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/Thesis/experiment_postprocessing/loc6nt_APT_arm_seq.Rda")
 
 loc6nt_APT_arm_seq_summary <- loc6nt_APT_arm_seq %>% 
@@ -106,7 +133,7 @@ loc6nt_APT_ma <- data.frame(algorithm = rep("APT",6981),
                           lapply(loc6nt_APT_arm_seq_summary[,-1], FUN = zoo::rollapply, width = 10, mean)) %>%
   gather(arm, mean, -index, -algorithm)
 
-rbind(loc6nt_APT_ma, loc6nt_LR_ma) %>%
+rbind(loc6nt_APT_ma, loc6nt_LR_ma, loc6nt_LRD_ma) %>%
   ggplot(aes(x = index, y = mean, group = arm, color = arm)) +
   geom_line(size = 0.3) +
   facet_grid(.~algorithm) +
@@ -187,4 +214,5 @@ rbind(loc6nt_BUCB_ma, loc6nt_BUCB_c5_ma, loc6nt_BUCB_c15_ma) %>%
 
 load(file = "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/Thesis/experiment_postprocessing/loc6nt_ma.Rda")
 
-save(loc6nt_LR_ma, loc6nt_APT_ma, loc6nt_BUCB_ma, loc6nt_BUCB_c5_ma, loc6nt_BUCB_c15_ma, file = "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/Thesis/experiment_postprocessing/loc6nt_ma.Rda")
+save(loc6nt_LR_ma, loc6nt_LRD_ma, loc6nt_APT_ma, loc6nt_BUCB_ma, loc6nt_BUCB_c5_ma, loc6nt_BUCB_c15_ma, file = "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/Thesis/experiment_postprocessing/loc6nt_ma.Rda")
+load(file = "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/Thesis/experiment_postprocessing/loc6nt_ma.Rda")
