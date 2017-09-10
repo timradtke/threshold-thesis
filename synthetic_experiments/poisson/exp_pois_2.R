@@ -44,6 +44,7 @@ lines(log(pois2_comp_UNIFORM), col = "black")
 lines(log(pois2_comp_APT), col = "darkgreen")
 lines(log(pois2_comp_LR), col = "blue")
 lines(log(pois2_comp_EVT), col = "red")
+lines(log(pois2_comp_AugUCB), col = "red")
 
 ########################################################################
 # Poisson Likelihood Ratio
