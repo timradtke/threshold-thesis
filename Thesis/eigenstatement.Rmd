@@ -1,0 +1,30 @@
+---
+output: pdf_document
+header-includes:
+   #- \documentclass[a4paper,twoside,english]{article}
+   - \usepackage{setspace}
+---
+
+\pagenumbering{gobble}
+\normalsize Copyright © 2017 Tim Radtke \newline
+tim@timradtke.net \newline
+
+\vspace*{0.5\baselineskip}
+
+\normalsize Humboldt-Universität zu Berlin \newline
+Unter den Linden 6 \newline
+10099 Berlin \newline
+Germany \newline
+
+\vspace*{3\baselineskip}
+
+\Large{\bf Selbstständigkeitserklärung\\}
+
+\vspace*{1.5\baselineskip}
+
+
+\large Ich erkläre hiermit, dass ich die vorliegende Arbeit selbstständig und nur unter Verwendung der angegebenen Quellen und Hilfsmittel angefertigt habe und noch nicht für andere Prüfungen eingereicht habe. Sämtliche Quellen einschließlich Internetquellen, die unverändert oder abgewandelt wiedergegeben werden, insbesondere Quellen für Texte, Grafiken, Tabellen und Bilder, sind als solche kenntlich gemacht. Mir ist bekannt, dass bei Verstößen gegen diese Grundsätze ein Verfahren wegen Täuschungsversuchs bzw. Täuschung eingeleitet wird.
+
+\vspace*{3\baselineskip}
+
+Berlin, den 18. September 2017

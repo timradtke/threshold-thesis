@@ -33,22 +33,6 @@ current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis
 
 ####################################################################
 
-data_amo4 <- pv_list
-data_amo4_wide <- pv_products_wide
-data_amo4_own_means <- pv_own_means
-data_amo4_next_means <- pv_next_means
-data_amo4_mean_secondhalf <- colMeans(data_amo4_wide[15081:25160,])
-data_amo4_mean_middlehalf <- colMeans(data_amo4_wide[10081:20160,])
-data_amo4_mean_firsthalf <- colMeans(data_amo4_wide[1:15080,])
-save(data_amo4, file = paste0(current_path, "data_amo4.Rda"))
-save(data_amo4_wide, file = paste0(current_path, "data_amo4_wide.Rda"))
-save(data_amo4_own_means, file = paste0(current_path, "data_amo4_own_means.Rda"))
-save(data_amo4_next_means, file = paste0(current_path, "data_amo4_next_means.Rda"))
-save(data_amo4_mean_firsthalf, file = paste0(current_path, "data_amo4_mean_firsthalf.Rda"))
-save(data_amo4_mean_secondhalf, file = paste0(current_path, "data_amo4_mean_secondhalf.Rda"))
-rm(pv_list, pv_own_means, pv_next_means, pv_products_wide)
-gc()
-
 load(paste0(current_path, "data_amo4_mean_firsthalf.Rda"))
 load(paste0(current_path, "data_amo4_mean_secondhalf.Rda"))
 load(paste0(current_path, "data_amo4_own_means.Rda"))
@@ -56,34 +40,27 @@ load(paste0(current_path, "data_amo4.Rda"))
 tau_amo4 <- 5/60
 epsilon_amo4 <- 0
 
+data_amo5 <- data_amo4
+for(i in 1:length(data_amo5)) {
+  data_amo5[[i]]$V149 <- NULL
+}
+
+data_amo5_mean_firsthalf <- data_amo4_mean_firsthalf[-5]
+data_amo4_own_means <- data_amo4_own_means[-5]
+
 ########################################################################
 # Standard Likelihood Ratio
-system.time(amo4_LR <- para_bandit_sim_LR(data = data_amo4, 
+system.time(amo5_LR <- para_bandit_sim_LR(data = data_amo5, 
                                           rounds = 10080, 
                                           tau = tau_amo4, 
                                           epsilon = epsilon_amo4))
 
-save(amo4_LR, file = paste0(current_path, "amo4_LR.Rda"))
-#load(file = paste0(current_path, "amo4_LR.Rda"))
-amo4_comp_LR <- compare_to_ground_truth(data_amo4_mean_firsthalf, 
-                                        amo4_LR, 
+save(amo5_LR, file = paste0(current_path, "amo5_LR.Rda"))
+amo5_comp_LR <- compare_to_ground_truth(data_amo5_mean_firsthalf, 
+                                        amo5_LR, 
                                         tau_amo4, epsilon_amo4)$mean
-amo4_compholdout_LR <- compare_to_ground_truth(data_amo4_mean_secondhalf, 
-                                               amo4_LR, 
-                                               tau_amo4, epsilon_amo4)$mean
-amo4_compown_LR <- compare_to_cv_data(data_amo4_own_means, amo4_LR, 
-                                      tau_amo4, epsilon_amo4)$mean
-amo4_simpleregret_LR <- get_simple_regret(data_amo4_mean_firsthalf, 
-                                          amo4_LR, 
-                                          tau_amo4, epsilon_amo4)$mean
-save(amo4_comp_LR, file = paste0(current_path, "amo4_comp_LR.Rda"))
-save(amo4_compholdout_LR, file = paste0(current_path, 
-                                        "amo4_compholdout_LR.Rda"))
-save(amo4_compown_LR, file = paste0(current_path, 
-                                    "amo4_compown_LR.Rda"))
-save(amo4_simpleregret_LR, file = paste0(current_path, 
-                                         "amo4_simpleregret_LR.Rda"))
-rm(amo4_LR, amo4_comp_LR)
+save(amo5_comp_LR, file = paste0(current_path, "amo5_comp_LR.Rda"))
+rm(amo5_LR, amo5_comp_LR)
 gc()
 
 ########################################################################
@@ -261,12 +238,13 @@ load(paste0(current_path, "amo4_comp_AugUCB.Rda"))
 load(paste0(current_path, "amo4_comp_EVT.Rda"))
 load(paste0(current_path, "amo4_comp_BUCB.Rda"))
 
-plot(c(0,10080), c(0, -1.5), type = "n")
+plot(c(0,10080), c(0, -3), type = "n")
 lines(log(amo4_comp_UNIFORM), col = "black")
 lines(log(amo4_comp_APT), col = "blue")
 lines(log(amo4_comp_AugUCB), col = "green")
 lines(log(amo4_comp_EVT), col = "darkgreen")
 lines(log(amo4_comp_LR), col = "red")
+lines(log(amo5_comp_LR), col = "red")
 lines(log(amo4_compown_LR), col = "blue")
 lines(log(amo4_comp_BUCB), col = "violet")
 abline(h = log(0.1), lty = 2)

@@ -1,0 +1,440 @@
+---
+title: "On Pure Exploration, Thresholding Bandits, and Kullback-Leibler Divergence"
+header-includes:
+   #- \documentclass[a4paper,twoside,english]{article}
+   - \usepackage[retainorgcmds]{IEEEtrantools}
+   - \usepackage{bm}
+   - \usepackage{amsmath}
+   - \usepackage{bbm}
+   - \usepackage{hyperref}
+   - \usepackage[lined,boxed]{algorithm2e}
+   - \newtheorem{theorem}{Theorem}
+   - \newtheorem{definition}{Definition}
+   - \newtheorem{lemma}{Lemma}
+   - \newtheorem{corollary}{Corollary}
+   - \newcommand{\KL}{\,\text{KL}}
+   - \newcommand{\der}{\,\text{d}}
+   - \newcommand*{\Alignyesnumber}{\refstepcounter{equation}\tag{\theequation}}%
+   #- \usepackage[top=1.5cm, bottom=1.5cm, outer=5cm, inner=2cm, heightrounded, marginparwidth=2.5cm, marginparsep=2cm]{geometry}
+   #- \usepackage{fontspec}
+   #-   \setmainfont{Arial}
+keep_tex: TRUE
+output:
+  pdf_document:
+    number_sections: true
+    keep_tex: true
+    toc: true
+    toc_depth: 2
+    #latex_engine: xelatex
+fontsize: 11pt
+urlcolor: blue
+---
+
+\newpage
+
+# Experiments \label{chap:Experiments}
+
+We now compare the algorithms introduced in the previous chapters in simulations and experiments against each other to evaluate their performance. We first perform experiments on synthetic data in \autoref{sec:SyntheticData}. We then use Bernoulli time series data collected by the online shop Amorelie to evaluate the algorithms on real world data in \autoref{sec:RealData}.
+
+We compare the empirical performance of the SLR algorithm not only against the APT algorithm, but also against the variance-based algorithms. Thus we also compare the variance-based algorithms for the first time directly against each other. As benchmark, the uniform sampling strategy is included. Additionally, we include the Bayes-UCB algorithm introduced in Kaufmann et al. (2012) for the cumulative regret setting. See \autoref{sec:AppendixBUCB} in the appendix for how we adapt the Bayes-UCB algorithm to the thresholding bandit problem.
+
+## Experiments on Web Analytics Data \label{sec:RealData}
+
+In the following, we present the results of two experiments performed on a real world data set. While most multi-armed bandit algorithms are assessed on synthetic data, as we have done in \autoref{sec:SyntheticData}, a real world data set is useful to observe how algorithms perform in presence of, for example, not perfectly i.i.d. samples. Every experimenter of course tries to run their algorithms under settings as ideal as possible, but there will always be problems. Thus our experiments serve as a first robustness check on the algorithms introduced before.
+
+### The Data Set
+
+Data have been collected by the German online shop [Amorelie](https://amorelie.de) as part of standard website analytics. For 197 selected products, we observe the number of users visiting each product's detail page (PDP) during a given minute. The data set we use here has been collected during the entire month of November 2016. It can be considered time series data sampled at minutely frequency. Thus the data contain 43200 observations per product, and in total 8510400 observations.
+
+Since we would like to run an offline comparison of bandit algorithms, it is important to have at each time point an observation for each arm. Given that, it is easy to evaluate the perfomance of algorithms that make different decisions at different point in times and thus do not observe the same samples. By having an observation for each arm at any given time point, each algorithm had at least the opportunity to observe a certain sample. Other papers (for example, Li et al., 2011) have solved this problem by using a sample drawn uniformly during, for example, an A/B test. Then, if the next observation in the sample is not from the same arm that the algorithm would like to draw from, observations are discarded until the next observation from the selected arm.
+
+The choice of using what is essentially multivariate time series data as the sample offers a simple way of running the algorithms just as often on the real data as on simulated data. The goal is to perform 5000 runs over the sample to confidently assess the performance. Since we would like to preserve potential time dependencies in the data, a simple resampling of the data is not an option to create the needed 5000 variations of the sample. Instead we perform time series cross validation. To preserve the autocorrelation, one can create different samples of $n$ observations by sliding a window of size $n$ over the time series. Moving the window one period (in our case one minute) at a time, one ensures that no sample shares start and end observation with another sample (see Figure 8)^[The graphic is adapted from a graphic by Rob J. Hyndman available at <https://gist.github.com/robjhyndman/9fa152c585442bb076eb42a30a020091>]. In particular, this means for a given bandit strategy and two samples that the observations that the algorithm collects as feedback during the initialization phases differ from sample to sample and are never the same. This is because during initialization every strategy pulls arms $1, ..., K$ (or $1,...,2K$ for EVT) once in this order.
+
+```{r, echo = FALSE, message = FALSE, fig.align = "center", out.width = '80%', fig.cap = "We use time series crossvalidation, to create many samples from one data set."}
+plot(0,0,xlim=c(0,28),ylim=c(0,1),
+     xaxt="n",yaxt="n",bty="n",xlab="",ylab="",type="n")
+i <- 1
+for(j in 1:20)
+{
+  test <- (6+j):26
+  train <- 1:(5+j)
+  pre_train <- 1:(j-1)
+  arrows(0,1-j/20,27,1-j/20,0.05)
+  points(train,rep(1-j/20,length(train)),pch=19,col="blue")
+  if(j > 1)
+    points(pre_train, rep(1-j/20,length(pre_train)),pch=19,col="gray")
+  if(length(test) >= i)
+    points(test[i], 1-j/20, pch=19, col="red")
+  if(length(test) >= i)
+    points(test[-i], rep(1-j/20,length(test)-1), pch=19, col="gray")
+  else
+    points(test, rep(1-j/20,length(test)), pch=19, col="gray")
+}
+text(28,.95,"time")
+```
+
+While the data set consists of count data (the number of visits to a PDP during a given minute), we binarize the data by applying a certain threshold. If the count is above this threshold, the new observation is $1$, else $0$. Thus we have a binary time series of length $60\cdot 24 \cdot 30 = 43200$ for each of the 197 products. Given that the number of visitors that reach a given PDP is likely to vary by time of day, by day, and in general over time, we expect the mean of the time series to not be stable over time. For example, less visitors visit during night than during the evening. This leads to a decrease in the average number of visits, and creates a daily seasonality. On the other hand, more users may visit the site during a weekend, thus leading to a spike on Saturdays and Sundays. Because of the latter time dependency, it is best practice to run online A/B tests for at least a week^[See for example the "A/B Testing in the Wild" presentation by Emily Robinson, <https://youtu.be/SF-ryGgLOgQ>], or an integer multiple of weeks, so as to take into account the weekly seasonality in the time series. For this reason, the experiments we present below are run on $60 \cdot 24 \cdot 7 = 10080$ observations for each arm, so as to have a sample for one full week.
+
+```{r, echo = FALSE}
+load("/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/arms_example_binary.Rda")
+
+knitr::kable(arms_example_binary, caption = "Example of the binary time series data for five products.")
+```
+
+We can look at summary statistics for the sample means of the 197 products over the month of November to get a first impression of the binary data we are dealing with. We see that most products have a small mean, which is very common also for actual conversion rate or click-through rate data that can be tested with A/B tests or multi-armed bandits. Yet the sample of products contains a few outliers with very large view rates, with a maximum rate of 78%. If we used a threshold $\gamma$ to binarize the count data, then this means that on average every fourth minute the count of visitors was below $\gamma$ for this product. On the other hand, we conclude that using thresholding bandit strategies to test the products against a threshold of for example $\tau = \frac{2}{60} = 0.0333$ or $\tau = \frac{5}{60} = 0.083$ is likely to create more complex problems than a threshold of, say, $\tau = \frac{15}{60} = 0.25$ would.
+
+```{r amo_data_summary, echo = FALSE, message = FALSE}
+load(file = "/Users/timradtke/Desktop/thesis_data/pv_summary.Rda")
+
+knitr::kable(pv_summary, digits = 3, col.names = c("Mean", "Minimum", "25% Quantile", "Median", "75% Quantile", "Maximum"), caption = "Summary Statistics for View Rates of 197 Products")
+```
+
+### Experiment 1
+
+In the first experiment, we pick ten arms randomly from the set of 197 arms. The experiment is run with a budget of $T=10080$ samples for each of the $5000$ iterations for which we repeat the experiment. Given the time series cross-validation idea described above, this means that in total, $15080$ observations of the $43200$ available observations per arm are used in training. In the thresholding bandit problem, we classify arms as below or above a threshold. Thus we can evaluate the strategies also based on whether their classifications are correct in a holdout sample (the time period after training). As this holdout sample, we can use the 10080 observations in our data set that follow the first 15080 observations used in training. In the table below, we present the count rates of the ten products for both training and test samples.
+
+```{r experiment1_arm_means, echo = FALSE, message = FALSE}
+
+load("/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/data_amo3_mean_firsthalf.Rda")
+load("/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/data_amo3_mean_secondhalf.Rda")
+
+Training <- data_amo3_mean_firsthalf
+Test <- data_amo3_mean_secondhalf
+tau <- 2/60
+TrainingMinusTau <- Training - tau
+
+#knitr::kable(rbind(Training, Test, TrainingMinusTau)[,order(Training)], digits = 3, col.names = names(data_amo3_mean_firsthalf)[order(Training)],
+#             caption = "Count rates for ten products for both training and test sample.")
+knitr::kable(rbind(Training, Test)[,order(Training)], digits = 3, col.names = names(data_amo3_mean_firsthalf)[order(Training)],
+             caption = "Training and test sample means for experiment 1.")
+
+```
+
+We see that while the rates do vary across training and test samples, they are relatively stable which is likely due to the fact that the samples come from an entire week's worth of observations. In particular, since we test against a threshold of $\tau = \frac{2}{60} = 0.0333$ in this experiment, the true classifications of arms do not differ across training and test data. A correct classification after training will be correct in the test set. For the rest of the analysis, we thus evaluate the performance using the training rates.
+
+```{r, include = FALSE}
+#When comparing the rates against the threshold, we see that three products are below the already small threshold. Product $V64$ seems to be especially difficult to classify correctly, even without time dependency. On the other hand, arms $V119$ and $V118$ should be much easier than the rest.
+```
+
+In order to visualize the time dependency that we expect for our samples, we plot a moving average of the mean of the time series for the first week of data. To remove daily seasonality, we select a sliding window of $60\cdot24 = 1440$ observations. To make the time dependency even more obvious, we contrast the actual data against synthetic data generated using the sample means of the actual data.
+
+The graph again underlines that arm $V64$ is likely to be very difficult to classify given that its moving average crosses the threshold twice. The same is true for arm $V139$, which is not visible when looking at the overall mean alone. Furthermore, arms $V159$ and $V189$ come very close to the threshold at times.
+
+```{r, echo = FALSE, message = FALSE, fig.align = "center", out.width = '80%', fig.cap = "Moving average for the arms used in experiment 1."}
+library(zoo)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+load("/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/data_amo3_wide.Rda")
+
+real_daily <- data.frame(index = 1:8641,
+                                lapply(data_amo3_wide[1:10080,], FUN = rollapply, 
+                                       width = 24*60, mean)) %>%
+  gather(arm, mean, -index) %>%
+  mutate(source = rep("Real", 86410)) %>%
+  rename(Arm = arm)
+
+real_means <- colMeans(data_amo3_wide[1:10080,])
+tau_amo3 <- 2/60
+
+syn_data <- data.frame(rep(NA, times = 10080))
+set.seed(124632728)
+for(i in 1:length(real_means)) {
+  syn_data[[i]] <- as.numeric(purrr::rbernoulli(10080, p  = real_means[i]))
+}
+names(syn_data) <- names(data_amo3_wide)
+
+syn_daily <- data.frame(source = rep("Synthetic", 8641),
+                        index = 1:8641,
+                        lapply(syn_data, FUN = zoo::rollapply, width = 24*60, mean)) %>%
+  gather(arm, mean, -index, -source) %>%
+  rename(Arm = arm)
+
+rbind(real_daily, syn_daily) %>%
+  ggplot(aes(x = index, y = mean, group = Arm, color = Arm)) +
+  geom_line(size = 0.4) +
+  geom_hline(aes(yintercept = tau_amo3), linetype = 2) +
+  facet_grid(.~source) + 
+  labs(#title = "Moving average over 24*60 observations (1 day)", 
+       subtitle = "Dashed line indicates the threshold.", 
+       x = "Index", y = "One day moving average") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+These difficulties seem to have a large impact on the performance of all algorithms. Given that the data are binary observations, we can compare all algorithms in a setting in which one expects all assumptions to hold before having observed the data: The distributions are sub-Gaussian for the APT algorithm, bounded between $0$ and $1$ for the variance-based algorithms, and assumed to be Bernoulli for the SLR algorithm. Additionally, we use the Bayes-UCB algorithm as it performed best on the synthetic data. We set $\epsilon = 0$, and $\tau = 2/60$. For the AugUCB algorithm we use the parameters as in Mukherjee et al. (2017), that is, $\rho = 1/3$. For Bayes-UCB we set the prior to $\alpha_0 = \tau$ and $\beta_0 = 1-\tau$, and pick $c=1$.
+
+```{r, echo = FALSE, fig.align = "center", out.width = '80%', fig.cap = "Performance comparison of algorithms for experiment 1."}
+library(ggplot2)
+current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/"
+
+load(paste0(current_path, "amo3_comp_BUCB.Rda"))
+load(paste0(current_path, "amo3_comp_APT.Rda"))
+load(paste0(current_path, "amo3_comp_UNIFORM.Rda"))
+load(paste0(current_path, "amo3_comp_AugUCB.Rda"))
+load(paste0(current_path, "amo3_comp_LR.Rda"))
+load(paste0(current_path, "amo3_comp_EVT.Rda"))
+
+alg_names <- c(rep(c("Uniform", "APT", "AugUCB","SLR","B-UCB"), 
+                   each = 10071), rep("EVT", 10061))
+index <- c(rep(10:10080, times = 5), 20:10080)
+alg_res <- (c(amo3_comp_UNIFORM, amo3_comp_APT, amo3_comp_AugUCB, amo3_comp_LR, amo3_comp_BUCB, amo3_comp_EVT))
+loc3_comp_res <- data.frame(index = index, Algorithm = alg_names, 
+                            results = alg_res)
+ggplot(loc3_comp_res, aes(x = index, y = results)) + 
+  geom_line(aes(group = Algorithm, color = Algorithm)) +
+  geom_hline(aes(yintercept = (0.1)), linetype = 2, color = "lightgrey") +
+  labs(#title = "Results of Real Data Experiment 1", 
+       #subtitle = paste0("Dashed Line indicates Error = 0.1."), 
+       y = "Error (log10 scale)", x = "Round Index") +
+  theme_bw() +
+  scale_y_log10()
+```
+
+Compared to the previous simulations with synthetic data, the results are dramatically poor. First of all, we see that all strategies perform poorly. All of them end above the 10% error rate mark after 1 week of data. Second, the uniform sampling strategy fares best when evaluated against the sample mean of all observations used during training. This of course is the opposite of what we would like to see, and the opposite of what we saw on the synthetic data, where we were able to improve upon the naive strategy. Third, again in contrast to the results on synthetic data, we observe non-monotonicity in the error curves. Given that the highs and lows for the different models run mostly parallel, it stands to reason that this effect is caused by the variation in means of the arms over time. Indeed, roughly comparing the error curves to the moving averages in the previous figure, the increase in errors after round $5000$ and the decreasing error after round $7500$ seems to line up with the fluctuations observed in the data. Given that we evaluate the models against a sample mean of all observations, it is not surprising that the uniform sampling strategy has a certain advantage when it comes to "factoring out" the seasonalities. In contrast, the adaptive sampling schemes try to adapt more or less quickly to the changes in the means--a feature that would be valuable in a cumulative regret multi-armed bandit setting. Here, however, it leads to wrong estimates of the overall sample mean.
+
+If we focus on a comparison of adaptive sampling strategies and less on their globally bad performance, we see that the variance based strategies perform worse than APT and SLR. Very dramatic is the behavior of the Augmented-UCB algorithm, which first seems to perform well; this, however, is a result of it pulling arms mostly uniformly, until it starts to adapt its sampling and discarding arms after nearly 5000 rounds. The result is a dramatic increase in error which leads to the worst performance at the budget horizon. The differences between APT, SLR, and EVT are small, and their performance fluctuates in sync. None of them is really able to converge due to the changes in the underlying means. Advantageous only seems to be the fact that their behavior is less erratic than that of the AugUCB strategy given that they do not discard arms.
+
+### Experiment 2
+
+In order to underline the results of the previous experiment, we perform a second experiment using the data collected by Amorelie. We increase the threshold to $\tau = \frac{5}{60} = 0.833$ to make the problem in general slightly easier, and again pick 10 arms at random from the data set of 197 arms. We again use a sliding window of $10080$ observations to create $5000$ iterations and look at the training and test sample means as in the previous experiment.
+
+Some arms, in particular $V110$ and $V150$, but also $V103$, $V149$, $V104$, and $V112$ are quite close to the threshold. Two arms, $V129$ and $V32$ appear to have basically no positive observation in the training set. On the other hand, arm $V154$ is larger than the threshold by a fair amount and should be easier to classify.
+
+```{r experiment2_arm_means, echo = FALSE, message = FALSE}
+
+load("/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/data_amo4_mean_firsthalf.Rda")
+load("/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/data_amo4_mean_secondhalf.Rda")
+
+Training <- data_amo4_mean_firsthalf
+Test <- data_amo4_mean_secondhalf
+tau <- 5/60
+TrainingMinusTau <- Training - tau
+
+#knitr::kable(rbind(Training, Test, TrainingMinusTau)[,order(Training)], #digits = 3, col.names = names(data_amo4_mean_firsthalf)[order(Training)],
+#             caption = "Count rates for ten products for both training #and test sample.")
+
+knitr::kable(rbind(Training, Test)[,order(Training)], digits = 3, col.names = names(data_amo4_mean_firsthalf)[order(Training)],
+             caption = "Training and test sample means for experiment 2.")
+
+```
+
+As in the previous experiment, we can also take a look at the one day moving averages of the arms to quickly assess the time dependency of the means. Given those and the previous experiment, the performance results of Experiment 2 shown in Figure 13 are not surprising. We recognize the same structure as previously. The uniform sampling strategy performs the best. The adaptive sampling strategies perform bad, do not converge, and end above the 10% error rate mark. This time, AugUCB is not (yet) the worst performing strategy, but equally erratic after it eventually adapts its sampling. This time around, it even has two spikes in its adaptive phase. Again, APT, SLR, and EVT perform in sync and more or less equally bad, with EVT slightly better than APT and SLR this time around. Interestingly, Bayes-UCB performs clearly worst of all strategies. Its performance changes at the same time as AugUCB starts to adapt its sampling strategy. This last fact is of particular interest, as Bayes-UCB is dramatically better than the other strategies in experiments on synthetic data. 
+
+On the right hand side of figure 13, the performance of the algorithms on synthetic data from Bernoulli distributions is depicted. These synthetic samples were sampled from distributions with mean equal to the sample means of the real data. We thereby create similar samples that are perfectly i.i.d. On this data, Bayes-UCB performs very well, ending at an average error rate of about 0.1%. This mirrors its performance observed in the previous simulations with synthetic data. Also all other adaptive strategies perform clearly better now, and their error rates are strictly decreasing. Interestingly, the uniform sampling scheme is now clearly worse than in the experiment on real data; it does no longer have the advantage of sampling the different mean phases at a representative rate. Excluding Bayes-UCB, we see that the SLR algorithm performs the best, followed by the variance-based algorithms. APT comes in at the same error rate as uniform sampling. While the difference between SLR and EVT is less than 2% (1.2% vs 3%), the difference to uniform sampling (10%) is relevant. The error rate of 10% is achieved by SLR about 1000 observations earlier than by EVT.
+
+```{r, echo = FALSE, message = FALSE, fig.align = "center", out.width = '80%', fig.cap = "Moving average of arms used in experiment 2. Dashed line indicates the threshold."}
+library(zoo)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+load("/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/data_amo4_wide.Rda")
+
+real_daily <- data.frame(index = 1:8641,
+                                lapply(data_amo4_wide[1:10080,], 
+                                       FUN = rollapply, 
+                                       width = 24*60, mean)) %>%
+  gather(arm, mean, -index) %>%
+  mutate(source = rep("Real", 86410))
+
+real_means <- colMeans(data_amo4_wide[1:10080,])
+tau_amo4 <- 5/60
+
+syn_data <- data.frame(rep(NA, times = 10080))
+set.seed(124632728)
+for(i in 1:length(real_means)) {
+  syn_data[[i]] <- as.numeric(purrr::rbernoulli(10080, p  = real_means[i]))
+}
+names(syn_data) <- names(data_amo4_wide)
+
+syn_daily <- data.frame(source = rep("Synthetic", 8641),
+                        index = 1:8641,
+                        lapply(syn_data, FUN = zoo::rollapply, width = 24*60, mean)) %>%
+  gather(arm, mean, -index, -source)
+
+rbind(real_daily, syn_daily) %>%
+  rename(Arm = arm) %>%
+  ggplot(aes(x = index, y = mean, group = Arm, color = Arm)) +
+  geom_line(size = 0.4) +
+  geom_hline(aes(yintercept = tau_amo4), linetype = 2) +
+  facet_grid(.~source) + 
+  labs(#title = "Moving average over 24*60 observations (1 day)", 
+       subtitle = "Horizontal bar indicates the threshold.", 
+       x = "Index", y = "One day moving average") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+```{r, include = FALSE, echo = FALSE, message = FALSE, fig.align = "center", out.width = '80%', fig.cap = "Rolling average of arms used in experiment 2."}
+amo4_cummean_real <- data_amo4_wide[1:10080,] %>% tbl_df() %>%
+  mutate_each(funs(cummean)) %>%
+  mutate(index = 1:10080) %>%
+  gather(arm, mean, -index) %>%
+  mutate(source = rep("Real", 100800))
+
+amo4_cummean_syn <- syn_data %>% tbl_df() %>%
+  mutate_each(funs(cummean)) %>%
+  mutate(index = 1:10080) %>%
+  gather(arm, mean, -index) %>%
+  mutate(source = rep("Synthetic", 100800))
+
+rbind(amo4_cummean_real, amo4_cummean_syn) %>%
+  rename(Arm = arm) %>%
+  ggplot(aes(x = index, y = mean, group = Arm, color = Arm)) +
+  geom_line(size = 0.4) +
+  geom_hline(aes(yintercept = tau_amo4), linetype = 2) +
+  facet_grid(.~source) + 
+  labs(#title = "Running average of 10080 observations (1 week)", 
+       subtitle = "Horizontal bar indicates the threshold.", 
+       x = "Index", y = "Running average") +
+  ylim(c(0,0.3)) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+```{r, include = FALSE, echo = FALSE, message = FALSE, fig.align = "center", out.width = '80%', fig.cap = "Rolling average of arms used in experiment 2."}
+amo4_cummean_real_12hrs <- data_amo4_wide[721:10800,] %>% 
+  tbl_df() %>%
+  mutate_each(funs(cummean)) %>%
+  mutate(index = 1:10080) %>%
+  gather(arm, mean, -index) %>%
+  mutate(source = rep("Real", 100800))
+
+rbind(amo4_cummean_real_12hrs, amo4_cummean_syn) %>%
+  rename(Arm = arm) %>%
+  ggplot(aes(x = index, y = mean, group = Arm, color = Arm)) +
+  geom_line(size = 0.4) +
+  geom_hline(aes(yintercept = tau_amo4), linetype = 2) +
+  facet_grid(.~source) + 
+  labs(title = "Running average of 10080 observations (1 week), 12hrs later", 
+       subtitle = "Horizontal bar indicates the threshold.", 
+       x = "Index", y = "Running average") +
+  ylim(c(0,0.3)) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+```{r, include = FALSE, echo = FALSE, message = FALSE, fig.align = "center", out.width = '80%', fig.cap = "Rolling average of arms used in experiment 2."}
+load("/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/data_amo4_shuffled_wide.Rda")
+
+set.seed(214237)
+shuffle_idx <- sample(1:(24*60), 24*60)
+data_amo4_shuffled_wide[1:1440,] <- data_amo4_shuffled_wide[shuffle_idx,]
+
+amo4_shuffled_cummean_real <- data_amo4_shuffled_wide[1:10080,] %>%
+  tbl_df() %>%
+  mutate_each(funs(cummean)) %>%
+  mutate(index = 1:10080) %>%
+  gather(arm, mean, -index) %>%
+  mutate(source = rep("Real", 100800))
+
+rbind(amo4_shuffled_cummean_real, amo4_cummean_syn) %>%
+  rename(Arm = arm) %>%
+  ggplot(aes(x = index, y = mean, group = Arm, color = Arm)) +
+  geom_line(size = 0.4) +
+  geom_hline(aes(yintercept = tau_amo4), linetype = 2) +
+  facet_grid(.~source) + 
+  labs(#title = "Running average of 10080 observations (1 week), 12hrs later", 
+       subtitle = "Horizontal bar indicates the threshold.", 
+       x = "Index", y = "Running average") +
+  ylim(c(0,0.3)) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+```{r, echo = FALSE, fig.align = "center", out.width = '80%', fig.cap = "Performance results of algorithms in experiment 2."}
+library(ggplot2)
+current_path <- "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/real_experiments/"
+
+load(paste0(current_path, "amo4_comp_BUCB.Rda"))
+load(paste0(current_path, "amo4_comp_APT.Rda"))
+load(paste0(current_path, "amo4_comp_UNIFORM.Rda"))
+load(paste0(current_path, "amo4_comp_AugUCB.Rda"))
+load(paste0(current_path, "amo4_comp_LR.Rda"))
+load(paste0(current_path, "amo4_comp_EVT.Rda"))
+
+load(paste0(current_path, "amo4sim_comp_BUCB.Rda"))
+load(paste0(current_path, "amo4sim_comp_APT.Rda"))
+load(paste0(current_path, "amo4sim_comp_UNIFORM.Rda"))
+load(paste0(current_path, "amo4sim_comp_AugUCB.Rda"))
+load(paste0(current_path, "amo4sim_comp_LR.Rda"))
+load(paste0(current_path, "amo4sim_comp_EVT.Rda"))
+
+alg_names <- c(rep(c("Uniform", "APT", "AugUCB","SLR", "B-UCB"), 
+                   each = 10071), rep("EVT", 10061))
+index <- c(rep(10:10080, times = 5), 20:10080)
+alg_res <- (c(amo4_comp_UNIFORM, amo4_comp_APT, amo4_comp_AugUCB, amo4_comp_LR, amo4_comp_BUCB, amo4_comp_EVT))
+source_name <- rep("Real", 60416)
+loc4_comp_res <- data.frame(source = source_name, 
+                            index = index, names = alg_names, 
+                            results = alg_res)
+
+alg_names <- c(rep(c("Uniform", "APT", "AugUCB", "SLR", "B-UCB"), 
+                   each = 10071), rep("EVT", 10061))
+index <- c(rep(10:10080, times = 5), 20:10080)
+alg_res <- (c(amo4sim_comp_UNIFORM, amo4sim_comp_APT, 
+                 amo4sim_comp_AugUCB,
+                 amo4sim_comp_LR, amo4sim_comp_BUCB, amo4sim_comp_EVT))
+source_name <- rep("Synthetic", 60416)
+loc4sim_comp_res <- data.frame(source = source_name, index = index, 
+                               names = alg_names, results = alg_res)
+loc4total <- rbind(loc4_comp_res, loc4sim_comp_res) %>%
+  rename(Algorithm = names)
+
+ggplot(loc4total, aes(x = index, y = results, 
+                      group = Algorithm, color = Algorithm)) + 
+  geom_line() +
+  facet_grid(.~source) +
+  #geom_hline(aes(yintercept = (0.1)), linetype = 2) +
+  labs(#title = "Results of Real Data Experiment 2", 
+       #subtitle = paste0("Dashed line indicates Error = 0.1."), 
+       y = "Error (log10 scale)", x = "Round Index") +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  scale_y_log10()
+```
+
+Using a plot of the pulls at each round across the 5000 simulations in Figure 14, as we did for simulation 2, we can try to understand why some strategies perform well on synthetic data, but poorly on the time series data.
+
+We observe that the patterns across algorithms are quite similar, while the patterns are very different across data sets. On the synthetic data, given that arm $V149$ is clearly the most difficult arm to classify due to its closeness to the threshold $\tau$, all algorithms focus a major share of their budget on this arm. The speed at which they start to do so, however, differs. Perhaps surprisingly, the best performing Bayes-UCB algorithm increases its focus on arm $V149$ the slowest, while in many iterations spending budget on exploring other arms. This is surprising as the Bayes-UCB algorithm's exploration factor was originally conceived for the cumulative regret problem. Thus one would expect it to explore *less* than other algorithms. But its performance does not seem to be easily explained by the lessened focus on the most difficult arm; else we would expect the APT algorithm to perform second best. However, both SLR and EVT perform better than APT while converging more quickly to a higher share of samples allocated to the most difficult arm. 
+
+Something that might be hidden by this aggregated view of all 5000 iterations are a share of iterations in which the EVT completely fails by exploring wrong arms for long periods. This effect might even be more drastic for the APT algorithm. Even though it seems as if its behavior is very similar to SLR and EVT, the overall performance is not better than the performance of uniform sampling. Taking this reasoning into account, one can hypothesize that the Bayes-UCB algorithm finds the most difficult arm uniformly across most iterations as the rounds increase, while other algorithms either find the most difficult arm right away or never and thus have many iterations that end with a misclassification.
+
+For the real data, the difference between Bayes-UCB and the other algorithms is just as apparent. As is the effect of the time varying means of the arms on the rate at which they are sampled. APT, SLR, and EVT all focus quickly in many iterations on the still most difficult arm $V149$. However, in the case of the real data this behavior is not rewarded in the end, as this leads to biased samples and thus wrong estimation of the overall sample mean against which the algorithms are evaluated. We see in the curves of arms $V32$ and arm $V154$ that the EVT algorithm is less impacted by daily seasonalities, while APT clearly is. 
+
+```{r ShareOfPullsAtEachIteration, echo = FALSE, include = FALSE, fig.cap = "Budget allocation of algorithms across arms on real and synthetic data in experiment 2."}
+load(file = "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/Thesis/experiment_postprocessing/amo4_arm_seq_ma.Rda")
+
+rbind(amo4_LR_ma, amo4sim_LR_ma, amo4_AugUCB_ma, amo4sim_AugUCB_ma) %>%
+  ggplot(aes(x = index, y = mean, group = arm, color = arm)) +
+  geom_line(size = 0.3) +
+  facet_grid(source~algorithm) +
+  labs(x = "Index", y = "10 Rounds Moving Average",
+       title = "Average Number of Pulls Allocated to Each Arm per Round") +
+  theme_bw()
+```
+
+```{r, echo = FALSE, fig.align = "center", out.width = '80%', fig.cap = "Budget allocation of algorithms across arms on real and synthetic data in experiment 2."}
+load(file = "/Users/timradtke/Dropbox/1Master/Master Thesis/threshold-thesis/Thesis/experiment_postprocessing/amo4_arm_seq_ma.Rda")
+rbind(amo4sim_APT_ma, amo4_APT_ma, amo4_LR_ma, amo4sim_LR_ma, amo4_EVT_ma, amo4sim_EVT_ma, amo4_BUCB_ma, amo4sim_BUCB_ma) %>%
+  ggplot(aes(x = index, y = mean, group = arm, color = arm)) +
+  geom_line(size = 0.3) +
+  facet_grid(source~algorithm) +
+  labs(x = "Index", y = "10 Rounds Moving Average",
+       title = "Share of Iterations Pulling an Arm at a Given Round") +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  scale_color_discrete(name = "Arm")
+```
+
+### Experiments Conclusion
+
+In the two previous experiments, we observe that the real time series data poses a major hurdle for the adaptive sampling algorithms. It seems that the poor performance can be mostly explained by the seasonality and sudden changes in the samples over time. The observations clearly do not correspond to i.i.d. Bernoulli samples, but have large time dependencies. However, the effect might be overly stark due to the fact that we use minutely time series data, which leads to observations even in minutes when there are few or no users on the website (during night). In contrast, the daily seasonality might be less represented in an actual online experiment observations are only drawn when there is an actual visitor on the site (and a proper conversion rate would fluctuate less than the count of visitors on a given product page). 
+
+Furthermore, some of the problems in dealing with the fluctuating distributions might be specific to the thresholding bandit problem as opposed to the cumulative regret or best-arm identification problems. In the experiments above, we observe that the order of the arms is mostly unaffected by the seasonalities and fluctuations, which implies that the best arm could still be identified. In contrast, given that all arms are individually classified against the *fixed* threshold, a weekly seasonality can declare a correct classification on the first half of the sample null and void on the second half of the sample.
+
+# Conclusion
+
+# Acknowledgements
+
+We thank Alexandra Carpentier, Andrea Locatelli, Urun Dogan, and Marius Kloft for many hours of fruitful discussions and ideas. We thank Carlo Alberto Dall'Amico for bringing our attention to multi-armed bandits in the first place. Sonoma Internet GmbH (Amorelie) supported this work by giving the author access to the discussed data set.

@@ -1,0 +1,42 @@
+---
+output: pdf_document
+---
+
+\begin{centering}
+
+\vspace{5cm}
+
+
+    {\Large Humboldt-Universit\"at zu Berlin \\
+    School of Business and Economics \\
+    Institute for Statistics and Econometrics\\} 
+    
+    \vspace{4cm}
+
+{\huge{\bf On Pure Exploration, Thresholding Bandits, \\
+and Kullback-Leibler Divergence\\}} 
+
+\vspace{2cm}
+
+
+{\large Master's Thesis submitted\\\vspace{0.5cm}
+    to}
+    \\\vspace{0.5cm}
+    {\large{\bf Prof. Dr. Marius Kloft \\}}
+    {\large{\bf Prof. Alexandra Carpentier, PhD \\}}
+    \vspace{0.5cm}
+
+
+    {\large by \\\vspace{0.5cm}
+    {\bf Tim Radtke\\}
+    (572481)\\
+    born on 11.01.1992 in Viersen \\\vspace{1cm}}
+    
+
+
+    {\large in partial fulfillment of the requirements \\
+    for the degree of \\
+    {\bf Master of Science (M. Sc.)\\} \vspace{3cm}
+    Berlin, September 18, 2017\\}
+
+\end{centering}
