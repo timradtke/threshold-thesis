@@ -123,7 +123,7 @@ and Kullback-Leibler Divergence\\}}
     to}
     \\\vspace{0.5cm}
     {\large{\bf Prof. Dr. Marius Kloft \\}}
-    {\large{\bf Prof. Alexandra Carpentier, PhD \\}}
+    {\large{\bf Dr. Alexandra Carpentier \\}}
     \vspace{0.5cm}
 
 
@@ -136,7 +136,7 @@ and Kullback-Leibler Divergence\\}}
 
     {\large in partial fulfillment of the requirements \\
     for the degree of \\
-    {\bf Master of Science (M. Sc.)\\} \vspace{3cm}
+    {\bf Master of Science (M. Sc.) in Statistics\\} \vspace{3cm}
     Berlin, September 18, 2017\\}
 
 \end{centering}
@@ -349,8 +349,7 @@ that she visited a restaurant, the app would like to ask questions about
 her experience. To give a simple example, assume users are not willing
 to answer more than one question per restaurant visit, and the app would
 like to find out two things: Does the restaurant have good service? Is
-the restaurant trendy? See \autoref{app:Foursquare} for how this
-information is then displayed in the Foursquare app.
+the restaurant trendy?
 
 If the feedback that users can give is restricted to binary ``Yes'' or
 ``No'' answers, then we can model the feedback as Bernoulli random
@@ -3650,18 +3649,6 @@ preprint arXiv:1704.04567}, 2017.\par
 
 \appendix
 
-\section{Example of User Feedback in Foursquare App} \label{app:Foursquare}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics{figures/Foursquare_Screenshot.png}
-\caption{The right screenshot shows aggregated user feedback in the
-Foursquare app. One could use thresholding bandit algorithms as
-presented in this thesis to ask different questions so as to optimize
-the confidence with which the results are displayed for a restaurant in
-the app.}
-\end{figure}
-
 \section{Proof of Theorem 2} \label{app:AppendixAPTLB}
 
 We now give a proof for the lower bound for the thresholding bandit
@@ -3741,6 +3728,8 @@ distributions with fixed variance 1 for a given set of gaps
 threshold. We now prove a lower bound on the worst case regret of any
 algorithm; that is, the maximum error probability that even the best
 algorithm makes on this problem.
+
+\newpage
 
 \textbf{Statistical Decision}
 
@@ -4100,8 +4089,8 @@ In order to assess the excellent performance of the Bayes-UCB algorithm,
 which comes at a surprise given that is is designed for the cumulative
 regret setting and thus should tend to explore the arms less, we run the
 Bayes-UCB algorithm for simulation 2 with three different choices of the
-parameter \(c\). In Figure 15, we see the performance results of the
-three versions, whereas Figure 16 shows how the algorithm allocates its
+parameter \(c\). In Figure 14, we see the performance results of the
+three versions, whereas Figure 15 shows how the algorithm allocates its
 budget across the arms over time. The three versions differ in the
 quantile parameter \(c\) (compare \autoref{app:AppendixBUCB}) for which
 we choose \(c \in \{1/5, 1, 5\}\) to explore more or less. In Kaufmann
@@ -4118,7 +4107,7 @@ and Beta distributions are bounded between \(0\) and \(1\), with
 \(\tau\) very close to \(0\). Thus, the index \(B_i^{BUCB}(t)\) cannot
 be larger than \(\tau\) for arms with \(\hat{\mu}_i(t) \geq \tau\). For
 arms with \(\hat{\mu}_i(t) < \tau\), however, the index can be as large
-as \(B_i^{BUCB}(t) = 0.95\). This leads to the effect seen in Figure 14:
+as \(B_i^{BUCB}(t) = 0.95\). This leads to the effect seen in Figure 13:
 Due to \(c=5\), the indexes are based on very large quantiles even in
 the beginning, which leads to large indexes for the arms with small
 means. This however is not the ideal sampling behavior. The other two
@@ -4156,7 +4145,7 @@ variable for adaptive sampling strategies. Given the 5000 iterations
 conducted in simulation 2, we can plot the empirical distribution of
 this random variable for different arms.
 
-In Figure 17, we show the distribution of \(T_6(T)\) for algorithms APT,
+In Figure 16, we show the distribution of \(T_6(T)\) for algorithms APT,
 Bayes-UCB, and SLR. We see that the distribution of the Bayes-UCB
 algorithm is much better concentrated around the optimal share of the
 budget, and has a bell curve shape. In contrast, the distributions of
@@ -4167,7 +4156,7 @@ which they draw arm 6--the most difficult arm--only a single time
 iterations, and leads to the spike on the very left of the graph. In
 order to cope at least a little bit with this problem, we have also run
 the SLR algorithm with the D-Tracking rule as introduced in Garivier and
-Kaufmann (2016). The effect is barely noticeable in Figure 17, but the
+Kaufmann (2016). The effect is barely noticeable in Figure 16, but the
 minimum number of observations is now clearly bounded away from 0. The
 effect on the performance was described before and is very noticeable in
 comparison to SLR without D-Tracking. However, even with D-Tracking the

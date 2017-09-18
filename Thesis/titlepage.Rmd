@@ -23,7 +23,7 @@ and Kullback-Leibler Divergence\\}}
     to}
     \\\vspace{0.5cm}
     {\large{\bf Prof. Dr. Marius Kloft \\}}
-    {\large{\bf Prof. Alexandra Carpentier, PhD \\}}
+    {\large{\bf Dr. Alexandra Carpentier \\}}
     \vspace{0.5cm}
 
 
@@ -36,7 +36,7 @@ and Kullback-Leibler Divergence\\}}
 
     {\large in partial fulfillment of the requirements \\
     for the degree of \\
-    {\bf Master of Science (M. Sc.)\\} \vspace{3cm}
+    {\bf Master of Science (M. Sc.) in Statistics\\} \vspace{3cm}
     Berlin, September 18, 2017\\}
 
 \end{centering}
